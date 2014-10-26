@@ -269,7 +269,6 @@ sub _encode_unix_file_parts {
 
 sub _uri_decode {
   my $todecode = shift;
-  $todecode =~ tr/+/ /;       # pluses become spaces
   $todecode =~ s/%([0-9a-fA-F]{2})/chr(hex($1))/ge;
   return $todecode;
 }

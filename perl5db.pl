@@ -391,7 +391,7 @@ Keep track of the various settings in this hash
 		      stderr => 1,
 		      stdin => 0,
 		      break => 0,
-		      eval => 1,
+		      'eval' => 1,
 		      interact => 1,
 		      );
 		      
@@ -3762,7 +3762,7 @@ sub DB {
 							  $endLine,
 							  \@lines);
 		    # One slash or two in this next pattern?
-		} elsif ($opts{f} =~ m@^dbgp:///?perl/(?:[-_\w\d]+/\d+/)?(.+)$@) {
+		} elsif ($opts{f} =~ m@^dbgp:///?perl/.*(\d+/\(eval\s\d+\).*)$@) {
 		    dblog("source: it's a dbgp thing ($1)");
 		    my $dynamicLocation = $1;
 		    if ($dynamicLocation =~ /^(\d+)\/\(eval\s*\d+\)/) {
