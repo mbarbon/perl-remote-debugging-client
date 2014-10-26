@@ -1,0 +1,192 @@
+<?xml version="1.0" ?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<!-- saved from url=(0017)http://localhost/ -->
+<script language="JavaScript" src="../../../../displayToc.js"></script>
+<script language="JavaScript" src="../../../../tocParas.js"></script>
+<script language="JavaScript" src="../../../../tocTab.js"></script>
+<link rel="stylesheet" type="text/css" href="../../../../scineplex.css">
+<title>/home/komodo-build/buildbot/ko-linux-x86_64-r/ide-6.1/build/release/dbgp/perl/contrib/IO-stringy/blib/lib/DB/IO/ScalarArray.pm</title>
+<link rel="stylesheet" href="../../../../Active.css" type="text/css" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:support@ActiveState.com" />
+</head>
+
+<body>
+
+
+<!-- INDEX BEGIN -->
+<div name="index">
+<script>writelinks('__top__',4);</script>
+<h1><a>/home/komodo-build/buildbot/ko-linux-x86_64-r/ide-6.1/build/release/dbgp/perl/contrib/IO-stringy/blib/lib/DB/IO/ScalarArray.pm</a></h1>
+<p><a name="__index__"></a></p>
+
+
+<ul>
+
+	<ul>
+
+		<li><a href="#construction">Construction</a></li>
+		<li><a href="#input_and_output">Input and output</a></li>
+		<li><a href="#seeking_telling_and_other_attributes">Seeking/telling and other attributes</a></li>
+	</ul>
+
+</ul>
+
+<hr name="index" />
+</div>
+<!-- INDEX END -->
+
+<p>
+</p>
+<h2><a name="construction">Construction</a></h2>
+<dl>
+<dt><strong><a name="new_args2" class="item">new [ARGS...]</a></strong></dt>
+
+<dd>
+<p><em>Class method.</em>
+Return a new, unattached array handle.  
+If any arguments are given, they're sent to <a href="../../../../lib/pod/perlfunc.html#open"><code>open()</code></a>.</p>
+</dd>
+<dt><strong><a name="open_arrayref" class="item">open [ARRAYREF]</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Open the array handle on a new array, pointed to by ARRAYREF.
+If no ARRAYREF is given, a &quot;private&quot; array is created to hold
+the file data.</p>
+<p>Returns the self object on success, undefined on error.</p>
+</dd>
+<dt><strong><a name="opened" class="item">opened</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Is the array handle opened on something?</p>
+</dd>
+<dt><strong><a name="close" class="item">close</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Disassociate the array handle from its underlying array.
+Done automatically on destroy.</p>
+</dd>
+</dl>
+<p>
+</p>
+<h2><a name="input_and_output">Input and output</a></h2>
+<dl>
+<dt><strong><a name="flush" class="item">flush</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+No-op, provided for OO compatibility.</p>
+</dd>
+<dt><strong><a name="getc" class="item">getc</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Return the next character, or undef if none remain.
+This does a <a href="../../../../lib/pod/perlfunc.html#read"><code>read(1)</code></a>, which is somewhat costly.</p>
+</dd>
+<dt><strong><a name="getline" class="item">getline</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Return the next line, or undef on end of data.
+Can safely be called in an array context.
+Currently, lines are delimited by &quot;\n&quot;.</p>
+</dd>
+<dt><strong><a name="getlines" class="item">getlines</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Get all remaining lines.
+It will <code>croak()</code> if accidentally called in a scalar context.</p>
+</dd>
+<dt><strong><a name="print_args2" class="item">print ARGS...</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Print ARGS to the underlying array.</p>
+<p>Currently, this always causes a &quot;seek to the end of the array&quot;
+and generates a new array entry.  This may change in the future.</p>
+</dd>
+<dt><strong><a name="read_buf_nbytes_offset2" class="item">read BUF, NBYTES, [OFFSET];</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Read some bytes from the array.
+Returns the number of bytes actually read, 0 on end-of-file, undef on error.</p>
+</dd>
+<dt><strong><a name="write_buf_nbytes_offset2" class="item">write BUF, NBYTES, [OFFSET];</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Write some bytes into the array.</p>
+</dd>
+</dl>
+<p>
+</p>
+<h2><a name="seeking_telling_and_other_attributes">Seeking/telling and other attributes</a></h2>
+<dl>
+<dt><strong><a name="autoflush" class="item">autoflush</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+No-op, provided for OO compatibility.</p>
+</dd>
+<dt><strong><a name="binmode" class="item">binmode</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+No-op, provided for OO compatibility.</p>
+</dd>
+<dt><strong><a name="clearerr" class="item">clearerr</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>  Clear the error and EOF flags.  A no-op.</p>
+</dd>
+<dt><strong><a name="eof" class="item">eof</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>  Are we at end of file?</p>
+</dd>
+<dt><strong><a name="seek" class="item">seek POS,WHENCE</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Seek to a given position in the stream.
+Only a WHENCE of 0 (SEEK_SET) is supported.</p>
+</dd>
+<dt><strong><a name="tell" class="item">tell</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Return the current position in the stream, as a numeric offset.</p>
+</dd>
+<dt><strong><a name="setpos" class="item">setpos POS</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Seek to a given position in the array, using the opaque <a href="#getpos"><code>getpos()</code></a> value.
+Don't expect this to be a number.</p>
+</dd>
+<dt><strong><a name="getpos" class="item">getpos</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Return the current position in the array, as an opaque value.
+Don't expect this to be a number.</p>
+</dd>
+<dt><strong><a name="aref" class="item">aref</a></strong></dt>
+
+<dd>
+<p><em>Instance method.</em>
+Return a reference to the underlying array.</p>
+</dd>
+</dl>
+
+</body>
+
+</html>
