@@ -130,7 +130,8 @@ sub enableLogger {
 	$doLogging = 0;
 	return;
     }
-    my $outLogName = shift;
+    my $outLogName;
+    $DB::outLogName = $outLogName = shift;
     return unless $outLogName;
     if (ref $outLogName eq 'GLOB') {
 	# Make sure we can write to it -- we die if we can't
@@ -237,16 +238,10 @@ sub getCommonType($) {
     }
     my $r;
     if ($r = ref $val) {
-	if ($r =~ /^ARRAY/) {
-	    return 'array';
-	} elsif ($r =~ /^HASH/) {
-	    return 'hash';
-	} else {
-	    # classes and refs to scalars
-	    return 'object';
-	}
+	$r =~ s/\(0x\w+\)//;
+	return $r;
     } else {
-	return 'scalar';
+	return '';
     }
 }
 

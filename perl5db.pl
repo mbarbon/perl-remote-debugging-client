@@ -1791,7 +1791,7 @@ sub _getProximityVars($$$) {
 
     my $currProxVarTable;
     my %each_vars;
-    my $each_ptn = qr/each (\%\w+)/;
+    my $each_ptn = qr/each \s+ ( \% [\$\{]* \w+ )/xmsi;
     # First get the each-vars up to the cutoff point, regardless
     # of whether we're using the formatter or not.
     my $currProxVarEachVarTable = ($proxVarEachVarTable{$filename} ||= []);
@@ -1801,6 +1801,22 @@ sub _getProximityVars($$$) {
 	foreach my $i ($finalBack .. $finalFwd) {
 	    my @list = ($dbline[$i] =~ /$each_ptn/g);
 	    $currProxVarEachVarTable[$i] = \@list || 0;
+	    my @newList;
+            foreach my $term (@list) {
+		# Pull out any braces, since we're ignoring subscripts
+		# We didn't bother collecting the close-braces, so no
+		# need to drop them
+		$term =~ s/\{//g;
+		if ($term =~ /(\$+)(\w+)/) {
+		    my $numDollars = length($1);
+		    my $word = $2;
+		    for my $i (1 ... $numDollars) {
+			my $dollarPart = '$' x $i;
+			push @newList, "\%$dollarPart", "$dollarPart$word";
+		    }
+                }
+            }
+	    push @{$currProxVarEachVarTable[$i]}, @newList if @newList;
 	}
     }
     # Pick up the each_vars in this run
@@ -1993,7 +2009,10 @@ sub _isPrintable($$) {
     } elsif ($ibBuffer =~ /^\s*sub\b/) {
 	return;
     }
-    return $valRef =~ /HASH|ARRAY|SCALAR/;
+    require overload;
+    return (overload::Overloaded($valRef)
+            || $valRef =~ /HASH|ARRAY|SCALAR/
+            || (ref $valRef) =~ /Regexp/);
 }
 
 sub _removeLocalizers($) {
@@ -2015,6 +2034,9 @@ sub _removeLocalizers($) {
 		sub { DB::Text::Balanced::extract_codeblock($_[0],'{}','') },
     );
     my @parts = DB::Text::Balanced::extract_multiple($code, \@list);
+    if (!join("", @parts)) {
+        return $code;
+    }
     local $_;
     foreach (@parts) {
 	my $char1 = substr($_, 0, 1);
@@ -2147,6 +2169,36 @@ sub db_alarm {
 	alarm($time);
     };
     $skip_alarm = 1 if $@;
+}
+
+# DB::eval returns an array, but we can do better
+sub eval_term {
+    my ($term) = @_;
+    my $valRef;
+    my $firstChar = substr($term, 0, 1);
+    $DB::no_value = undef;
+    $evalarg = $term;
+    if ($firstChar eq '@') {
+	my @tmp = &eval();
+	if ($DB::no_value) {
+	    @tmp = ();
+	}
+	$valRef = \@tmp;
+    } elsif ($firstChar eq '%') {
+	my %tmp = &eval();
+	if ($DB::no_value) {
+	    %tmp = ();
+	}
+	$valRef = \%tmp;
+    } else {
+	# eval always fires in array context
+	my @tmp = &eval();
+	if ($DB::no_value) {
+	    $valRef = \undef;
+	} else {
+	    $valRef = _guessScalarOrArray(\@tmp);
+	}
+    }
 }
 
 sub DB {
@@ -3333,32 +3385,7 @@ sub DB {
 		    if ($entry->[NV_NEED_MAIN_LEVEL_EVAL]
 			|| !$entry->[NV_VALUE]) {
 			eval {
-			    my $valRef;
-			    $evalarg = $entry->[NV_NAME];
-			    my $firstChar = substr($evalarg, 0, 1);
-			    $DB::no_value = undef;
-			    if ($firstChar eq '@') {
-				my @tmp = &eval();
-				if ($DB::no_value) {
-				    @tmp = ();
-				}
-				$valRef = \@tmp;
-			    } elsif ($firstChar eq '%') {
-				my %tmp = &eval();
-				if ($DB::no_value) {
-				    %tmp = ();
-				}
-				$valRef = \%tmp;
-			    } else {
-				# eval always fires in array context
-				my @tmp = &eval();
-				if ($DB::no_value) {
-				    $valRef = \undef;
-				} else {
-				    $valRef = _guessScalarOrArray(\@tmp);
-				}
-			    }
-			    $entry->[NV_VALUE] = $valRef;
+			    $entry->[NV_VALUE] = eval_term($entry->[NV_NAME]);
 			};
 			if ($@) {
 			    $entry->[NV_VALUE] = _trimExceptionInfo($@);
@@ -3872,6 +3899,9 @@ sub DB {
 			}
 			tie(*STDOUT, 'DB::RedirectStdOutput', *ActualSTDOUT, $OUT, $cmd, $copyType);
 			$tiedFileHandles{'stdout'} = 1;
+			if ($DB::outLogName && $DB::outLogName == \*STDOUT) {
+			    $DB::DbgrCommon::logFH = \*ActualSTDOUT;
+			}
 		    } elsif ($cmd eq 'stderr' && !$ldebug) {
 			if (exists $tiedFileHandles{'stderr'}) {
 				# Update the copy-type
@@ -3886,6 +3916,9 @@ sub DB {
 			}
 			tie(*STDERR, 'DB::RedirectStdOutput', *ActualSTDERR, $OUT, $cmd, $copyType);
 			$tiedFileHandles{'stderr'} = 1;
+			if ($DB::outLogName && $DB::outLogName == \*STDERR) {
+			    $DB::DbgrCommon::logFH = \*ActualSTDERR;
+			}
 		    }
 		    local $res = sprintf(qq(%s\n<response %s command="%s" 
 					    transaction_id="%s" success="1" />),
@@ -3942,16 +3975,12 @@ sub DB {
 		if (!defined $decodedData) {
 		    next CMD;
 		}
-		$evalarg = $decodedData;
-		local $res = eval { join("", &eval()) };
-		printWithLength(sprintf
-				qq(%s\n<response %s command="%s" transaction_id="%s" success="1"><data>%s</data></response>),
-
-				xmlHeader(),
-				namespaceAttr(),
-				$cmd,
-				$transactionID,
-				xmlEncode($res));
+		my $res = eval_term($decodedData);
+		emitEvalResultAsProperty($cmd,
+					 $transactionID,
+					 $decodedData,
+					 $res,
+					 $maxDataSize);
 	    } elsif ($cmd eq 'interact') {
 		local %opts = ();
 		{
@@ -4057,8 +4086,10 @@ sub DB {
 				my @tmp = &eval();
 				if ($evalarg =~ /^[\@\%]/) {
 				    $valRef = \@tmp;
+				    $::_ = undef;
 				} else {
 				    $valRef = _guessScalarOrArray(\@tmp);
+				    $::_ = $tmp[0] if 0+@tmp == 1;
 				}
 			    };
 			    if ($@) {

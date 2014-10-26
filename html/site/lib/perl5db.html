@@ -7,7 +7,7 @@
 <script language="JavaScript" src="../../tocParas.js"></script>
 <script language="JavaScript" src="../../tocTab.js"></script>
 <link rel="stylesheet" type="text/css" href="../../scineplex.css">
-<title>/home/trentm/var/ko44/build/release/dbgp/perl/DBGP/blib/lib/perl5db.pl</title>
+<title>/home/komodo-build/buildbot/ko-linux-x86_64-r/ide-5.2/build/release/dbgp/perl/DBGP/blib/lib/perl5db.pl</title>
 <link rel="stylesheet" href="../../Active.css" type="text/css" />
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <link rev="made" href="mailto:support@ActiveState.com" />
@@ -15,11 +15,13 @@
 
 <body>
 
-<script>writelinks('__top__',2);</script>
-<h1><a>/home/trentm/var/ko44/build/release/dbgp/perl/DBGP/blib/lib/perl5db.pl</a></h1>
-<p><a name="__index__"></a></p>
 
 <!-- INDEX BEGIN -->
+<div name="index">
+<script>writelinks('__top__',2);</script>
+<h1><a>/home/komodo-build/buildbot/ko-linux-x86_64-r/ide-5.2/build/release/dbgp/perl/DBGP/blib/lib/perl5db.pl</a></h1>
+<p><a name="__index__"></a></p>
+
 
 <ul>
 
@@ -60,9 +62,11 @@
 
 	<li><a href="#db__fake"><code>DB::fake</code></a></li>
 </ul>
+
+<hr name="index" />
+</div>
 <!-- INDEX END -->
 
-<hr />
 <p>
 </p>
 <h2><a name="remote_debugging">REMOTE DEBUGGING</a></h2>
@@ -98,27 +102,31 @@ command mode if it finds <code>$signal</code> set to a true value.</p>
 <p>Controls behavior during single-stepping. Stacked in <code>@stack</code> on entry to
 each subroutine; popped again at the end of each subroutine.</p>
 <ul>
-<li><strong><a name="item_0__2d_run_continuously_2e">0 - run continuously.</a></strong>
+<li><strong><a name="0_run_continuously" class="item">0 - run continuously.</a></strong>
 
-<li><strong><a name="item_1__2d_single_2dstep_2c_go_into_subs_2e_the__27s_27">1 - single-step, go into subs. The 's' command.</a></strong>
+</li>
+<li><strong><a name="1_single_step_go_into_subs_the_s_command" class="item">1 - single-step, go into subs. The 's' command.</a></strong>
 
-<li><strong><a name="item_2__2d_single_2dstep_2c_don_27t_go_into_subs_2e_the">2 - single-step, don't go into subs. The 'n' command.</a></strong>
+</li>
+<li><strong><a name="2_single_step_don_t_go_into_subs_the_n_command" class="item">2 - single-step, don't go into subs. The 'n' command.</a></strong>
 
-<li><strong><a name="item_depth">4 - print current sub depth (turned on to force this when &quot;too much
+</li>
+<li><strong><a name="depth" class="item">4 - print current sub depth (turned on to force this when &quot;too much
 recursion&quot; occurs.</a></strong>
 
+</li>
 </ul>
 <p>
 </p>
 <h4><a name="_saved"><code>@saved</code></a></h4>
-<p>Saves important globals (<a href="../../lib/pod/perlvar.html#item___"><code>$@</code></a>, <a href="../../lib/pod/perlvar.html#item___"><code>$!</code></a>, <a href="../../lib/pod/perlvar.html#item___e"><code>$^E</code></a>, <a href="../../lib/pod/perlvar.html#item___"><code>$,</code></a>, <a href="../../lib/pod/perlvar.html#item___"><code>$/</code></a>, <a href="../../lib/pod/perlvar.html#item___"><code>$\</code></a>, <a href="../../lib/pod/perlvar.html#item___w"><code>$^W</code></a>)
+<p>Saves important globals (<a href="../../lib/pod/perlvar.html#__"><code>$@</code></a>, <a href="../../lib/pod/perlvar.html#__"><code>$!</code></a>, <a href="../../lib/pod/perlvar.html#__e"><code>$^E</code></a>, <a href="../../lib/pod/perlvar.html#__"><code>$,</code></a>, <a href="../../lib/pod/perlvar.html#__"><code>$/</code></a>, <a href="../../lib/pod/perlvar.html#__"><code>$\</code></a>, <a href="../../lib/pod/perlvar.html#__w"><code>$^W</code></a>)
 so that the debugger can substitute safe values while it's running, and
 restore them when it returns control.</p>
 <p>
 </p>
 <h4><a name="_stack"><code>@stack</code></a></h4>
 <p>Saves the current value of <code>$single</code> on entry to a subroutine.
-Manipulated by the <code>c</code> command to turn off tracing in all subs above the
+Manipulated by the <a href="../../lib/pod/perlrun.html#c"><code>c</code></a> command to turn off tracing in all subs above the
 current one.</p>
 <p>
 </p>
@@ -140,9 +148,9 @@ debugger has to turn off warnings while the debugger code is compiled, but then
 restore them to their original setting before the program being debugged begins
 executing.</p>
 <p>The first <code>BEGIN</code> block simply turns off warnings by saving the current
-setting of <a href="../../lib/pod/perlvar.html#item___w"><code>$^W</code></a> and then setting it to zero. The second one initializes
+setting of <a href="../../lib/pod/perlvar.html#__w"><code>$^W</code></a> and then setting it to zero. The second one initializes
 the debugger variables that are needed before the debugger begins executing.
-The third one puts <a href="../../lib/pod/perlvar.html#item___x"><code>$^X</code></a> back to its former value.</p>
+The third one puts <a href="../../lib/pod/perlvar.html#__x"><code>$^X</code></a> back to its former value.</p>
 <p>We'll detail the second <code>BEGIN</code> block later; just remember that if you need
 to initialize something before the debugger starts really executing, that's
 where it has to go.</p>
@@ -157,7 +165,7 @@ where it has to go.</p>
 <p>First, it initializes the environment it wants to run in: turning off
 warnings during its own compilation, defining variables which it will need
 to avoid warnings later, setting itself up to not exit when the program
-terminates, and defaulting to printing return values for the <a href="../../lib/pod/perlguts.html#item_r"><code>r</code></a> command.</p>
+terminates, and defaulting to printing return values for the <a href="../../lib/pod/perlguts.html#r"><code>r</code></a> command.</p>
 <p>
 </p>
 <hr />
@@ -169,22 +177,27 @@ terminates, and defaulting to printing return values for the <a href="../../lib/
 <h1><a name="stopreasons">StopReasons</a></h1>
 <p>Why we are stopping</p>
 <ul>
-<li><strong><a name="item_0__2d_started_program">0 - started program</a></strong>
+<li><strong><a name="0_started_program" class="item">0 - started program</a></strong>
 
-<li><strong><a name="item_1__2d_user_did_a_step_into">1 - user did a step_into</a></strong>
+</li>
+<li><strong><a name="1_user_did_a_step_into" class="item">1 - user did a step_into</a></strong>
 
-<li><strong><a name="item_2__2d_user_did_a_step_over">2 - user did a step_over</a></strong>
+</li>
+<li><strong><a name="2_user_did_a_step_over" class="item">2 - user did a step_over</a></strong>
 
-<li><strong><a name="item_4__2d_user_did_a_step_out">4 - user did a step_out</a></strong>
+</li>
+<li><strong><a name="4_user_did_a_step_out" class="item">4 - user did a step_out</a></strong>
 
-<li><strong><a name="item_8__2d_program_hit_max_2drecursion_depth">8 - program hit max-recursion depth</a></strong>
+</li>
+<li><strong><a name="8_program_hit_max_recursion_depth" class="item">8 - program hit max-recursion depth</a></strong>
 
+</li>
 </ul>
 <p>
 </p>
 <hr />
 <h1><a name="notyet">notyet</a></h1>
-<p>sub <code>hook_file_spec_win32_fixes()</code> {
+<p>sub hook_file_spec_win32_fixes() {
     # There's a serious bug in 5.005's win32.pm, so supply fixes
     # from our own space.
     require DB::File::Spec::Win32;
@@ -223,9 +236,7 @@ terminates, and defaulting to printing return values for the <a href="../../lib/
 <h1><a name="db__fake"><code>DB::fake</code></a></h1>
 <p>Contains the <code>at_exit</code> routine that the debugger uses to issue the
 <code>Debugged program terminated ...</code> message after the program completes. See
-the <code>END</code> block documentation for more details.
-
-</p>
+the <code>END</code> block documentation for more details.</p>
 
 </body>
 

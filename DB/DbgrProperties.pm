@@ -16,6 +16,7 @@ require Exporter;
 	     doPropertySetInfo
 	     emitContextNames
 	     emitContextProperties
+	     emitEvalResultAsProperty
 	     emitEvaluatedPropertyGetInfo
 	     emitFinalPropertyValue
 	     figureEncoding
@@ -368,6 +369,29 @@ sub emitFinalPropertyValue($$$$$) {
 }
 
 
+sub emitEvalResultAsProperty($$$$$) {
+    my ($cmd,
+	$transactionID,
+	$property_long_name,
+	$valRefs,
+	$maxDataSize) = @_;
+    my $res = sprintf(qq(%s\n<response %s command="%s" 
+			 transaction_id="%s" >),
+		      xmlHeader(),
+		      namespaceAttr(),
+		      $cmd,
+		      $transactionID);
+    $res .= getFullPropertyInfoByValue($property_long_name, # name
+				       $property_long_name,
+				       $valRefs,
+				       $maxDataSize,
+				       0, # page
+				       0, # current depth
+				       );
+    $res .= "\n</response>";
+    printWithLength($res);
+}
+
 # This routine either returns a (name, value, evalRequest) array
 # Locals are evaluated here everywhere but at the top-level
 # Everthing else we attempt to evaluate here.  If we fail, we'll
@@ -491,20 +515,25 @@ sub getFullPropertyInfoByValue($$$$$$) {
     my $encValLength = undef;
     my $refstr = "";
     my $address;
+    my $variableGroup = -1;
+    use constant VARIABLE_GROUP_ARRAY => 1;
+    use constant VARIABLE_GROUP_HASH => 2;
     if (!defined $val) {
-	$typeString = 'null';
+	$typeString = 'undef';
     } else {
 	# Unlike getPropertyInfo, this is where we find
 	# arrays and hashes
 	if ($refstr = ref $val) {
 	    my $stringifiedVal = "" . $val;
 	    if ($refstr =~ /^ARRAY/) {
-		$typeString = 'array';
+		$typeString = $refstr;
+		$variableGroup = VARIABLE_GROUP_ARRAY;
 		$numChildren = scalar @$val;
 		$hasChildren = $numChildren >= 1;
 		($address) = ($stringifiedVal =~ m/^ARRAY\(0x(.*)\)$/i);
 	    } elsif ($refstr =~ /^HASH/) {
-		$typeString = 'hash';
+		$typeString = $refstr;
+		$variableGroup = VARIABLE_GROUP_HASH;
 		$numChildren = scalar keys %$val;
 		$hasChildren = $numChildren >= 1;
 		($address) = ($stringifiedVal =~ m/^HASH\(0x(.*)\)$/i);
@@ -550,7 +579,7 @@ sub getFullPropertyInfoByValue($$$$$$) {
 	    $typeString = getCommonType($val2);
 	}
     }
-    $res .= qq( type="$typeString");
+    $res .= sprintf(qq( type="%s"), xmlAttrEncode($typeString));
     $res .= qq( constant="0");
     if ($hasChildren) {
 	$res .= qq( children="1" numchildren="$numChildren");
@@ -570,7 +599,7 @@ sub getFullPropertyInfoByValue($$$$$$) {
 	    my $childrenPerPage = $settings{max_children}[0];
 	    my $startIndex = $pageIndex * $childrenPerPage;
 	    my $endIndex = $startIndex + $childrenPerPage - 1;
-	    if ($typeString eq 'array'
+	    if ($variableGroup == VARIABLE_GROUP_ARRAY
 		|| $refstr =~ /=ARRAY\(0x.*\)/
 		|| "$val" =~ /=ARRAY\(0x.*\)/) {
 		my $arraySize = scalar @$val;
@@ -596,7 +625,7 @@ sub getFullPropertyInfoByValue($$$$$$) {
 			$res .= "$innerProp";
 		    }
 		}
-	    } elsif ($typeString eq 'hash'
+	    } elsif ($variableGroup == VARIABLE_GROUP_HASH
 		     || $refstr =~ /=HASH\(0x.*\)/
 		     || "$val" =~ /=HASH\(0x.*\)/) {
 		my %hval = %$val;
@@ -691,21 +720,23 @@ sub analyzeVal($) {
     }
     my $refstr = ref $val;
     if ($refstr =~ /^ARRAY/) {
-	return ('array', scalar @$val, undef);
+	return ($refstr, scalar @$val, undef);
     } elsif ($refstr =~ /^HASH/) {
-	return ('hash', scalar keys %$val, undef);
+	return ($refstr, scalar keys %$val, undef);
     } elsif ($refstr =~ /^REF/ || $refstr =~ /^SCALAR/) {
-	return ('object', 1, undef);
+	return ($refstr, 1, undef);
     } elsif ($refstr =~ /^CODE/) {
 	return ('CODE', 0, undef);
     } elsif ("$val" =~ /$refstr=/) {
 	my $strVal = "$val";
+        my $typeString = $refstr;
+        $typeString =~ s/\(0x\w+\)//;
 	if ($strVal =~ /=HASH\(0x\w+\)/) {
-	    return ('object', scalar keys %$val, $refstr);
+	    return ($typeString, scalar keys %$val, $refstr);
 	} elsif ($strVal =~ /=ARRAY\(0x\w+\)/) {
-	    return ('object', scalar @$val, $refstr);
+	    return ($typeString, scalar @$val, $refstr);
 	} else {
-	    return ('object', 0, $refstr);
+	    return ($typeString, 0, $refstr);
 	}
     } elsif (overload::Overloaded($val)) {
 	my $overloadedRefStr;
@@ -717,18 +748,18 @@ sub analyzeVal($) {
 		$className = $1;
 		dblog("  \$className = $className, \$overloadedRefStr = $overloadedRefStr");
 		if ($overloadedRefStr =~ /=HASH\(0x\w+\)/) {
-		    return ('object', scalar keys %$val, $className, $overloadedRefStr);
+		    return ('HASH', scalar keys %$val, $className, $overloadedRefStr);
 		} elsif ($overloadedRefStr =~ /=ARRAY\(0x\w+\)/) {
-		    return ('object', scalar @$val, $className, $overloadedRefStr);
+		    return ('ARRAY', scalar @$val, $className, $overloadedRefStr);
 		} else {
-		    return ('object', 0, $className, $overloadedRefStr);
+		    return ('SCALAR', 0, $className, $overloadedRefStr);
 		}
 	    }
 	    dblog("Could pull className out of refstr [$overloadedRefStr]");
 	}
 	# It's some other kind of bizarre overloaded operator.
 	dblog('qqq:analyzeVal ' . __LINE__);
-	return ('object', 0, $overloadedRefStr);
+	return ('SCALAR', 0, $overloadedRefStr);
     } else {
 	# Return whatever it is.
 	$refstr =~ s/=.*//;
@@ -755,13 +786,28 @@ sub adjustLongName($$$) {
 	    return ("->[$key]", "${fullname}->[$key]");
 	}
     } else {
+        # Don't use Data::Dump for hash keys, as it's doing too
+        # much processing on hash keys.
+        # Data::Dump was used to fix bugs 79892, 79894, and 79895 in r22847.
+        # However Data::Dump \x-encodes high-bit characters,
+        # which makes them hard to read in the UI, so we need to do
+        # our own encoding.
+        # This change fixes bug 83959
 	if ($key =~ /^-?[a-zA-Z_]\w*$/) {
-	    # Do nothing
-	} else {
-	    if ($key =~ /[\\\']/) {
-		$key =~ s/([\\\'])/\\$1/g;
-	    }
-	    $key = "'$key'";
+	    # Don't quote barewords
+	} elsif ($key =~ /^-?[1-9]\d{0,8}$/ || $key eq "0") {
+            # Don't quote integers
+        } else {
+            # Convert low-byte values, leave high-byte values alone,
+            # and backslash-escape the usual suspects.
+            $key =~ s{([\\\"\$\@\*\%])}
+                     {\\$1}g;
+            $key =~ s{([\x00-\x08\x0b\x0c\x0e-\x1f])}
+                     {sprintf('\\x%02x', hex(ord($1)))}egx;
+            $key =~ s{\t}{\\t}gx;
+            $key =~ s{\r}{\\r}gx;
+            $key =~ s{\n}{\\n}gx;
+            $key = '"' . $key . '"';
 	}
 	if ($fullname =~ m/^(\%)(.*)/) {
 	    # Verify that single-quotes won't nest.

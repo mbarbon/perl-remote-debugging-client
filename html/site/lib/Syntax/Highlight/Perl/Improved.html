@@ -15,11 +15,13 @@
 
 <body>
 
+
+<!-- INDEX BEGIN -->
+<div name="index">
 <script>writelinks('__top__',5);</script>
 <h1><a>Syntax::Highlight::Perl::Improved - Highlighting of Perl Syntactical Structures</a></h1>
 <p><a name="__index__"></a></p>
 
-<!-- INDEX BEGIN -->
 
 <ul>
 
@@ -47,18 +49,20 @@
 	<li><a href="#revisions">REVISIONS</a></li>
 	<ul>
 
-		<li><a href="#05032004_david_c_y__liu__version_1_01_">05-03-2004  David C.Y. Liu (Version 1.01)</a></li>
-		<li><a href="#04042001_cory_johns">04-04-2001  Cory Johns</a></li>
-		<li><a href="#03302001_cory_johns">03-30-2001  Cory Johns</a></li>
-		<li><a href="#03292001_cory_johns">03-29-2001  Cory Johns</a></li>
-		<li><a href="#03272001_cory_johns">03-27-2001  Cory Johns</a></li>
-		<li><a href="#03202001_cory_johns">03-20-2001  Cory Johns</a></li>
+		<li><a href="#05_03_2004_david_c_y__liu__version_1_01_">05-03-2004  David C.Y. Liu (Version 1.01)</a></li>
+		<li><a href="#04_04_2001_cory_johns">04-04-2001  Cory Johns</a></li>
+		<li><a href="#03_30_2001_cory_johns">03-30-2001  Cory Johns</a></li>
+		<li><a href="#03_29_2001_cory_johns">03-29-2001  Cory Johns</a></li>
+		<li><a href="#03_27_2001_cory_johns">03-27-2001  Cory Johns</a></li>
+		<li><a href="#03_20_2001_cory_johns">03-20-2001  Cory Johns</a></li>
 	</ul>
 
 </ul>
+
+<hr name="index" />
+</div>
 <!-- INDEX END -->
 
-<hr />
 <p>
 </p>
 <h1><a name="name">NAME</a></h1>
@@ -98,35 +102,35 @@ a stream) such as speeding up state copying.</p>
 <p>
 </p>
 <h2><a name="constructors">Constructors</a></h2>
-<p>The only constructor provided is <a href="#item_new"><code>new()</code></a>.  When called on an existing object, <a href="#item_new"><code>new()</code></a> will
-create a new <em><strong>copy</strong></em> of that object.  Otherwise, <a href="#item_new"><code>new()</code></a> creates a new copy of the (internal)
+<p>The only constructor provided is <a href="#new"><code>new()</code></a>.  When called on an existing object, <a href="#new"><code>new()</code></a> will
+create a new <em><strong>copy</strong></em> of that object.  Otherwise, <a href="#new"><code>new()</code></a> creates a new copy of the (internal)
 <em>Default Object</em>.  Note that the use of the procedural syntax modifies the <em>Default Object</em>
-and that those changes <em>will</em> be reflected in any subsequent <a href="#item_new"><code>new()</code></a> calls.</p>
+and that those changes <em>will</em> be reflected in any subsequent <a href="#new"><code>new()</code></a> calls.</p>
 <p>
 </p>
 <h2><a name="formatting">Formatting</a></h2>
-<p>Formatting is done using the <a href="#item_format_string"><code>format_string()</code></a> method.  Call <a href="#item_format_string"><code>format_string()</code></a> with one or more
-strings to format, or it will default to using <a href="../../../../../lib/pod/perlvar.html#item___"><code>$_</code></a>.</p>
+<p>Formatting is done using the <a href="#format_string"><code>format_string()</code></a> method.  Call <a href="#format_string"><code>format_string()</code></a> with one or more
+strings to format, or it will default to using <a href="../../../../../lib/pod/perlvar.html#__"><code>$_</code></a>.</p>
 <p>
 </p>
 <h2><a name="setting_and_getting_formats">Setting and Getting Formats</a></h2>
-<p>You can set the text used for formatting a syntax element using <a href="#item_set_format"><code>set_format()</code></a> (or set
-the start and end format individually using <a href="#item_set_start_format"><code>set_start_format()</code></a> and <a href="#item_set_end_format"><code>set_end_format()</code></a>,
+<p>You can set the text used for formatting a syntax element using <a href="#set_format"><code>set_format()</code></a> (or set
+the start and end format individually using <a href="#set_start_format"><code>set_start_format()</code></a> and <a href="#set_end_format"><code>set_end_format()</code></a>,
 respectively).</p>
-<p>You can also retrieve the text used for formatting for an element via <a href="#item_get_start_format"><code>get_start_format()</code></a>
-or <a href="#item_get_end_format"><code>get_end_format</code></a>.  Bulk retrieval of the names or values of defined formats is possible
-via <a href="#item_get_format_names_list"><code>get_format_names_list()</code></a> (names), <a href="#item_get_start_format_values_list"><code>get_start_format_values_list()</code></a> and <a href="#item_get_end_format_values_list"><code>get_end_format_values_list()</code></a>.</p>
+<p>You can also retrieve the text used for formatting for an element via <a href="#get_start_format"><code>get_start_format()</code></a>
+or <a href="#get_end_format"><code>get_end_format</code></a>.  Bulk retrieval of the names or values of defined formats is possible
+via <a href="#get_format_names_list"><code>get_format_names_list()</code></a> (names), <a href="#get_start_format_values_list"><code>get_start_format_values_list()</code></a> and <a href="#get_end_format_values_list"><code>get_end_format_values_list()</code></a>.</p>
 <p>See <a href="#format_types">FORMAT TYPES</a> later in this document for information on what format elements can be used.</p>
 <p>
 </p>
 <h2><a name="checking_and_setting_the_state">Checking and Setting the State</a></h2>
-<p>You can check certain aspects of the state of the formatter via the methods: <a href="#item_in_heredoc"><code>in_heredoc()</code></a>,
-<a href="#item_in_string"><code>in_string()</code></a>, <a href="#item_in_pod"><code>in_pod()</code></a>, <a href="#item_was_pod"><code>was_pod()</code></a>, <a href="#item_in_data"><code>in_data()</code></a>, and <a href="#item_line_count"><code>line_count()</code></a>.</p>
-<p>You can reset all of the above states (and a few other internal ones) using <a href="#item_reset"><code>reset()</code></a>.</p>
+<p>You can check certain aspects of the state of the formatter via the methods: <a href="#in_heredoc"><code>in_heredoc()</code></a>,
+<a href="#in_string"><code>in_string()</code></a>, <a href="#in_pod"><code>in_pod()</code></a>, <a href="#was_pod"><code>was_pod()</code></a>, <a href="#in_data"><code>in_data()</code></a>, and <a href="#line_count"><code>line_count()</code></a>.</p>
+<p>You can reset all of the above states (and a few other internal ones) using <a href="#reset"><code>reset()</code></a>.</p>
 <p>
 </p>
 <h2><a name="stable_and_unstable_formatting_modes">Stable and Unstable Formatting Modes</a></h2>
-<p>You can set or check the stability of formatting via <a href="#item_unstable"><code>unstable()</code></a>.</p>
+<p>You can set or check the stability of formatting via <a href="#unstable"><code>unstable()</code></a>.</p>
 <p>In unstable (TRUE) mode, formatting is not considered to be persistent with nested formats.
 Or, put another way, when unstable, the formatter can only &quot;remember&quot; one format at a time
 and must reinstate formatting for each token.  An example of unstable formatting is using
@@ -139,11 +143,11 @@ An example of stable formatting is HTML.</p>
 <p>
 </p>
 <h2><a name="substitutions">Substitutions</a></h2>
-<p>Using <a href="#item_define_substitution"><code>define_substitution()</code></a>, you can have the formatter substitute certain strings with others,
+<p>Using <a href="#define_substitution"><code>define_substitution()</code></a>, you can have the formatter substitute certain strings with others,
 after the original string has been parsed (but before formatting is applied).  This is useful
 for escaping characters special to the output mode (eg, &gt; and &lt; in HTML) without them
 affecting the way the code is parsed.</p>
-<p>You can retrieve the current substitutions (as a hash-ref) via <a href="#item_substitutions"><code>substitutions()</code></a>.</p>
+<p>You can retrieve the current substitutions (as a hash-ref) via <a href="#substitutions"><code>substitutions()</code></a>.</p>
 <p>
 </p>
 <hr />
@@ -166,192 +170,151 @@ assigned if neither the generalized Type name, nor the full Type name have value
 <p>Following is a list of all the syntactical elements that Syntax::Highlight::Perl::Improved currently
 recognizes, along with a short description of what each would be applied to.</p>
 <dl>
-<dt><strong><a name="item_comment_normal">Comment_Normal</a></strong>
+<dt><strong><a name="comment_normal" class="item">Comment_Normal</a></strong></dt>
 
 <dd>
 <p>A normal Perl comment.  Starts with '#' and goes until the end of the line.</p>
 </dd>
-</li>
-<dt><strong><a name="item_comment_pod">Comment_POD</a></strong>
+<dt><strong><a name="comment_pod" class="item">Comment_POD</a></strong></dt>
 
 <dd>
 <p>Inline documentation.  Starts with a line beginning with an equal sign ('=') followed by
 a word (eg: '=pod') and continuing until a line beginning with '=cut'.</p>
 </dd>
-</li>
-<dt><strong><a name="item_directive">Directive</a></strong>
+<dt><strong><a name="directive" class="item">Directive</a></strong></dt>
 
 <dd>
 <p>Either the &quot;she-bang&quot; line at the beginning of the file, or a line directive altering what
 the compiler thinks the current line and file is.</p>
 </dd>
-</li>
-<dt><strong><a name="item_label">Label</a></strong>
+<dt><strong><a name="label" class="item">Label</a></strong></dt>
 
 <dd>
 <p>A loop or statement label (to be the target of a goto, next, last or redo).</p>
 </dd>
-</li>
-<dt><strong><a name="item_quote">Quote</a></strong>
+<dt><strong><a name="quote" class="item">Quote</a></strong></dt>
 
 <dd>
 <p>Any string or character that begins or ends a String.  Including, but not necessarily limited to:
-quote-like regular expression operators (<a href="../../../../../lib/pod/perlfunc.html#item_m_"><code>m//</code></a>, <a href="../../../../../lib/pod/perlfunc.html#item_s_"><code>s///</code></a>, <a href="../../../../../lib/pod/perlfunc.html#item_tr_"><code>tr///</code></a>, etc), a Here-Document terminating
+quote-like regular expression operators (<a href="../../../../../lib/pod/perlfunc.html#m_"><code>m//</code></a>, <a href="../../../../../lib/pod/perlfunc.html#s_"><code>s///</code></a>, <a href="../../../../../lib/pod/perlfunc.html#tr_"><code>tr///</code></a>, etc), a Here-Document terminating
 line, the lone period terminating a format, and, of course, normal quotes (<code>'</code>, <code>&quot;</code>, <code>`</code>, <code>q{}</code>,
 <code>qq{}</code>, <code>qr{}</code>, <code>qx{}</code>).</p>
 </dd>
-</li>
-<dt><strong><a name="item_string">String</a></strong>
+<dt><strong><a name="string" class="item">String</a></strong></dt>
 
 <dd>
-<p>Any text within quotes, <code>format</code>s, Here-Documents, Regular Expressions, and the like.</p>
+<p>Any text within quotes, <a href="../../../../../lib/pod/perlfunc.html#format"><code>format</code></a>s, Here-Documents, Regular Expressions, and the like.</p>
 </dd>
-</li>
-<dt><strong><a name="item_subroutine">Subroutine</a></strong>
+<dt><strong><a name="subroutine" class="item">Subroutine</a></strong></dt>
 
 <dd>
 <p>The identifier used to define, identify, or call a subroutine (or method).  Note that
 Syntax::Highlight::Perl::Improved cannot recognize a subroutine if it is called without using parentheses
 or an ampersand, or methods called using the indirect object syntax.  It formats those as barewords.</p>
 </dd>
-</li>
-<dt><strong><a name="item_variable_scalar">Variable_Scalar</a></strong>
+<dt><strong><a name="variable_scalar" class="item">Variable_Scalar</a></strong></dt>
 
 <dd>
 <p>A scalar variable.</p>
-</dd>
-<dd>
 <p>Note that (theoretically) this format is not applied to non-scalar variables that are
 being used as scalars (ie: array or hash lookups, nor references to anything other than scalars).
 Syntax::Highlight::Perl::Improved figures out (or at least tries to) the actual <em>type</em> of the variable
 being used (by looking at how you're subscripting it) and formats it accordingly.  The first
 character of the variable (ie, the <code>$</code>, <code>@</code>, <code>%</code>, or <code>*</code>) tells you the type of value being
 used, and the color (hopefully) tells you the type of variable being used to get that value.</p>
-</dd>
-<dd>
 <p>(See <a href="#known_issues">KNOWN ISSUES</a> for information about when this doesn't work quite right.)</p>
 </dd>
-</li>
-<dt><strong><a name="item_variable_array">Variable_Array</a></strong>
+<dt><strong><a name="variable_array" class="item">Variable_Array</a></strong></dt>
 
 <dd>
 <p>An array variable (but not usually a slice; see above).</p>
 </dd>
-</li>
-<dt><strong><a name="item_variable_hash">Variable_Hash</a></strong>
+<dt><strong><a name="variable_hash" class="item">Variable_Hash</a></strong></dt>
 
 <dd>
 <p>A hash variable.</p>
 </dd>
-</li>
-<dt><strong><a name="item_variable_typeglob">Variable_Typeglob</a></strong>
+<dt><strong><a name="variable_typeglob" class="item">Variable_Typeglob</a></strong></dt>
 
 <dd>
 <p>A typeglob.  Note that typeglobs not beginning with an asterisk (*) (eg: filehandles) are formatted
 as barewords.  This is because, well, they are.</p>
 </dd>
-</li>
-<dt><strong><a name="item_whitespace">Whitespace</a></strong>
+<dt><strong><a name="whitespace" class="item">Whitespace</a></strong></dt>
 
 <dd>
 <p>Whitespace.  Not usually formatted but it can be.</p>
 </dd>
-</li>
-<dt><strong><a name="item_character">Character</a></strong>
+<dt><strong><a name="character" class="item">Character</a></strong></dt>
 
 <dd>
-<p>A special, or backslash-escaped, character.  For example: <code>\n</code> (newline), or <code>\d</code> (digits).</p>
-</dd>
-<dd>
+<p>A special, or backslash-escaped, character.  For example: <a href="../../../../../lib/pod/perlrun.html#n"><code>\n</code></a> (newline), or <a href="../../../../../lib/pod/perlrun.html#d"><code>\d</code></a> (digits).</p>
 <p>Only occurs within strings or regular expressions.</p>
 </dd>
-</li>
-<dt><strong><a name="item_keyword">Keyword</a></strong>
+<dt><strong><a name="keyword" class="item">Keyword</a></strong></dt>
 
 <dd>
 <p>A Perl keyword.  Some examples include: my, local, sub, next.</p>
-</dd>
-<dd>
 <p>Note that Perl does not make any distinction between keywords and built-in functions (at least
 not in the documentation).  Thus I had to make a subjective call as to what would be considered
 keywords and what would be built-in functions.</p>
-</dd>
-<dd>
 <p>The list of keywords can be found (and overloaded) in the variable
 <code>$Syntax::Highlight::Perl::Improved::keyword_list_re</code> as a pre-compiled regular expression.</p>
 </dd>
-</li>
-<dt><strong><a name="item_builtin_function">Builtin_Function</a></strong>
+<dt><strong><a name="builtin_function" class="item">Builtin_Function</a></strong></dt>
 
 <dd>
 <p>A Perl built-in function, called as a function (ie, using parentheses).</p>
-</dd>
-<dd>
 <p>The list of built-in functions can be found (and overloaded) in the variable
 <code>$Syntax::Highlight::Perl::Improved::builtin_list_re</code> as a pre-compiled regular expression.</p>
 </dd>
-</li>
-<dt><strong><a name="item_builtin_operator">Builtin_Operator</a></strong>
+<dt><strong><a name="builtin_operator" class="item">Builtin_Operator</a></strong></dt>
 
 <dd>
 <p>A Perl built-in function, called as a list or unary operator (ie, without using parentheses).</p>
-</dd>
-<dd>
 <p>The list of built-in functions can be found (and overloaded) in the variable
 <code>$Syntax::Highlight::Perl::Improved::builtin_list_re</code> as a pre-compiled regular expression.</p>
 </dd>
-</li>
-<dt><strong><a name="item_operator">Operator</a></strong>
+<dt><strong><a name="operator" class="item">Operator</a></strong></dt>
 
 <dd>
 <p>A Perl operator.</p>
-</dd>
-<dd>
 <p>The list of operators can be found (and overloaded) in the variable
 <code>$Syntax::Highlight::Perl::Improved::operator_list_re</code> as a pre-compiled regular expression.</p>
 </dd>
-</li>
-<dt><strong><a name="item_bareword">Bareword</a></strong>
+<dt><strong><a name="bareword" class="item">Bareword</a></strong></dt>
 
 <dd>
 <p>A bareword.  This can be user-defined subroutine called without parentheses, a typeglob used
 without an asterisk (*), or just a plain old bareword.</p>
 </dd>
-</li>
-<dt><strong><a name="item_package">Package</a></strong>
+<dt><strong><a name="package" class="item">Package</a></strong></dt>
 
 <dd>
 <p>The name of a package or pragmatic module.</p>
-</dd>
-<dd>
 <p>Note that this does not apply to the package portion of a fully qualified variable name.</p>
 </dd>
-</li>
-<dt><strong><a name="item_number">Number</a></strong>
+<dt><strong><a name="number" class="item">Number</a></strong></dt>
 
 <dd>
 <p>A numeric literal.</p>
 </dd>
-</li>
-<dt><strong><a name="item_symbol">Symbol</a></strong>
+<dt><strong><a name="symbol" class="item">Symbol</a></strong></dt>
 
 <dd>
 <p>A symbol (ie, non-operator punctuation).</p>
 </dd>
-</li>
-<dt><strong><a name="item_codeterm">CodeTerm</a></strong>
+<dt><strong><a name="codeterm" class="item">CodeTerm</a></strong></dt>
 
 <dd>
 <p>The special tokens that signal the end of executable code and the begining of the
-DATA section.  Specifically, '<code>__END__</code>' and '<code>__DATA__</code>'.</p>
+DATA section.  Specifically, '<code>__END__</code>' and '<a href="#data"><code>__DATA__</code></a>'.</p>
 </dd>
-</li>
-<dt><strong><a name="item_data">DATA</a></strong>
+<dt><strong><a name="data" class="item">DATA</a></strong></dt>
 
 <dd>
-<p>Anything in the DATA section (see <a href="#item_codeterm"><code>CodeTerm</code></a>).</p>
+<p>Anything in the DATA section (see <a href="#codeterm"><code>CodeTerm</code></a>).</p>
 </dd>
-</li>
 </dl>
 <p>
 </p>
@@ -363,64 +326,53 @@ that is used when the functions are invoked procedurally) so you will not gain a
 <p>It is actually recommended that you use the OO interface, as this allows you to instantiate
 multiple, concurrent-yet-separate formatters.  Though I cannot think of <em>why</em> you would <em>need</em>
 multiple formatters instantiated. :-)</p>
-<p>One point to note: the <a href="#item_new"><code>new()</code></a> method uses the Default Object to initialize new objects.  This
+<p>One point to note: the <a href="#new"><code>new()</code></a> method uses the Default Object to initialize new objects.  This
 means that any changes to the state of the Default Object (including Format definitions) made by
 using the procedural interface will be reflected in any subsequently created objects.  This can
-be useful in some cases (eg, call <a href="#item_set_format"><code>set_format()</code></a> procedurally just before creating a batch of new
+be useful in some cases (eg, call <a href="#set_format"><code>set_format()</code></a> procedurally just before creating a batch of new
 objects to define default Formats for them all) but will most likely lead to trouble.</p>
 <p>
 </p>
 <hr />
 <h1><a name="methods">METHODS</a></h1>
 <dl>
-<dt><strong><a name="item_new">new PACKAGE</a></strong>
+<dt><strong><a name="new" class="item">new PACKAGE</a></strong></dt>
 
-<dt><strong>new OBJECT</strong>
+<dt><strong>new OBJECT</strong></dt>
 
 <dd>
 <p>Creates a new object.  If called on an existing object, creates a new copy of that
 object (which is thenceforth totally separate from the original).</p>
 </dd>
-</li>
-<dt><strong><a name="item_reset">reset</a></strong>
+<dt><strong><a name="reset" class="item">reset</a></strong></dt>
 
 <dd>
 <p>Resets the object's internal state.  This breaks out of strings and here-docs, ends PODs,
 resets the line-count, and otherwise gets the object back into a &quot;normal&quot; state to begin
 processing a new stream.</p>
-</dd>
-<dd>
 <p>Note that this does <strong><em>not</em></strong> reset any user options (including formats and format stability).</p>
 </dd>
-</li>
-<dt><strong><a name="item_unstable">unstable EXPR</a></strong>
+<dt><strong><a name="unstable" class="item">unstable EXPR</a></strong></dt>
 
-<dt><strong>unstable</strong>
+<dt><strong>unstable</strong></dt>
 
 <dd>
 <p>Returns true if the formatter is in unstable mode.</p>
-</dd>
-<dd>
 <p>If called with a non-zero number, puts the formatter into unstable formatting mode.</p>
-</dd>
-<dd>
 <p>In unstable mode, it is assumed that formatting is not persistent one token to the
 next and that each token must be explicitly formatted.</p>
 </dd>
-</li>
-<dt><strong><a name="item_in_heredoc">in_heredoc</a></strong>
+<dt><strong><a name="in_heredoc" class="item">in_heredoc</a></strong></dt>
 
 <dd>
 <p>Returns true if the next string to be formatted will be inside a Here-Document.</p>
 </dd>
-</li>
-<dt><strong><a name="item_in_string">in_string</a></strong>
+<dt><strong><a name="in_string" class="item">in_string</a></strong></dt>
 
 <dd>
 <p>Returns true if the next string to be formatted will be inside a multi-line string.</p>
 </dd>
-</li>
-<dt><strong><a name="item_in_pod">in_pod</a></strong>
+<dt><strong><a name="in_pod" class="item">in_pod</a></strong></dt>
 
 <dd>
 <p>Returns true if the formatter would consider the next string passed to it as begin within
@@ -428,162 +380,126 @@ a POD structure.  This is false immediately before any POD instigators
 (<code>=pod</code>, <code>=head1</code>, <code>=item</code>, etc), true immediately after an instigator, throughout the POD and
 immediately before the POD terminator (<code>=cut</code>), and false immediately after the POD terminator.</p>
 </dd>
-</li>
-<dt><strong><a name="item_was_pod">was_pod</a></strong>
+<dt><strong><a name="was_pod" class="item">was_pod</a></strong></dt>
 
 <dd>
 <p>Returns true if the last line of the string just formatted was part of a POD structure.
-This includes the <code>/^=\w+/</code> POD instigators and terminators.</p>
+This includes the <a href="../../../../../lib/pod/perlrun.html#w"><code>/^=\w+/</code></a> POD instigators and terminators.</p>
 </dd>
-</li>
-<dt><strong><a name="item_in_data">in_data</a></strong>
+<dt><strong><a name="in_data" class="item">in_data</a></strong></dt>
 
 <dd>
 <p>Returns true if the next string to be formatted will be inside
-the DATA section (ie, follows a <code>__DATA__</code> or <code>__END__</code> tag).</p>
+the DATA section (ie, follows a <a href="#data"><code>__DATA__</code></a> or <code>__END__</code> tag).</p>
 </dd>
-</li>
-<dt><strong><a name="item_line_count">line_count</a></strong>
+<dt><strong><a name="line_count" class="item">line_count</a></strong></dt>
 
 <dd>
 <p>Returns the number of lines processed by the formatter.</p>
 </dd>
-</li>
-<dt><strong><a name="item_substitutions">substitutions</a></strong>
+<dt><strong><a name="substitutions" class="item">substitutions</a></strong></dt>
 
 <dd>
 <p>Returns a reference to the substitution table used.  The substitution
 table is a hash whose keys are the strings to be replaced, and whose values
 are what to replace them with.</p>
 </dd>
-</li>
-<dt><strong><a name="item_define_substitution_hash_ref">define_substitution HASH_REF</a></strong>
+<dt><strong><a name="define_substitution_hash_ref" class="item">define_substitution HASH_REF</a></strong></dt>
 
-<dt><strong><a name="item_define_substitution">define_substitution LIST</a></strong>
+<dt><strong><a name="define_substitution" class="item">define_substitution LIST</a></strong></dt>
 
 <dd>
 <p>Allows user to define certain characters that will be substituted
 before formatting is done (but after they have been processed for
 meaning).</p>
-</dd>
-<dd>
 <p>If the first parameter is a reference to a hash, the formatter
 will replace it's own hash with the given one, and subsequent
 changes to the hash outside the formatter will be reflected.</p>
-</dd>
-<dd>
 <p>Otherwise, it will copy the arguments passed into it's own
 hash, and any substitutions already defined (but not in the
 parameter list) will be preserved. (ie, the new substitutions
 will be added, without destroying what was there already.)</p>
 </dd>
-</li>
-<dt><strong><a name="item_set_start_format_hash_ref">set_start_format HASH_REF</a></strong>
+<dt><strong><a name="set_start_format_hash_ref" class="item">set_start_format HASH_REF</a></strong></dt>
 
-<dt><strong><a name="item_set_start_format">set_start_format LIST</a></strong>
-
-<dd>
-<p>Given either a list of keys/values, or a reference to a hash of keys/values,
-copy them into the object's Formats list.</p>
-</dd>
-</li>
-<dt><strong><a name="item_set_end_format_hash_ref">set_end_format HASH_REF</a></strong>
-
-<dt><strong><a name="item_set_end_format">set_end_format LIST</a></strong>
+<dt><strong><a name="set_start_format" class="item">set_start_format LIST</a></strong></dt>
 
 <dd>
 <p>Given either a list of keys/values, or a reference to a hash of keys/values,
 copy them into the object's Formats list.</p>
 </dd>
-</li>
-<dt><strong><a name="item_set_format">set_format LIST</a></strong>
+<dt><strong><a name="set_end_format_hash_ref" class="item">set_end_format HASH_REF</a></strong></dt>
+
+<dt><strong><a name="set_end_format" class="item">set_end_format LIST</a></strong></dt>
+
+<dd>
+<p>Given either a list of keys/values, or a reference to a hash of keys/values,
+copy them into the object's Formats list.</p>
+</dd>
+<dt><strong><a name="set_format" class="item">set_format LIST</a></strong></dt>
 
 <dd>
 <p>Sets the formatting string for one or more formats.</p>
-</dd>
-<dd>
 <p>You should pass a list of keys/values where the keys are the format names and the values
 are references to arrays containing the starting and ending formatting strings (in that order)
 for that format.</p>
 </dd>
-</li>
-<dt><strong><a name="item_get_start_format">get_start_format LIST</a></strong>
+<dt><strong><a name="get_start_format" class="item">get_start_format LIST</a></strong></dt>
 
 <dd>
 <p>Retrieve the string that is inserted to begin a given format type (starting format string).</p>
-</dd>
-<dd>
 <p>The names are looked for in the following order:</p>
-</dd>
-<dd>
 <p><strong>First:</strong> Prefer the names joined by underscore, from most general to least.  For example, given
 (&quot;Variable&quot;, &quot;Scalar&quot;): &quot;Variable&quot; then &quot;Variable_Scalar&quot;.</p>
-</dd>
-<dd>
 <p><strong>Second:</strong> Then try each name singly, in reverse order.  For example,
 &quot;Scalar&quot; then &quot;Variable&quot;.</p>
-</dd>
-<dd>
 <p>See <a href="#format_types">FORMAT TYPES</a> for more information.</p>
 </dd>
-</li>
-<dt><strong><a name="item_get_end_format">get_end_format LIST</a></strong>
+<dt><strong><a name="get_end_format" class="item">get_end_format LIST</a></strong></dt>
 
 <dd>
 <p>Retrieve the string that is inserted to end a given format type (ending format string).</p>
 </dd>
-</li>
-<dt><strong><a name="item_get_format_names_list">get_format_names_list</a></strong>
+<dt><strong><a name="get_format_names_list" class="item">get_format_names_list</a></strong></dt>
 
 <dd>
 <p>Returns a list of the <em>names</em> of all the Formats defined.</p>
 </dd>
-</li>
-<dt><strong><a name="item_get_start_format_values_list">get_start_format_values_list</a></strong>
+<dt><strong><a name="get_start_format_values_list" class="item">get_start_format_values_list</a></strong></dt>
 
 <dd>
 <p>Returns a list of the <em>values</em> of all the start Formats defined (in the same order
-as the names returned by <a href="#item_get_format_names_list"><code>get_format_names_list()</code></a>).</p>
+as the names returned by <a href="#get_format_names_list"><code>get_format_names_list()</code></a>).</p>
 </dd>
-</li>
-<dt><strong><a name="item_get_end_format_values_list">get_end_format_values_list</a></strong>
+<dt><strong><a name="get_end_format_values_list" class="item">get_end_format_values_list</a></strong></dt>
 
 <dd>
 <p>Returns a list of the <em>values</em> of all the end Formats defined (in the same order
-as the names returned by <a href="#item_get_format_names_list"><code>get_format_names_list()</code></a>).</p>
+as the names returned by <a href="#get_format_names_list"><code>get_format_names_list()</code></a>).</p>
 </dd>
-</li>
-<dt><strong><a name="item_format_string">format_string LIST</a></strong>
+<dt><strong><a name="format_string" class="item">format_string LIST</a></strong></dt>
 
 <dd>
-<p>Formats one or more strings of Perl code.  If no strings are specified, defaults to <a href="../../../../../lib/pod/perlvar.html#item___"><code>$_</code></a>.
+<p>Formats one or more strings of Perl code.  If no strings are specified, defaults to <a href="../../../../../lib/pod/perlvar.html#__"><code>$_</code></a>.
 Returns the list of formatted strings (or the first string formatted if called in scalar context).</p>
-</dd>
-<dd>
 <p><strong>Note:</strong>  The end of the string is considered to be the end of a line, regardless of whether
 or not there is a trailing line-break (but trailing line-breaks will <em>not</em> cause an extra, empty
 line).</p>
-</dd>
-<dd>
-<p><strong>Another Note:</strong>  The function actually uses <a href="../../../../../lib/pod/perlvar.html#item___"><code>$/</code></a> to determine line-breaks, unless <a href="../../../../../lib/pod/perlvar.html#item___"><code>$/</code></a> is
-set to <code>\n</code> (newline).  If <a href="../../../../../lib/pod/perlvar.html#item___"><code>$/</code></a> <em>is</em> <code>\n</code>, then it looks for the first match
-of <a href="../../../../../lib/pod/perlfunc.html#item_m_"><code>m/\r?\n|\n?\r/</code></a> in the string and uses that to determine line-breaks.  This is to make
+<p><strong>Another Note:</strong>  The function actually uses <a href="../../../../../lib/pod/perlvar.html#__"><code>$/</code></a> to determine line-breaks, unless <a href="../../../../../lib/pod/perlvar.html#__"><code>$/</code></a> is
+set to <a href="../../../../../lib/pod/perlrun.html#n"><code>\n</code></a> (newline).  If <a href="../../../../../lib/pod/perlvar.html#__"><code>$/</code></a> <em>is</em> <a href="../../../../../lib/pod/perlrun.html#n"><code>\n</code></a>, then it looks for the first match
+of <a href="../../../../../lib/pod/perlfunc.html#m_"><code>m/\r?\n|\n?\r/</code></a> in the string and uses that to determine line-breaks.  This is to make
 it easy to handle non-unix text.  Whatever characters it ends up using as line-breaks are
 preserved.</p>
 </dd>
-</li>
-<dt><strong><a name="item_format_token">format_token TOKEN, LIST</a></strong>
+<dt><strong><a name="format_token" class="item">format_token TOKEN, LIST</a></strong></dt>
 
 <dd>
 <p>Returns TOKEN wrapped in the start and end Formats corresponding to LIST
-(as would be returned by <a href="#item_get_start_format"><code>get_start_format( LIST )</code></a> and <a href="#item_get_end_format"><code>get_end_format( LIST )</code></a>,
+(as would be returned by <a href="#get_start_format"><code>get_start_format( LIST )</code></a> and <a href="#get_end_format"><code>get_end_format( LIST )</code></a>,
 respectively).</p>
-</dd>
-<dd>
-<p>No syntax checking is done on TOKEN but substitutions defined with <a href="#item_define_substitution"><code>define_substitution()</code></a>
+<p>No syntax checking is done on TOKEN but substitutions defined with <a href="#define_substitution"><code>define_substitution()</code></a>
 are performed.</p>
 </dd>
-</li>
 </dl>
 <p>
 </p>
@@ -612,7 +528,7 @@ Regular Expressions as interpolated strings.</p>
 <li>
 <p>User-defined subroutines, called without parentheses, are formatted as barewords.
 This is because there is no way to tell them apart from barewords without parsing
-the code, and would require us to go as far as perl does when doing the <code>-c</code> check
+the code, and would require us to go as far as perl does when doing the <a href="../../../../../lib/pod/perlrun.html#c"><code>-c</code></a> check
 (ie, executing BEGIN and END blocks and the like).  That's not going to happen.</p>
 </li>
 <li>
@@ -665,10 +581,10 @@ Recognize the /e option to the substitution operator (maybe).</p>
 format-comments.  Possibly format value lines as normal Perl code.</p>
 </li>
 <li>
-<p>Create in-memory deep-copy routine to replace <a href="../../../../../lib/pod/perlfunc.html#item_eval"><code>eval(Data::Dumper)</code></a> deep-copy.</p>
+<p>Create in-memory deep-copy routine to replace <a href="../../../../../lib/pod/perlfunc.html#eval"><code>eval(Data::Dumper)</code></a> deep-copy.</p>
 </li>
 <li>
-<p>Generalize state transitions (<a href="#item_reset"><code>reset()</code></a> and, in the future, <code>copy_state()</code>) to use
+<p>Generalize state transitions (<a href="#reset"><code>reset()</code></a> and, in the future, <code>copy_state()</code>) to use
 non-hard-coded keys and values for state variables.  Probably will extrapolate them into an
 overloadable hash, and use the aforementioned deep-copy to assign them.</p>
 </li>
@@ -678,7 +594,7 @@ using this module in an editor.</p>
 </li>
 <li>
 <p>Add support for greater-than-one length special characters.  Specifically, octal,
-hexidecimal, and control character codes.  For example, <code>\644</code>, <code>\x1a4</code> or <code>\c[</code>.</p>
+hexidecimal, and control character codes.  For example, <code>\644</code>, <code>\x1a4</code> or <a href="../../../../../lib/pod/perlrun.html#c"><code>\c[</code></a>.</p>
 </li>
 </ol>
 <p>
@@ -687,7 +603,7 @@ hexidecimal, and control character codes.  For example, <code>\644</code>, <code
 <h1><a name="revisions">REVISIONS</a></h1>
 <p>
 </p>
-<h2><a name="05032004_david_c_y__liu__version_1_01_">05-03-2004  David C.Y. Liu (Version 1.01)</a></h2>
+<h2><a name="05_03_2004_david_c_y__liu__version_1_01_">05-03-2004  David C.Y. Liu (Version 1.01)</a></h2>
 <ul>
 <li>
 <p>Added 'our' to the keywords list.</p>
@@ -701,7 +617,7 @@ hexidecimal, and control character codes.  For example, <code>\644</code>, <code
 </ul>
 <p>
 </p>
-<h2><a name="04042001_cory_johns">04-04-2001  Cory Johns</a></h2>
+<h2><a name="04_04_2001_cory_johns">04-04-2001  Cory Johns</a></h2>
 <ul>
 <li>
 <p>Fixed problem with special characters not formatting inside of Here-Documents.</p>
@@ -712,7 +628,7 @@ hexidecimal, and control character codes.  For example, <code>\644</code>, <code
 </ul>
 <p>
 </p>
-<h2><a name="03302001_cory_johns">03-30-2001  Cory Johns</a></h2>
+<h2><a name="03_30_2001_cory_johns">03-30-2001  Cory Johns</a></h2>
 <ul>
 <li>
 <p>Fixed bug where quote-terminators were checked for inside of Here-Documents.</p>
@@ -720,7 +636,7 @@ hexidecimal, and control character codes.  For example, <code>\644</code>, <code
 </ul>
 <p>
 </p>
-<h2><a name="03292001_cory_johns">03-29-2001  Cory Johns</a></h2>
+<h2><a name="03_29_2001_cory_johns">03-29-2001  Cory Johns</a></h2>
 <ul>
 <li>
 <p>Moved token processing tests from <code>_format_line()</code> into <code>_process_token()</code>
@@ -740,23 +656,23 @@ strings.</p>
 exponential notation (eg: 1.3e10), hexidecimal, and underscore-separated.</p>
 </li>
 <li>
-<p>Added the <a href="#item_codeterm"><code>CodeTerm</code></a> and <a href="#item_data"><code>DATA</code></a> Formats.</p>
+<p>Added the <a href="#codeterm"><code>CodeTerm</code></a> and <a href="#data"><code>DATA</code></a> Formats.</p>
 </li>
 </ul>
 <p>
 </p>
-<h2><a name="03272001_cory_johns">03-27-2001  Cory Johns</a></h2>
+<h2><a name="03_27_2001_cory_johns">03-27-2001  Cory Johns</a></h2>
 <ul>
 <li>
-<p>Added <a href="#item_was_pod"><code>was_pod()</code></a> and updated the documentation for in_pod().</p>
+<p>Added <a href="#was_pod"><code>was_pod()</code></a> and updated the documentation for <a href="#in_pod"><code>in_pod()</code></a>.</p>
 </li>
 </ul>
 <p>
 </p>
-<h2><a name="03202001_cory_johns">03-20-2001  Cory Johns</a></h2>
+<h2><a name="03_20_2001_cory_johns">03-20-2001  Cory Johns</a></h2>
 <ul>
 <li>
-<p>Added support for Perl formats (ie, `<code>format = ...</code>').</p>
+<p>Added support for Perl formats (ie, `<a href="../../../../../lib/pod/perlfunc.html#format"><code>format = ...</code></a>').</p>
 </li>
 </ul>
 
