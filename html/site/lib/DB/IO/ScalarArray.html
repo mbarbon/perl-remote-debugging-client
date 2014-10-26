@@ -1,0 +1,212 @@
+<?xml version="1.0" ?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<!-- saved from url=(0017)http://localhost/ -->
+<script language="JavaScript" src="../../../../displayToc.js"></script>
+<script language="JavaScript" src="../../../../tocParas.js"></script>
+<script language="JavaScript" src="../../../../tocTab.js"></script>
+<link rel="stylesheet" type="text/css" href="../../../../scineplex.css">
+<title>/home/trentm/var/ko44/build/release/dbgp/perl/contrib/IO-stringy/blib/lib/DB/IO/ScalarArray.pm</title>
+<link rel="stylesheet" href="../../../../Active.css" type="text/css" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:support@ActiveState.com" />
+</head>
+
+<body>
+
+<script>writelinks('__top__',4);</script>
+<h1><a>/home/trentm/var/ko44/build/release/dbgp/perl/contrib/IO-stringy/blib/lib/DB/IO/ScalarArray.pm</a></h1>
+<p><a name="__index__"></a></p>
+
+<!-- INDEX BEGIN -->
+
+<ul>
+
+	<ul>
+
+		<li><a href="#construction">Construction</a></li>
+		<li><a href="#input_and_output">Input and output</a></li>
+		<li><a href="#seeking_telling_and_other_attributes">Seeking/telling and other attributes</a></li>
+	</ul>
+
+</ul>
+<!-- INDEX END -->
+
+<hr />
+<p>
+</p>
+<h2><a name="construction">Construction</a></h2>
+<dl>
+<dt><strong><a name="item_new__5bargs_2e_2e_2e_5d">new [ARGS...]</a></strong>
+
+<dd>
+<p><em>Class method.</em>
+Return a new, unattached array handle.  
+If any arguments are given, they're sent to open().</p>
+</dd>
+</li>
+<dt><strong><a name="item_open__5barrayref_5d">open [ARRAYREF]</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Open the array handle on a new array, pointed to by ARRAYREF.
+If no ARRAYREF is given, a &quot;private&quot; array is created to hold
+the file data.</p>
+</dd>
+<dd>
+<p>Returns the self object on success, undefined on error.</p>
+</dd>
+</li>
+<dt><strong><a name="item_opened">opened</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Is the array handle opened on something?</p>
+</dd>
+</li>
+<dt><strong><a name="item_close">close</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Disassociate the array handle from its underlying array.
+Done automatically on destroy.</p>
+</dd>
+</li>
+</dl>
+<p>
+</p>
+<h2><a name="input_and_output">Input and output</a></h2>
+<dl>
+<dt><strong><a name="item_flush">flush</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+No-op, provided for OO compatibility.</p>
+</dd>
+</li>
+<dt><strong><a name="item_getc">getc</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Return the next character, or undef if none remain.
+This does a read(1), which is somewhat costly.</p>
+</dd>
+</li>
+<dt><strong><a name="item_getline">getline</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Return the next line, or undef on end of data.
+Can safely be called in an array context.
+Currently, lines are delimited by &quot;\n&quot;.</p>
+</dd>
+</li>
+<dt><strong><a name="item_getlines">getlines</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Get all remaining lines.
+It will <code>croak()</code> if accidentally called in a scalar context.</p>
+</dd>
+</li>
+<dt><strong><a name="item_print_args_2e_2e_2e">print ARGS...</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Print ARGS to the underlying array.</p>
+</dd>
+<dd>
+<p>Currently, this always causes a &quot;seek to the end of the array&quot;
+and generates a new array entry.  This may change in the future.</p>
+</dd>
+</li>
+<dt><strong><a name="item_read_buf_2c_nbytes_2c__5boffset_5d_3b">read BUF, NBYTES, [OFFSET];</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Read some bytes from the array.
+Returns the number of bytes actually read, 0 on end-of-file, undef on error.</p>
+</dd>
+</li>
+<dt><strong><a name="item_write_buf_2c_nbytes_2c__5boffset_5d_3b">write BUF, NBYTES, [OFFSET];</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Write some bytes into the array.</p>
+</dd>
+</li>
+</dl>
+<p>
+</p>
+<h2><a name="seeking_telling_and_other_attributes">Seeking/telling and other attributes</a></h2>
+<dl>
+<dt><strong><a name="item_autoflush">autoflush</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+No-op, provided for OO compatibility.</p>
+</dd>
+</li>
+<dt><strong><a name="item_binmode">binmode</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+No-op, provided for OO compatibility.</p>
+</dd>
+</li>
+<dt><strong><a name="item_clearerr">clearerr</a></strong>
+
+<dd>
+<p><em>Instance method.</em>  Clear the error and EOF flags.  A no-op.</p>
+</dd>
+</li>
+<dt><strong><a name="item_eof">eof</a></strong>
+
+<dd>
+<p><em>Instance method.</em>  Are we at end of file?</p>
+</dd>
+</li>
+<dt><strong><a name="item_seek">seek POS,WHENCE</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Seek to a given position in the stream.
+Only a WHENCE of 0 (SEEK_SET) is supported.</p>
+</dd>
+</li>
+<dt><strong><a name="item_tell">tell</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Return the current position in the stream, as a numeric offset.</p>
+</dd>
+</li>
+<dt><strong><a name="item_setpos">setpos POS</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Seek to a given position in the array, using the opaque <a href="#item_getpos"><code>getpos()</code></a> value.
+Don't expect this to be a number.</p>
+</dd>
+</li>
+<dt><strong><a name="item_getpos">getpos</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Return the current position in the array, as an opaque value.
+Don't expect this to be a number.</p>
+</dd>
+</li>
+<dt><strong><a name="item_aref">aref</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Return a reference to the underlying array.</p>
+</dd>
+</li>
+</dl>
+
+</body>
+
+</html>

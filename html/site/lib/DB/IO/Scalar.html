@@ -1,0 +1,306 @@
+<?xml version="1.0" ?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<!-- saved from url=(0017)http://localhost/ -->
+<script language="JavaScript" src="../../../../displayToc.js"></script>
+<script language="JavaScript" src="../../../../tocParas.js"></script>
+<script language="JavaScript" src="../../../../tocTab.js"></script>
+<link rel="stylesheet" type="text/css" href="../../../../scineplex.css">
+<title>/home/trentm/var/ko44/build/release/dbgp/perl/contrib/IO-stringy/blib/lib/DB/IO/Scalar.pm</title>
+<link rel="stylesheet" href="../../../../Active.css" type="text/css" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:support@ActiveState.com" />
+</head>
+
+<body>
+
+<script>writelinks('__top__',4);</script>
+<h1><a>/home/trentm/var/ko44/build/release/dbgp/perl/contrib/IO-stringy/blib/lib/DB/IO/Scalar.pm</a></h1>
+<p><a name="__index__"></a></p>
+
+<!-- INDEX BEGIN -->
+
+<ul>
+
+	<ul>
+
+		<li><a href="#construction">Construction</a></li>
+		<li><a href="#input_and_output">Input and output</a></li>
+		<li><a href="#seeking_telling_and_other_attributes">Seeking/telling and other attributes</a></li>
+	</ul>
+
+	<li><a href="#warnings">WARNINGS</a></li>
+	<li><a href="#version">VERSION</a></li>
+	<li><a href="#authors">AUTHORS</a></li>
+	<ul>
+
+		<li><a href="#principal_author">Principal author</a></li>
+		<li><a href="#other_contributors">Other contributors</a></li>
+	</ul>
+
+	<li><a href="#see_also">SEE ALSO</a></li>
+</ul>
+<!-- INDEX END -->
+
+<hr />
+<p>
+</p>
+<h2><a name="construction">Construction</a></h2>
+<dl>
+<dt><strong><a name="item_new__5bargs_2e_2e_2e_5d">new [ARGS...]</a></strong>
+
+<dd>
+<p><em>Class method.</em>
+Return a new, unattached scalar handle.
+If any arguments are given, they're sent to open().</p>
+</dd>
+</li>
+<dt><strong><a name="item_open__5bscalarref_5d">open [SCALARREF]</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Open the scalar handle on a new scalar, pointed to by SCALARREF.
+If no SCALARREF is given, a &quot;private&quot; scalar is created to hold
+the file data.</p>
+</dd>
+<dd>
+<p>Returns the self object on success, undefined on error.</p>
+</dd>
+</li>
+<dt><strong><a name="item_opened">opened</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Is the scalar handle opened on something?</p>
+</dd>
+</li>
+<dt><strong><a name="item_close">close</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Disassociate the scalar handle from its underlying scalar.
+Done automatically on destroy.</p>
+</dd>
+</li>
+</dl>
+<p>
+</p>
+<h2><a name="input_and_output">Input and output</a></h2>
+<dl>
+<dt><strong><a name="item_flush">flush</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+No-op, provided for OO compatibility.</p>
+</dd>
+</li>
+<dt><strong><a name="item_getc">getc</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Return the next character, or undef if none remain.</p>
+</dd>
+</li>
+<dt><strong><a name="item_getline">getline</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Return the next line, or undef on end of string.
+Can safely be called in an array context.
+Currently, lines are delimited by &quot;\n&quot;.</p>
+</dd>
+</li>
+<dt><strong><a name="item_getlines">getlines</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Get all remaining lines.
+It will <code>croak()</code> if accidentally called in a scalar context.</p>
+</dd>
+</li>
+<dt><strong><a name="item_print_args_2e_2e_2e">print ARGS...</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Print ARGS to the underlying scalar.</p>
+</dd>
+<dd>
+<p><strong>Warning:</strong> this continues to always cause a seek to the end
+of the string, but if you perform seek()s and tell()s, it is
+still safer to explicitly seek-to-end before subsequent print()s.</p>
+</dd>
+</li>
+<dt><strong><a name="item_read_buf_2c_nbytes_2c__5boffset_5d">read BUF, NBYTES, [OFFSET]</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Read some bytes from the scalar.
+Returns the number of bytes actually read, 0 on end-of-file, undef on error.</p>
+</dd>
+</li>
+<dt><strong><a name="item_write_buf_2c_nbytes_2c__5boffset_5d">write BUF, NBYTES, [OFFSET]</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Write some bytes to the scalar.</p>
+</dd>
+</li>
+<dt><strong><a name="item_sysread_buf_2c_len_2c__5boffset_5d">sysread BUF, LEN, [OFFSET]</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Read some bytes from the scalar.
+Returns the number of bytes actually read, 0 on end-of-file, undef on error.</p>
+</dd>
+</li>
+<dt><strong><a name="item_syswrite_buf_2c_nbytes_2c__5boffset_5d">syswrite BUF, NBYTES, [OFFSET]</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Write some bytes to the scalar.</p>
+</dd>
+</li>
+</dl>
+<p>
+</p>
+<h2><a name="seeking_telling_and_other_attributes">Seeking/telling and other attributes</a></h2>
+<dl>
+<dt><strong><a name="item_autoflush">autoflush</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+No-op, provided for OO compatibility.</p>
+</dd>
+</li>
+<dt><strong><a name="item_binmode">binmode</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+No-op, provided for OO compatibility.</p>
+</dd>
+</li>
+<dt><strong><a name="item_clearerr">clearerr</a></strong>
+
+<dd>
+<p><em>Instance method.</em>  Clear the error and EOF flags.  A no-op.</p>
+</dd>
+</li>
+<dt><strong><a name="item_eof">eof</a></strong>
+
+<dd>
+<p><em>Instance method.</em>  Are we at end of file?</p>
+</dd>
+</li>
+<dt><strong><a name="item_seek">seek OFFSET, WHENCE</a></strong>
+
+<dd>
+<p><em>Instance method.</em>  Seek to a given position in the stream.</p>
+</dd>
+</li>
+<dt><strong><a name="item_sysseek">sysseek OFFSET, WHENCE</a></strong>
+
+<dd>
+<p><em>Instance method.</em> Identical to <a href="#item_seek"><code>seek OFFSET, WHENCE</code></a>, <em>q.v.</em></p>
+</dd>
+</li>
+<dt><strong><a name="item_tell">tell</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Return the current position in the stream, as a numeric offset.</p>
+</dd>
+</li>
+<dt><strong><a name="item_setpos">setpos POS</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Set the current position, using the opaque value returned by <a href="#item_getpos"><code>getpos()</code></a>.</p>
+</dd>
+</li>
+<dt><strong><a name="item_getpos">getpos</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Return the current position in the string, as an opaque object.</p>
+</dd>
+</li>
+<dt><strong><a name="item_sref">sref</a></strong>
+
+<dd>
+<p><em>Instance method.</em>
+Return a reference to the underlying scalar.</p>
+</dd>
+</li>
+</dl>
+<p>
+</p>
+<hr />
+<h1><a name="warnings">WARNINGS</a></h1>
+<p>Perl's TIEHANDLE spec was incomplete prior to 5.005_57;
+it was missing support for <a href="#item_seek"><code>seek()</code></a>, <a href="#item_tell"><code>tell()</code></a>, and <a href="#item_eof"><code>eof()</code></a>.
+Attempting to use these functions with an DB::IO::Scalar will not work
+prior to 5.005_57. DB::IO::Scalar will not have the relevant methods
+invoked; and even worse, this kind of bug can lie dormant for a while.
+If you turn warnings on (via <a href="../../../../lib/pod/perlvar.html#item___w"><code>$^W</code></a> or <code>perl -w</code>),
+and you see something like this...</p>
+<pre>
+    attempt to seek on unopened filehandle</pre>
+<p>...then you are probably trying to use one of these functions
+on an DB::IO::Scalar with an old Perl.  The remedy is to simply
+use the OO version; e.g.:</p>
+<pre>
+    <span class="variable">$SH</span><span class="operator">-&gt;</span><span class="keyword">seek</span><span class="operator">(</span><span class="number">0</span><span class="operator">,</span><span class="number">0</span><span class="operator">);</span>    <span class="comment">### GOOD: will work on any 5.005</span>
+    <span class="keyword">seek</span><span class="operator">(</span><span class="variable">$SH</span><span class="operator">,</span><span class="number">0</span><span class="operator">,</span><span class="number">0</span><span class="operator">);</span>     <span class="comment">### WARNING: will only work on 5.005_57 and beyond</span>
+</pre>
+<p>
+</p>
+<hr />
+<h1><a name="version">VERSION</a></h1>
+<p>$Id: Scalar.pm,v 2.105 2003/12/21 18:51:45 eryq Exp $</p>
+<p>
+</p>
+<hr />
+<h1><a name="authors">AUTHORS</a></h1>
+<p>
+</p>
+<h2><a name="principal_author">Principal author</a></h2>
+<p>Eryq (<em><a href="mailto:eryq@zeegee.com">eryq@zeegee.com</a></em>).
+President, ZeeGee Software Inc (<em><a href="http://www.zeegee.com">http://www.zeegee.com</a></em>).</p>
+<p>
+</p>
+<h2><a name="other_contributors">Other contributors</a></h2>
+<p>The full set of contributors always includes the folks mentioned
+in <a href="../../../..//home/trentm/var/ko44/build/release/dbgp/perl/contrib/IO-stringy/blib/lib/DB/IO/Stringy.html#change_log">CHANGE LOG in the DB::IO::Stringy manpage</a>.  But just the same, special
+thanks to the following individuals for their invaluable contributions
+(if I've forgotten or misspelled your name, please email me!):</p>
+<p><em>Andy Glew,</em>
+for contributing <a href="#item_getc"><code>getc()</code></a>.</p>
+<p><em>Brandon Browning,</em>
+for suggesting <a href="#item_opened"><code>opened()</code></a>.</p>
+<p><em>David Richter,</em>
+for finding and fixing the bug in <code>PRINTF()</code>.</p>
+<p><em>Eric L. Brine,</em>
+for his offset-using <a href="../../../../lib/pod/perlfunc.html#item_read"><code>read()</code></a> and <a href="../../../../lib/pod/perlfunc.html#item_write"><code>write()</code></a> implementations.</p>
+<p><em>Richard Jones,</em>
+for his patches to massively improve the performance of <a href="#item_getline"><code>getline()</code></a>
+and add <a href="../../../../lib/pod/perlfunc.html#item_sysread"><code>sysread</code></a> and <a href="../../../../lib/pod/perlfunc.html#item_syswrite"><code>syswrite</code></a>.</p>
+<p><em>B. K. Oxley (binkley),</em>
+for stringification and inheritance improvements,
+and sundry good ideas.</p>
+<p><em>Doug Wilson,</em>
+for the IO::Handle inheritance and automatic tie-ing.</p>
+<p>
+</p>
+<hr />
+<h1><a name="see_also">SEE ALSO</a></h1>
+<p><a href="../../../../DB/IO/String.html">the DB::IO::String manpage</a>, which is quite similar but which was designed
+more-recently and with an IO::Handle-like interface in mind,
+so you could mix OO- and native-filehandle usage without using tied().</p>
+<p><em>Note:</em> as of version 2.x, these classes all work like
+their IO::Handle counterparts, so we have comparable
+functionality to DB::IO::String.</p>
+
+</body>
+
+</html>
