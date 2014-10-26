@@ -129,6 +129,12 @@ sub FILENO {
     }
 }
 
+sub BINMODE {
+    my ($self, $layer) = @_;
+    return binmode $self->{h_old}, $layer if $layer;
+    return binmode $self->{h_old};
+}
+
 # "Optional" routines, according to perldoc perltie.  
 # Bug 34879 shows they were using them.  The proper
 # fix is to die when they're used, so the user can 
@@ -147,10 +153,6 @@ sub _buildMessage_Die {
 		    "to the code",
 		    );
     carp join("\n", @messages);
-}
-
-sub BINMODE {
-    _buildMessage_Die('have their mode changed');
 }
 
 sub OPEN {

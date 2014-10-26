@@ -3,7 +3,7 @@ License and Copyrights
 The following terms apply to all files associated with the software unless
 explicitly disclaimed in individual files.
 
-Copyright © 2007 ActiveState Software Inc. All Rights Reserved.
+Copyright © 2011 ActiveState Software Inc. All Rights Reserved.
 
 ActiveState is a registered trademark of ActiveState Software Inc. Komodo,
 the Perl Dev Kit, the Tcl Dev Kit, ActivePerl, ActivePython, ActiveTcl and
@@ -14,7 +14,7 @@ their respective companies.
 
 * The Komodo IDE Javascript Remote Debugging component is covered by the
   Komodo IDE license:
-    http://aspn.activestate.com/ASPN/docs/Komodo/4.0/lic_copy.html
+    http://docs.activestate.com/komodo/7.0/lic_copy.html
 
 * The Komodo IDE Perl Remote Debugging component is covered by the Perl
   Artistic license:
@@ -34,4 +34,4 @@ their respective companies.
 
 * The Komodo IDE Tcl Remote Debugging component is covered by the Komodo
   IDE license:
-    http://aspn.activestate.com/ASPN/docs/Komodo/4.0/lic_copy.html
+    http://docs.activestate.com/komodo/7.0/lic_copy.html

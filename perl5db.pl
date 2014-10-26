@@ -191,7 +191,10 @@ sub eval {
 		$interact_str .= $DB::interact_pvs[-1] if $DB::interact_pvs[-1];
 	    }
 	} else {
-	    @res = eval "$usercontext $evalarg;\n"; # '\n' for nice recursive debug
+	    my $usercontext2 = (($evalarg =~ /[\$\@\%]\w*[^\x00-\x7f]/)
+                                ? "$usercontext use utf8; "
+                                : $usercontext);
+	    @res = eval "$usercontext2 $evalarg;\n"; # '\n' for nice recursive debug
 	}
 	if (!$@ && scalar @res == 1 && !defined $res[0]) {
 	    $res[0] = '';
@@ -1130,11 +1133,12 @@ sub lookForPerlFileName {
     foreach my $perlFileKey (@perlKeys) {
 	$perlFileKey =~ s/_<//;
 	my $origKey = $perlFileKey;
+	my $result;
 	local $@;
 	eval {
 	    $perlFileKey = canonicalizeFName(uriToFilename(filenameToURI($perlFileKey, 1)));
 	    if ($bFileName eq $perlFileKey) {
-		return $origKey;
+		$result = $origKey;
 	    }
 	};
 	if ($@) {
@@ -1142,7 +1146,7 @@ sub lookForPerlFileName {
 		  join("\n", dump_trace(0)));
 	}
     }
-    return undef;
+    return $result;
 }
     
     
@@ -1681,7 +1685,10 @@ sub _extract_var {
 	    $name =~ s/^\$/%/;
 	} elsif ($type eq 'vt') {
 	    $name =~ s/^\$/*/;
-	}
+	} elsif ($name eq '$#') {
+            # Bug 94937: not a valid variable name; squelch it.
+            $name = '';
+        }
 	if (length $name > 1) {
 	    # dblog("Found var [$name]");
 	    $res->{$name} = undef;
@@ -1737,8 +1744,61 @@ sub _extractVars {
     return $res;
 }
 
-sub _getProximityVars($$$) {
-    my ($pkg, $filename, $line) = @_;
+sub _getProximityVarsViaPadWalker($$$$) {
+    my ($pkg, $filename, $line, $stackDepth) = @_;
+    $stackDepth += 3; # Because we're three levels above the user code here.
+    my $my_var_hash = PadWalker::peek_my($stackDepth);
+    my $our_var_hash = PadWalker::peek_our($stackDepth);
+    my %merged_vars = (%$my_var_hash, %$our_var_hash);
+    local *dbline = $main::{'_<' . $filename};
+    my $sourceText = join("\n", @dbline);
+
+    my @results = ();
+    while(my($k, $v) = each %merged_vars) {
+        my $displayVar = 1;
+        if ($k =~ /^[\$\%]/) {
+            my $k1 = substr($k, 1);
+            # Don't return vars used in each blocks, because then we
+            # break the iterator.  Perl has only one iterator per variable.
+            # print STDERR "Skipping var $k\n";
+            # This is overly conservative, but it's safer than breaking the code.
+            if ($sourceText =~ /\beach\s+\%[\$\{]*$k1\b/) {
+                $displayVar = 0;
+            }
+        }
+        if ($displayVar) {
+            push(@results, [$k, $v, 1]);
+        }
+    }
+    if (! exists $merged_vars{'$_'}) {
+	my $dollar_under_val = eval('$_');
+	if (defined $dollar_under_val) {
+	    push(@results, ['$_', $dollar_under_val, 1]);
+	}
+    }
+    return \@results;
+}
+
+# -1: unknown, 0: no, 1:yes  #### Do not init as 1, only -1 or 0.
+# bug 93570 - allow padwalker detection/use to be disabled
+my $havePadWalker = $ENV{DBGP_PERL_IGNORE_PADWALKER} ? 0 : -1;
+
+sub _getProximityVars($$$$) {
+    if ($havePadWalker == -1) {
+        local $@;
+        eval {
+            require PadWalker;
+            PadWalker->VERSION(0.08);
+            $havePadWalker = 1;
+        };
+        if ($@) {
+            $havePadWalker = 0;
+        }
+    }
+    if ($havePadWalker) {
+        return &_getProximityVarsViaPadWalker;
+    };
+    my ($pkg, $filename, $line, $stackDepth) = @_;
     local *dbline = $main::{'_<' . $filename};
     my $limBack = 30;
     my $limFwd = 2;
@@ -3349,8 +3409,7 @@ sub DB {
 			}
 		    }
 		} elsif ($context_id == LocalVars) {
-		    $stackDepth = 0;
-		    $namesAndValues = eval { _getProximityVars($pkg, $filename, $line); };
+		    $namesAndValues = eval { _getProximityVars($pkg, $filename, $line, $stackDepth); };
 		} else {
 		    $stackDepth = 0;
 		    $namesAndValues = eval { getContextProperties($context_id, $pkg); };
