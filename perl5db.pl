@@ -570,7 +570,9 @@ if ($is_perl_5_005) {
     #XXX - really?
 }
 
-if (defined $remoteport || defined $remotepath) {
+sub connectOrReconnect {
+  $PID = $$;
+  $OUT = $IN = $OUT_Selector = undef;
   # If RemotePort was defined in the options, connect input and output
   # to the socket.
   require IO::Socket;
@@ -621,7 +623,10 @@ if (defined $remoteport || defined $remotepath) {
       # Moved stuff to start of init loop
       # sendInitString();
   }
+}
 
+if (defined $remoteport || defined $remotepath) {
+    connectOrReconnect();
 } else {
     warn "RemotePort not set for debugger\n";
     # Keep going
@@ -2290,6 +2295,15 @@ sub DB {
     # do important stuff
     #
     &save;
+    if ($PID != $$) {
+        connectOrReconnect();
+        unless ($OUT) {
+            # Implement a null debugger interface to keep the Perl program running
+            *DB = sub {};
+            *sub = sub { &$sub };
+            return;
+        }
+    }
     ($pkg, $filename, $line) = caller;
     if (!defined $startedAsInteractiveShell) {
 	# This won't work with code that changes $0 to "-e"
