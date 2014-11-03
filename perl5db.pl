@@ -570,9 +570,21 @@ if ($is_perl_5_005) {
     #XXX - really?
 }
 
+sub disconnect {
+  # force-close any copies of the file descriptor in other processes
+  if (ref $OUT and UNIVERSAL::isa($OUT, 'IO::Socket')) {
+      $OUT->shutdown(2);
+  }
+  $OUT = $IN = $OUT_Selector = undef;
+  $stopReason = 0;
+  $lastContinuationCommand = undef;
+  $lastContinuationStatus = 'break';
+  $lastTranID = 0;  # The transactionID that started
+}
+
 sub connectOrReconnect {
   $PID = $$;
-  $OUT = $IN = $OUT_Selector = undef;
+  disconnect() if $OUT;
   # If RemotePort was defined in the options, connect input and output
   # to the socket.
   require IO::Socket;
