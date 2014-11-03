@@ -3292,7 +3292,7 @@ sub DB {
 				     $transactionID);
 		my @sub = dump_trace(0); # , $numLevelsToShow);
 		# dblog("raw stack trace = ", DB::Data::Dump::dump(@sub), "\n") if $ldebug;
-		if (@sub && $sub[$#sub]->{line} == 0) {
+		if (@sub && $sub[0]->{line} == 0) {
 		    # We have no active stacks at this point
 		    @sub = ();
 		}
