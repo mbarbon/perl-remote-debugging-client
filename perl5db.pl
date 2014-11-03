@@ -523,11 +523,12 @@ my $current_filename = '';
 # (Copied from standard perl5db.pl to support PDK products)
 
 $remoteport = undef;
+$remotepath = undef;
 # If the PERLDB_OPTS variable has options in it, parse those out next.
 if (defined $ENV{PERLDB_OPTS}) {
     parse_options($ENV{PERLDB_OPTS});
 }
-if (!defined $remoteport) {
+if (!defined $remoteport && !defined $remotepath) {
     if (exists $ENV{RemotePort}) {
         $remoteport = $ENV{RemotePort};
     } else {
@@ -569,17 +570,29 @@ if ($is_perl_5_005) {
     #XXX - really?
 }
 
-if (defined $remoteport) {
+if (defined $remoteport || defined $remotepath) {
   # If RemotePort was defined in the options, connect input and output
   # to the socket.
   require IO::Socket;
-  $OUT = new IO::Socket::INET(
-			      Timeout  => '10',
-			      PeerAddr => $remoteport,
-			      Proto    => 'tcp',
-			     );
+  if ($remoteport) {
+    $OUT = new IO::Socket::INET(
+			        Timeout  => '10',
+			        PeerAddr => $remoteport,
+			        Proto    => 'tcp',
+			       );
+  } elsif ($remotepath) {
+    $OUT = new IO::Socket::UNIX(
+			        Timeout  => '10',
+			        Peer     => $remotepath,
+			       );
+  }
+
   if (!$OUT) {
-      warn "Unable to connect to remote host: $remoteport ($!)\n";
+      if ($remoteport) {
+          warn "Unable to connect to remote host: $remoteport ($!)\n";
+      } else {
+          warn "Unable to connect to Unix socket: $remotepath ($!)\n";
+      }
       warn "Running program outside the debugger...\n";
   } else {
       $sentInitString = 0;
@@ -4437,7 +4450,7 @@ sub readline {
     local $frame = 0;
     local $doret = -2;
     # Nothing on the filehandle stack. Socket?
-    if (ref $OUT and UNIVERSAL::isa($OUT, 'IO::Socket::INET')) {
+    if (ref $OUT and UNIVERSAL::isa($OUT, 'IO::Socket')) {
         # Send anything we have to send.
 	if (@_) {
 	    $OUT->write(join ('', @_));
@@ -4679,7 +4692,7 @@ sub parse_options {
     my %opt_needs_val = map { ($_ => 1) } qw{
       dumpDepth arrayDepth hashDepth LineInfo maxTraceLen ornaments windowSize
       pager quote ReadLine recallCommand RemotePort ShellBang TTY CommandSet
-					     LogFile
+					     LogFile RemotePath
       };
 
     while (length) {
@@ -4742,6 +4755,8 @@ sub parse_options {
         next unless length($val);
 	if (lc $option eq 'remoteport' && $val =~ /.*:\d+$/) {
 	    $remoteport = $val;
+	} elsif ($option eq 'RemotePath' && $val =~ /^\//) {
+	    $remotepath = $val;
 	} elsif ($option eq 'LogFile' && length($val)) {
 	    my $logThing;
 	    if (lc $val eq 'stdout') {
