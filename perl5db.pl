@@ -637,6 +637,8 @@ sub connectOrReconnect {
   }
 }
 
+sub isConnected { !!$OUT }
+
 if (defined $remoteport || defined $remotepath) {
     connectOrReconnect();
 } else {
