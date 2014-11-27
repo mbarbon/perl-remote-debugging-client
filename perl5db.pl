@@ -2320,6 +2320,7 @@ sub DB {
             # Implement a null debugger interface to keep the Perl program running
             *DB = sub {};
             *sub = sub { &$sub };
+            ($@, $!, $,, $/, $\, $^W) = @saved;
             return;
         }
     }
@@ -2375,6 +2376,7 @@ sub DB {
 	$single = 1;
     } elsif ($runnonstop) {
 	db_alarm($_pending_check_interval);
+	($@, $!, $,, $/, $\, $^W) = @saved;
 	return;
     } elsif (!$sentInitString) {
 	sendInitString();
