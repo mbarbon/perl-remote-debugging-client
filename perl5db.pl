@@ -601,6 +601,9 @@ sub connectOrReconnect {
 			       );
   }
 
+  # diabled by 'detach'
+  map { $supportedCommands{$_} = 1 } (qw(run step_into step_over step_out detach));
+
   if (!$OUT) {
       if ($remoteport) {
           warn "Unable to connect to remote host: $remoteport ($!)\n";
@@ -609,6 +612,8 @@ sub connectOrReconnect {
       }
       warn "Running program outside the debugger...\n";
   } else {
+      $signal = $single = $finished = $runnonstop = 0;
+      $stopReason = 0;
       $sentInitString = 0;
       $fakeFirstStepInto = 1;
       setDefaultOutput($OUT);
@@ -2838,6 +2843,7 @@ sub DB {
 	    } elsif ($cmd eq 'detach') {
 		$stopReason = STOP_REASON_STOPPED;
 		$runnonstop = 1;
+		$interact_str = undef;
 		# Disable all the move commands
 		map { $supportedCommands{$_} = 0 } (qw(run step_into step_over step_out detach));
 		# status will be emitted when the program hits the end
