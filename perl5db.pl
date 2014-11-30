@@ -2846,6 +2846,10 @@ sub DB {
 		$stopReason = STOP_REASON_STOPPED;
 		$runnonstop = 1;
 		$interact_str = undef;
+		# continue
+		for ($i=0; $i <= $#stack; ) {
+		    $stack[$i++] &= ~1;
+		}
 		# Disable all the move commands
 		map { $supportedCommands{$_} = 0 } (qw(run step_into step_over step_out detach));
 		# status will be emitted when the program hits the end
