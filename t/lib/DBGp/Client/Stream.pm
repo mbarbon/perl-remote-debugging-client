@@ -19,7 +19,9 @@ sub get_line {
 
     my $len_end = index($$buffer, "\x00");
     while ($len_end == -1) {
-        read $self->{socket}, $$buffer, 100, length($$buffer);
+        return undef
+            if read($self->{socket}, $$buffer, 100, length($$buffer)) == 0;
+
         $len_end = index($$buffer, "\x00");
     }
 
@@ -27,7 +29,8 @@ sub get_line {
     substr $$buffer, 0, $len_end + 1, '';
 
     if (length($$buffer) < $len + 1) {
-        read $self->{socket}, $$buffer, $len + 1 - length($$buffer), length($$buffer);
+        return undef
+            if read($self->{socket}, $$buffer, $len + 1 - length($$buffer), length($$buffer)) == 0;
     }
 
     die "Short read"

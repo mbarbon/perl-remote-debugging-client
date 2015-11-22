@@ -39,6 +39,8 @@ sub _text {
 }
 
 sub parse {
+    return undef unless defined $_[0];
+
     my $tree = $parser->parse($_[0]);
     die "Unexpected XML"
         if @$tree != 1 || $tree->[0]{type} ne 'e';
