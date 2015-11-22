@@ -2461,7 +2461,9 @@ sub DB {
 	# Send a status thing back
 	if ($pkg eq 'DB::fake') {
 	    # Do nothing
-	} elsif (defined $lastContinuationCommand) {
+	} elsif (defined $lastContinuationCommand &&
+                     ($lastContinuationCommand eq 'detach' ||
+                      $lastContinuationStatus ne 'stopping')) {
 	  printWithLength(sprintf(qq(%s\n<response %s command="%s" status="%s"
 				       reason="ok" transaction_id="%s"/>),
 				  xmlHeader(),
