@@ -25,6 +25,7 @@ use Test::Differences;
 
 use IO::Socket::INET;
 use IPC::Open3 ();
+use MIME::Base64 qw(encode_base64);
 use Cwd;
 
 require feature;
@@ -37,6 +38,8 @@ our @EXPORT = (
         run_debugger
         send_command
         command_is
+        eval_value_is
+        wait_connection
   )
 );
 
@@ -50,7 +53,8 @@ sub import {
     goto &Test::Builder::Module::import;
 }
 
-my ($CLIENT, $INIT, $SEQ, $PORT, $PID, $CHILD_IN, $CHILD_OUT, $CHILD_ERR);
+my ($LISTEN, $CLIENT, $INIT, $SEQ, $PORT);
+my ($PID, $CHILD_IN, $CHILD_OUT, $CHILD_ERR);
 
 sub abs_uri {
     return 'file://' . Cwd::abs_path($_[0]);
@@ -58,17 +62,16 @@ sub abs_uri {
 
 sub run_debugger {
     my ($script) = @_;
-    my $sock;
 
     for my $port (17000 .. 19000) {
-        $sock = IO::Socket::INET->new(
+        $LISTEN = IO::Socket::INET->new(
             Listen    => 1,
             LocalAddr => '127.0.0.1',
             LocalPort => $port,
             Proto     => 'tcp',
             Timeout   => 1,
         );
-        next unless $sock;
+        next unless $LISTEN;
 
         $PORT = $port;
         last;
@@ -84,9 +87,13 @@ sub run_debugger {
         $^X, '-Ilib=.', '-d', $script,
     );
 
-    my $conn = $sock->accept;
+    wait_connection();
+}
 
-    die "Did not receive any connection from the debugged program: ", $sock->error
+sub wait_connection {
+    my $conn = $LISTEN->accept;
+
+    die "Did not receive any connection from the debugged program: ", $LISTEN->error
         unless $conn;
 
     require DBGp::Client::Stream;
@@ -109,7 +116,7 @@ sub send_command {
 
     die 'Mismatched transaction IDs: got ', $res->transaction_id,
             ' expected ', $SEQ
-        if $res->transaction_id != $SEQ;
+        if $res && $res->transaction_id != $SEQ;
 
     return $res;
 }
@@ -122,6 +129,15 @@ sub command_is {
     my $cmp = _extract_command_data($res, $expected);
 
     eq_or_diff($cmp, $expected);
+}
+
+sub eval_value_is {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my ($expr, $value) = @_;
+    my $res = send_command('eval', encode_base64($expr));
+
+    is($res->result->value, $value);
 }
 
 sub _extract_command_data {
