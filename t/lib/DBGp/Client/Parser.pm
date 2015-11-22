@@ -11,6 +11,7 @@ use DBGp::Client::Response::Error;
 use DBGp::Client::Response::Step;
 use DBGp::Client::Response::StackGet;
 use DBGp::Client::Response::Eval;
+use DBGp::Client::Response::Typemap;
 
 my $parser = XML::Parser->new(Style => 'EasyTree');
 
@@ -61,6 +62,8 @@ sub parse {
             return bless $root, 'DBGp::Client::Response::StackGet';
         } elsif ($cmd eq 'eval') {
             return bless $root, 'DBGp::Client::Response::Eval';
+        } elsif ($cmd eq 'typemap_get') {
+            return bless $root, 'DBGp::Client::Response::Typemap';
         } else {
             require Data::Dumper;
 
