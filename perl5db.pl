@@ -1371,11 +1371,18 @@ sub emitTypeMapInfo($$) {
     foreach my $e (['boolean', 'bool'],
 		   ['float'],
 		   ['integer', 'int'],
-		   ['string']) {
+		   ['string'],
+		   [undef, 'undefined', 'undef'],
+		   [undef, 'array', 'ARRAY'],
+		   [undef, 'hash', 'HASH']) {
 	my $xsdName = $e->[0];
 	my $commonTypeName = $e->[1] || $xsdName;
 	my $languageTypeName = $e->[2] || $commonTypeName;
-	$res .= qq(<map type="$commonTypeName" name="$languageTypeName" xsi:type="xsd:$xsdName"/>);
+	if ($xsdName) {
+	    $res .= qq(<map type="$commonTypeName" name="$languageTypeName" xsi:type="xsd:$xsdName"/>);
+	} else {
+	    $res .= qq(<map type="$commonTypeName" name="$languageTypeName"/>);
+	}
     }
     $res .= "\n</response>";
     printWithLength($res);
