@@ -61,7 +61,8 @@ sub abs_uri {
 }
 
 sub run_debugger {
-    my ($script) = @_;
+    my ($script, $opts) = @_;
+    $opts ||= '';
 
     for my $port (17000 .. 19000) {
         $LISTEN = IO::Socket::INET->new(
@@ -80,7 +81,7 @@ sub run_debugger {
     die "Unable to open a listening socket in the 17000 - 19000 port range"
         unless $PORT;
 
-    local $ENV{RemotePort} = "localhost:$PORT";
+    local $ENV{PERLDB_OPTS} = "RemotePort=localhost:$PORT $opts";
     local $ENV{PERL5LIB} = $ENV{PERL5LIB} ? ".:$ENV{PERL5LIB}" : ".";
     $PID = IPC::Open3::open3(
         $CHILD_IN, $CHILD_OUT, $CHILD_ERR,

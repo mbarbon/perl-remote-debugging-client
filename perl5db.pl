@@ -524,6 +524,7 @@ my $current_filename = '';
 
 $remoteport = undef;
 $remotepath = undef;
+$xdebug = undef;
 # If the PERLDB_OPTS variable has options in it, parse those out next.
 if (defined $ENV{PERLDB_OPTS}) {
     parse_options($ENV{PERLDB_OPTS});
@@ -4748,7 +4749,7 @@ sub parse_options {
     my %opt_needs_val = map { ($_ => 1) } qw{
       dumpDepth arrayDepth hashDepth LineInfo maxTraceLen ornaments windowSize
       pager quote ReadLine recallCommand RemotePort ShellBang TTY CommandSet
-					     LogFile RemotePath
+      LogFile RemotePath Xdebug
       };
 
     while (length) {
@@ -4813,6 +4814,8 @@ sub parse_options {
 	    $remoteport = $val;
 	} elsif ($option eq 'RemotePath' && $val =~ /^\//) {
 	    $remotepath = $val;
+	} elsif ($option eq 'Xdebug') {
+	    $xdebug = !!$val;
 	} elsif ($option eq 'LogFile' && length($val)) {
 	    my $logThing;
 	    if (lc $val eq 'stdout') {
