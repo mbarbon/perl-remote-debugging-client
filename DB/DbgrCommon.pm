@@ -240,9 +240,21 @@ sub getCommonType($) {
     if ($r = ref $val) {
 	$r =~ s/\(0x\w+\)//;
 	return $r;
+    } elsif (isInt($val)) {
+        return 'int';
+    } elsif (isFloat($val)) {
+        return 'float';
     } else {
-	return '';
+	return 'string';
     }
+}
+
+sub isInt($) {
+    my ($val) = @_;
+    return $val =~ /^
+  		    [-+]?           # leading sign always optional
+		    \d+          # required digits
+		    $/x;
 }
 
 sub isFloat($) {
