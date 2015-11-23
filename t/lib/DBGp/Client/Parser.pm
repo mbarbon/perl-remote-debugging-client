@@ -57,7 +57,7 @@ sub parse {
         my $cmd = $root->{attrib}{command};
 
         if ($cmd eq 'step_into') {
-            return bless $root->{attrib}, 'DBGp::Client::Response::Step';
+            return bless $root, 'DBGp::Client::Response::Step';
         } elsif ($cmd eq 'stack_get') {
             return bless $root, 'DBGp::Client::Response::StackGet';
         } elsif ($cmd eq 'eval') {

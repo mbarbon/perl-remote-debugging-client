@@ -2466,12 +2466,13 @@ sub DB {
                      ($lastContinuationCommand eq 'detach' ||
                       $lastContinuationStatus ne 'stopping')) {
 	  printWithLength(sprintf(qq(%s\n<response %s command="%s" status="%s"
-				       reason="ok" transaction_id="%s"/>),
+				       reason="ok" transaction_id="%s" %s>),
 				  xmlHeader(),
 				  namespaceAttr(),
 				  $lastContinuationCommand,
 				  $lastContinuationStatus,
-				  $lastTranID));
+				  $lastTranID,
+				  fileAndLineIfXdebug()));
 	}
 	$stopReason = STOP_REASON_BREAK;
 
@@ -2740,11 +2741,12 @@ sub DB {
 		    printWithLength(sprintf
 				    (qq(%s\n<response %s command="%s"
 					status="break"
-					reason="ok" transaction_id="%s"/>),
+					reason="ok" transaction_id="%s" %s>),
 				     xmlHeader(),
 				     namespaceAttr(),
 				     $cmd,
-				     $transactionID));
+				     $transactionID,
+				     fileAndLineIfXdebug()));
 		    next CMD;
 		}
 		$interact_str = undef;
@@ -2770,11 +2772,12 @@ sub DB {
 		    printWithLength(sprintf
 				    (qq(%s\n<response %s command="%s"
 					status="break"
-					reason="ok" transaction_id="%s"/>),
+					reason="ok" transaction_id="%s" %s>),
 				     xmlHeader(),
 				     namespaceAttr(),
 				     $cmd,
-				     $transactionID));
+				     $transactionID,
+				     fileAndLineIfXdebug()));
 		    next CMD;
 		}
 
@@ -2826,11 +2829,12 @@ sub DB {
 		    printWithLength(sprintf
 				    (qq(%s\n<response %s command="%s"
 					status="break"
-					reason="ok" transaction_id="%s"/>),
+					reason="ok" transaction_id="%s" %s>),
 				     xmlHeader(),
 				     namespaceAttr(),
 				     $cmd,
-				     $transactionID));
+				     $transactionID,
+				     fileAndLineIfXdebug()));
 		    next CMD;
 		} else {
 		    $stopReason = STOP_REASON_RUNNING;
@@ -4588,6 +4592,12 @@ sub _checkForBreak {
     return 0;
 }
 
+sub fileAndLineIfXdebug {
+    return '/' unless $xdebug;
+    return sprintf '><xdebug:message filename="%s" lineno="%s" /></response',
+        calcFileURI($filename), $line;
+}
+
 sub dump_trace {
 
     # How many levels to skip.
@@ -4866,12 +4876,13 @@ END {
 	    # $lastContinuationCommand and $lastTranID must be set
 
 	    printWithLength(sprintf(qq(%s\n<response %s command="%s" status="%s"
-				       reason="ok" transaction_id="%s"/>),
+				       reason="ok" transaction_id="%s" %s>),
 				    xmlHeader(),
 				    namespaceAttr(),
 				    $lastContinuationCommand || 'run',
 				    $lastContinuationStatus = 'stopping',
-				    $lastTranID || '0'));
+				    $lastTranID || '0',
+				    fileAndLineIfXdebug()));
 	}
         DB::fake::at_exit();
     }

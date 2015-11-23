@@ -5,15 +5,19 @@ use t::lib::Test;
 run_debugger('t/scripts/base.pl');
 
 command_is(['step_into'], {
-    reason  => 'ok',
-    status  => 'break',
-    command => 'step_into',
+    reason      => 'ok',
+    status      => 'break',
+    command     => 'step_into',
+    filename    => undef,
+    lineno      => undef,
 }) for 1 .. 9;
 
 command_is(['step_into'], {
-    reason  => 'ok',
-    status  => 'stopping',
-    command => 'step_into',
+    reason      => 'ok',
+    status      => 'stopping',
+    command     => 'step_into',
+    filename    => undef,
+    lineno      => undef,
 });
 
 command_is(['step_into'], {

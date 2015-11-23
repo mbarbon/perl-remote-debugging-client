@@ -291,7 +291,7 @@ sub makeErrorResponse($$$$) {
 }
 
 sub namespaceAttr() {
-  return 'xmlns="urn:debugger_protocol_v1"';
+  return 'xmlns="urn:debugger_protocol_v1" xmlns:xdebug="http://xdebug.org/dbgp/xdebug"';
 }
 
 sub printWithLength {
