@@ -4868,7 +4868,6 @@ END {
 	$DB::single = 0;
     } else {
 	dblog("END block: single <= 1\n") if $ldebug;
-	$DB::single = 1;
 	if ($OUT) {
 	    # Send a status of stopping
 
@@ -4884,6 +4883,9 @@ END {
 				    $lastTranID || '0',
 				    fileAndLineIfXdebug()));
 	}
+	# do this after printing the response (since it might indirectly
+	# call code outside the DB package)
+	$DB::single = 1;
         DB::fake::at_exit();
     }
 } ## end END
