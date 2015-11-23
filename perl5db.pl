@@ -1570,8 +1570,8 @@ sub getBreakpointInfoString($%) {
 	    }
 	}
 	if ($extraInfo{lineNo} || $xbLine) {
-	    $res .= sprintf(' line="%s"',
-			    ($extraInfo{lineNo} || $xbLine));
+	    $res .= sprintf(' line="%s" lineno="%s"',
+			    ($extraInfo{lineNo} || $xbLine) x 2);
 	}
 	if ($extraInfo{function} || $bFunction) {
 	    $res .= sprintf(' function="%s"',
