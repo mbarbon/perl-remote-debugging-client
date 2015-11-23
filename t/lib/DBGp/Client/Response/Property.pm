@@ -2,14 +2,14 @@ package DBGp::Client::Response::Property;
 
 use strict;
 use warnings;
+use parent qw(DBGp::Client::Response::Simple);
 
 use MIME::Base64 qw(decode_base64);
 
-sub name { $_[0]->{attrib}{name} }
-sub fullname { $_[0]->{attrib}{fullname} }
-sub constant { $_[0]->{attrib}{constant} }
-sub type { $_[0]->{attrib}{type} }
-sub children { $_[0]->{attrib}{children} }
+__PACKAGE__->make_attrib_accessors(qw(
+    name fullname constant type children
+));
+
 sub numchildren { $_[0]->{attrib}{children} ? $_[0]->{attrib}{numchildren} : 0 }
 
 sub value {

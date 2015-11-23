@@ -2,9 +2,11 @@ package DBGp::Client::Response::StackGet;
 
 use strict;
 use warnings;
+use parent qw(DBGp::Client::Response::Simple);
 
-sub transaction_id { $_[0]->{attrib}{transaction_id} }
-sub command        { $_[0]->{attrib}{command} }
+__PACKAGE__->make_attrib_accessors(qw(
+    transaction_id command
+));
 
 sub frames {
     return [map {
