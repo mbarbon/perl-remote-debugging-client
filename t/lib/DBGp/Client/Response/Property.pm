@@ -15,6 +15,18 @@ sub numchildren { $_[0]->{attrib}{children} ? $_[0]->{attrib}{numchildren} : 0 }
 sub value {
     my $value = DBGp::Client::Parser::_node($_[0], 'value');
 
+    if (!$value) {
+        # Xdebug compat
+        my $text = DBGp::Client::Parser::_text($_[0]);
+
+        return undef unless $text =~ /\S/;
+
+        my $encoding = $_[0]->{attrib}{encoding};
+        die "Only supports base64" unless $encoding eq 'base64';
+
+        return decode_base64($text) ;
+    }
+
     if (my $encoding = $value->{attrib}{encoding}) {
         die "Only supports base64" unless $encoding eq 'base64';
 
