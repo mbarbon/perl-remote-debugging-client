@@ -110,6 +110,17 @@ package DB;
 
 sub DB {}
 
+sub DEBUG_ALL()             { 0x7ff }
+sub DEBUG_SINGLE_STEP_ON()  {  0x20 }
+sub DEBUG_USE_SUB_ADDRESS() {  0x40 }
+sub DEBUG_REPORT_GOTO()     {  0x80 }
+sub DEBUG_DEFAULT_FLAGS() # 0x73f
+       { DEBUG_ALL & ~(DEBUG_USE_SUB_ADDRESS|DEBUG_REPORT_GOTO) }
+sub DEBUG_PREPARE_FLAGS() # 0x73c
+       { DEBUG_ALL & ~(DEBUG_USE_SUB_ADDRESS|DEBUG_REPORT_GOTO|DEBUG_SINGLE_STEP_ON) }
+
+my (%ORIG_DB_SUB, %DISABLED_DB_SUB);
+
 # 'my' variables used here could leak into (that is, be visible in)
 # the context that the code being evaluated is executing in. This means that
 # the code could modify the debugger's variables.
@@ -4909,6 +4920,27 @@ sub end_report {
 		     $transactionID,
 		     $cmd,
 		     ));
+}
+
+{
+    %ORIG_DB_SUB = %DISABLED_DB_SUB = map {
+        ($_ => *DB::sub{$_}) x !!*DB::sub{$_}
+    } qw(CODE SCALAR ARRAY HASH);
+    delete $DISABLED_DB_SUB{CODE};
+}
+
+sub enable {
+    $DB::single = 1;
+    $^P = DEBUG_DEFAULT_FLAGS;
+    undef *DB::sub;
+    *DB::sub = $ORIG_DB_SUB{$_} for keys %ORIG_DB_SUB;
+}
+
+sub disable {
+    $DB::single = 0;
+    $^P = DEBUG_PREPARE_FLAGS;
+    undef *DB::sub;
+    *DB::sub = $DISABLED_DB_SUB{$_} for keys %DISABLED_DB_SUB;
 }
 
 =head1 C<DB::fake>
