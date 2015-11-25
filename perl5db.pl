@@ -4860,6 +4860,19 @@ sub parse_options {
     } ## end while (length)
 } ## end sub parse_options
 
+sub answerLastContinuationCommand {
+    return unless defined $lastContinuationCommand;
+    my ($status) = @_;
+    printWithLength(sprintf(qq(%s\n<response %s command="%s" status="%s"
+			       reason="ok" transaction_id="%s" %s>),
+			    xmlHeader(),
+			    namespaceAttr(),
+			    $lastContinuationCommand || 'run',
+			    $lastContinuationStatus = $status,
+			    $lastTranID || '0',
+			    fileAndLineIfXdebug()));
+}
+
 END {
     # Do not stop in at_exit() and destructors on exit:
     $DB::finished = 1;
@@ -4874,14 +4887,7 @@ END {
 	    # Invariant:
 	    # $lastContinuationCommand and $lastTranID must be set
 
-	    printWithLength(sprintf(qq(%s\n<response %s command="%s" status="%s"
-				       reason="ok" transaction_id="%s" %s>),
-				    xmlHeader(),
-				    namespaceAttr(),
-				    $lastContinuationCommand || 'run',
-				    $lastContinuationStatus = 'stopping',
-				    $lastTranID || '0',
-				    fileAndLineIfXdebug()));
+	    answerLastContinuationCommand('stopping');
 	}
 	# do this after printing the response (since it might indirectly
 	# call code outside the DB package)
