@@ -735,9 +735,8 @@ if ($is_perl_5_005 && $^O eq 'MSWin32' && !win32_pm_fixed()) {
 	$supportedCommands{interact} = 0;
     }
 } else {
-    # Implement a null debugger interface to keep the Perl program running
-    *DB = sub {};
-    *sub = sub { &$sub; };
+    # Disable the debugger to keep the Perl program running
+    disable();
 }
 
 # Set a breakpoint for the first line of breakable code now,
@@ -2336,9 +2335,8 @@ sub DB {
     if ($PID != $$) {
         connectOrReconnect();
         unless ($OUT) {
-            # Implement a null debugger interface to keep the Perl program running
-            *DB = sub {};
-            *sub = sub { &$sub };
+            # Disable the debugger to keep the Perl program running
+            disable();
             ($@, $!, $,, $/, $\, $^W) = @saved;
             return;
         }

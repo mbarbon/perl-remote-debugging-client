@@ -36,10 +36,15 @@ our @EXPORT = (
   qw(
         abs_uri
         run_debugger
+        run_program
         send_command
         command_is
         eval_value_is
+        start_listening
+        stop_listening
         wait_connection
+        wait_line
+        send_line
   )
 );
 
@@ -60,17 +65,16 @@ sub abs_uri {
     return 'file://' . Cwd::abs_path($_[0]);
 }
 
-sub run_debugger {
-    my ($script, $opts) = @_;
-    $opts ||= '';
+sub start_listening {
+    return if $LISTEN;
 
-    for my $port (17000 .. 19000) {
+    for my $port (!$PORT ? (17000 .. 19000) : ($PORT)) {
         $LISTEN = IO::Socket::INET->new(
             Listen    => 1,
             LocalAddr => '127.0.0.1',
             LocalPort => $port,
             Proto     => 'tcp',
-            Timeout   => 1,
+            Timeout   => 2,
         );
         next unless $LISTEN;
 
@@ -79,7 +83,17 @@ sub run_debugger {
     }
 
     die "Unable to open a listening socket in the 17000 - 19000 port range"
-        unless $PORT;
+        unless $LISTEN;
+}
+
+sub stop_listening {
+    close $LISTEN;
+    $LISTEN = undef;
+}
+
+sub run_program {
+    my ($script, $opts) = @_;
+    $opts ||= '';
 
     local $ENV{PERLDB_OPTS} = "RemotePort=localhost:$PORT $opts";
     local $ENV{PERL5LIB} = $ENV{PERL5LIB} ? ".:$ENV{PERL5LIB}" : ".";
@@ -87,7 +101,13 @@ sub run_debugger {
         $CHILD_IN, $CHILD_OUT, $CHILD_ERR,
         $^X, '-Ilib=.', '-d', $script,
     );
+}
 
+sub run_debugger {
+    my ($script, $opts) = @_;
+
+    start_listening();
+    run_program($script, $opts);
     wait_connection();
 }
 
@@ -107,6 +127,15 @@ sub wait_connection {
 
     die "We got connected with the wrong debugged program"
         if $INIT->appid != $PID || $INIT->language ne 'Perl';
+}
+
+sub wait_line {
+    readline $CHILD_OUT;
+}
+
+sub send_line {
+    print $CHILD_IN "\n";
+    flush $CHILD_IN;
 }
 
 sub send_command {
