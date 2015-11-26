@@ -99,7 +99,7 @@ sub run_program {
     local $ENV{PERL5LIB} = $ENV{PERL5LIB} ? ".:$ENV{PERL5LIB}" : ".";
     $PID = IPC::Open3::open3(
         $CHILD_IN, $CHILD_OUT, $CHILD_ERR,
-        $^X, '-Ilib=.', '-d', $script,
+        $^X, '-d', $script,
     );
 }
 

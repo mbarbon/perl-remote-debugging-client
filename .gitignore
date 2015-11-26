@@ -1,0 +1,7 @@
+/Build
+/MANIFEST.SKIP.bak
+/MYMETA.*
+/META.*
+/_build
+/blib/
+/Devel-Debug-DBGp-*
