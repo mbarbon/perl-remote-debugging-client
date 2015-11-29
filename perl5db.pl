@@ -3122,6 +3122,7 @@ sub DB {
 		    $opts{f} =~ s@^file:/([^/])@file://$1@;
 		    # work around broken clients
 		    $opts{f} =~ s@^(/|\\|[a-zA-Z]:\\)@file://$1@;
+		    $opts{f} =~ s@^file%3[Aa]//@file://@;
 		}		
 
 		getFileInfo(\%opts, 'f', $filename,
@@ -3971,6 +3972,7 @@ sub DB {
 		    if (exists $opts{f}) {
 			# work around broken clients
 			$opts{f} =~ s@^(/|\\|[a-zA-Z]:\\)@file://$1@;
+			$opts{f} =~ s@^file%3[Aa]//@file://@;
 		    }
 
 		    getFileInfo(\%opts, 'f', $filename,
