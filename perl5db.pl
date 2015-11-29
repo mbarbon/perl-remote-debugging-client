@@ -540,6 +540,7 @@ $remoteport = undef;
 $remotepath = undef;
 $xdebug_file_line_in_step = undef;
 $xdebug_no_value_tag = undef;
+$xdebug_full_values_in_context = undef;
 # If the PERLDB_OPTS variable has options in it, parse those out next.
 if (defined $ENV{PERLDB_OPTS}) {
     parse_options($ENV{PERLDB_OPTS});
@@ -3458,7 +3459,8 @@ sub DB {
 		local $stackDepth = getArg(\@cmdArgs, '-d');
 		local $context_id = getArg(\@cmdArgs, '-c');
 		$stackDepth = 0 unless defined $stackDepth;
-		local $settings{max_depth}[0] = 0;
+		local $settings{max_depth}[0] = 0
+                    unless $xdebug_full_values_in_context;
 		my $currStackSize = scalar dump_trace(0); # , $numLevelsToShow;
 		dblog("main->getContextProperties: \$currStackSize = $currStackSize\n") if $ldebug;
 		my $namesAndValues;
@@ -4840,7 +4842,7 @@ sub parse_options {
 	} elsif ($option eq 'RemotePath' && $val =~ /^\//) {
 	    $remotepath = $val;
 	} elsif ($option eq 'Xdebug') {
-	    $xdebug_file_line_in_step = $xdebug_no_value_tag = !!$val;
+	    $xdebug_file_line_in_step = $xdebug_no_value_tag = $xdebug_full_values_in_context = !!$val;
 	} elsif ($option eq 'LogFile' && length($val)) {
 	    my $logThing;
 	    if (lc $val eq 'stdout') {

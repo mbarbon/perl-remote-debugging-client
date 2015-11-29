@@ -32,9 +32,12 @@ t/012_basic_eval.t
 t/030_detach_reconnect.t
 t/035_connect_after.t
 t/110_typemap.t
+t/140_context_get.t
 t/610_xdebug_step.t
 t/612_xdebug_eval.t
+t/614_xdebug_context_get.t
 t/lib/DBGp/Client/Parser.pm
+t/lib/DBGp/Client/Response/ContextGet.pm
 t/lib/DBGp/Client/Response/Error.pm
 t/lib/DBGp/Client/Response/Eval.pm
 t/lib/DBGp/Client/Response/Init.pm
@@ -48,3 +51,4 @@ t/lib/Test.pm
 t/scripts/base.pl
 t/scripts/connect_after.pl
 t/scripts/reconnect.pl
+t/scripts/variables.pl
