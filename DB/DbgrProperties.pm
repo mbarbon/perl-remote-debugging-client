@@ -685,7 +685,7 @@ sub getFullPropertyInfoByValue($$$$$$) {
 	$res .= _getFullPropertyInfoByValue_emitNames($maxDataSize, %b_attr);
 	if ($refstr || !defined($encVal)) {
 	    # Do nothing
-	} elsif ($DB::xdebug) {
+	} elsif ($DB::xdebug_no_value_tag) {
 	    $res .= $encVal;
 	} else {
 	    $res .= sprintf(qq(<value%s><![CDATA[%s]]></value>\n),

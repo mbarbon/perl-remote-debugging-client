@@ -538,7 +538,8 @@ my $current_filename = '';
 
 $remoteport = undef;
 $remotepath = undef;
-$xdebug = undef;
+$xdebug_file_line_in_step = undef;
+$xdebug_no_value_tag = undef;
 # If the PERLDB_OPTS variable has options in it, parse those out next.
 if (defined $ENV{PERLDB_OPTS}) {
     parse_options($ENV{PERLDB_OPTS});
@@ -4607,7 +4608,7 @@ sub _checkForBreak {
 }
 
 sub fileAndLineIfXdebug {
-    return '/' unless $xdebug;
+    return '/' unless $xdebug_file_line_in_step;
     return sprintf '><xdebug:message filename="%s" lineno="%s" /></response',
         calcFileURI($filename), $line;
 }
@@ -4839,7 +4840,7 @@ sub parse_options {
 	} elsif ($option eq 'RemotePath' && $val =~ /^\//) {
 	    $remotepath = $val;
 	} elsif ($option eq 'Xdebug') {
-	    $xdebug = !!$val;
+	    $xdebug_file_line_in_step = $xdebug_no_value_tag = !!$val;
 	} elsif ($option eq 'LogFile' && length($val)) {
 	    my $logThing;
 	    if (lc $val eq 'stdout') {
