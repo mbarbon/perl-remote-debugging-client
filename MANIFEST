@@ -8,7 +8,6 @@ DB/IO/AtomicFile.pm
 DB/IO/InnerFile.pm
 DB/IO/Lines.pm
 DB/IO/Scalar.pm
-DB/IO/Scalar.pm.html
 DB/IO/ScalarArray.pm
 DB/IO/Stringy.pm
 DB/IO/Wrap.pm
