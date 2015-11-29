@@ -449,7 +449,6 @@ sub propertyTagSpacer($) {
 
 sub containsWideChar {
     my ($str) = @_;
-    return 0 if $DB::is_perl_5_005;
     require bytes;
     if (bytes::length($str) > length($str)
 	|| $str =~ /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]/

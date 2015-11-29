@@ -13,6 +13,9 @@ my $build = Module::Build::DBGp->new(
     dist_abstract   => 'Perl DBGp debugger (derived from Komodo remote debugging helper)',
     debugger_files  => ['perl5db.pl'],
     license         => 'artistic',
+    requires => {
+        'perl'      => 5.006,
+    },
     configure_requires => {
         'Module::Build'  => 0.42,
     },

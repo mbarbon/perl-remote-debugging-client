@@ -298,7 +298,6 @@ BEGIN {
     %postponed_file = ();
     %firstFileInfo = ();
     $OUT_selector = $_pending_check_enabled = undef;
-    $is_perl_5_005 = $] < 5.006;
     $skip_alarm = 1;
     
     # uninitialized warning suppression
@@ -582,11 +581,6 @@ sub emitBanner {
 
 # placeholder - tty stuff
 
-if ($is_perl_5_005) {
-    # Don't bother debugging at all on 5.5 -- just run to completion
-    #XXX - really?
-}
-
 sub disconnect {
   # force-close any copies of the file descriptor in other processes
   if (ref $OUT and UNIVERSAL::isa($OUT, 'IO::Socket')) {
@@ -668,63 +662,7 @@ if (defined $remoteport || defined $remotepath) {
     # Keep going
 }
 
-sub win32_pm_fixed {
-    # The fast way
-    return 1 if $File::Spec::VERSION >= 0.82;
-    
-    # The slow way
-    my $win32_file = $INC{"File/Spec/Win32.pm"};
-    open FH_WIN32, "<$win32_file" or return undef;
-    my $fixed = 1;
-    while (<FH_WIN32>) {
-	# We should check for undefined $base first, not after
-	if (/elsif.*!defined.*\$base\b/) {
-	    # No version in this one
-	    $fixed = undef;
-	    last;
-	}
-    }
-    close FH_WIN32;
-    return $fixed;
-}
-
-sub getopt_std_fixed {
-    # The fast way
-    return 1 if $Getopt::Std::VERSION >= 1.02;
-    # The slow way
-    my $getopt_file = $INC{"Getopt/Std.pm"};
-    open FH_GETOPT, "<$getopt_file" or return undef;
-    my $fixed;
-    my $qdd = quotemeta('/^--$/');
-    while (<FH_GETOPT>) {
-	# We should check for undefined $base first, not after
-	if (/$qdd/) {
-	    # This one allows for "--"
-	    $fixed = 1;
-	    last;
-	}
-    }
-    close FH_GETOPT;
-    return $fixed;
-}
-
-sub not_ready_for_5_005 {
-    my ($action, $context, $lib) = @_;
-    my $str = "$action with Perl 5.005 $context requires small fixes
-to your $lib file, and Komodo has determined that
-they have not yet been done.  Please contact support\@activestate.com
-for further information.";
-    # Re-wrap the lines.
-    $str =~ s/\n/ /g;
-    $str =~ s/ {2,}/ /g;
-    $str =~ s/(.{40}[^ ]+) /$1\n/gs;
-    print STDERR "$str\n";
-}
-
-if ($is_perl_5_005 && $^O eq 'MSWin32' && !win32_pm_fixed()) {
-    not_ready_for_5_005("Debugging", "on Win32", "File/Spec/Win32.pm");
-    exit();
-} elsif ($OUT) {
+if ($OUT) {
     # Unbuffer DB::OUT. We need to see responses right away. 
     my $previous = select($OUT);
     # for DB::OUT
@@ -735,9 +673,6 @@ if ($is_perl_5_005 && $^O eq 'MSWin32' && !win32_pm_fixed()) {
     # $single = 1;
     if (!$skip_alarm) {
 	$SIG{ALRM} = \&_break_check_handler;
-    }
-    if ($is_perl_5_005 && !getopt_std_fixed()) {
-	$supportedCommands{interact} = 0;
     }
 } else {
     # Disable the debugger to keep the Perl program running
@@ -804,33 +739,11 @@ use File::Basename;
 use File::Spec;
 use Getopt::Std;
 
-=head1 notyet
-
-sub hook_file_spec_win32_fixes() {
-    # There's a serious bug in 5.005's win32.pm, so supply fixes
-    # from our own space.
-    require DB::File::Spec::Win32;
-    no strict 'refs';
-    foreach $meth (qw(rel2abs splitpath)) {
-	*{'File::Spec::Functions::' . $meth} = *{'DB::File::Spec::Win32::' . $meth};
-	*{'File::Spec::' . $meth} = *{'DB::File::Spec::Win32::' . $meth};
-	*{'File::Spec::Win32::' . $meth} = *{'DB::File::Spec::Win32::' . $meth};
-	*{$meth} = *{'DB::File::Spec::Win32::' . $meth};
-    }
-}
-
-=cut
-
 # Load the proper base class at compile time
 BEGIN {
     require File::Spec::Functions;
     if ($^O eq 'MSWin32') {
 	require File::Spec::Win32;
-=notyet
-	if (0 && $is_perl_5_005) {
-	    hook_file_spec_win32_fixes();
-	}
-=cut
     } else {
 	require File::Spec::Unix;
     }
@@ -2352,9 +2265,6 @@ sub DB {
 	# in a BEGIN block.
 	if ($0 eq '-e') {
 	    $startedAsInteractiveShell = 1;
-	    if (!$supportedCommands{interact}) {
-		not_ready_for_5_005("Using the interactive shell", "", "Getopt/Std.pm");
-	    }		
 	    $stopReason = STOP_REASON_INTERACT;
 	    emitBanner();
 	} else {

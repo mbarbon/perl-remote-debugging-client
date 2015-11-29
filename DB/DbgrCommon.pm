@@ -128,11 +128,6 @@ sub enableLogger {
 	}
 	return;
     }
-    if ($DB::is_perl_5_005) {
-	print STDERR "Sorry, Komodo requires Perl 5.6 or higher to support debugger logging; this is version $].\n";
-	$doLogging = 0;
-	return;
-    }
     my $outLogName;
     $DB::outLogName = $outLogName = shift;
     return unless $outLogName;
