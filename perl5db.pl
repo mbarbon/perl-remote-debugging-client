@@ -295,6 +295,7 @@ BEGIN {
     # By default it doesn't stop.
     $deep = -1;
     $ready = 0;
+    $setup_once_after_connection = undef;
     %postponed_file = ();
     %firstFileInfo = ();
     $OUT_selector = $_pending_check_enabled = undef;
@@ -537,6 +538,7 @@ my $current_filename = '';
 
 $remoteport = undef;
 $remotepath = undef;
+$connect_at_start = 1;
 $xdebug_file_line_in_step = undef;
 $xdebug_no_value_tag = undef;
 $xdebug_full_values_in_context = undef;
@@ -622,6 +624,8 @@ sub connectOrReconnect {
           warn "Unable to connect to Unix socket: $remotepath ($!)\n";
       }
       warn "Running program outside the debugger...\n";
+      # Disable the debugger to keep the Perl program running
+      disable();
   } else {
       $signal = $single = $finished = $runnonstop = 0;
       $stopReason = 0;
@@ -650,19 +654,25 @@ sub connectOrReconnect {
       # print "# Talking to port $remoteport\n" if $ldebug;
       # Moved stuff to start of init loop
       # sendInitString();
+      setupOnceAfterConnection();
   }
 }
 
 sub isConnected { !!$OUT }
 
-if (defined $remoteport || defined $remotepath) {
+if (!$connect_at_start) {
+    # Keep going
+    disable();
+} elsif (defined $remoteport || defined $remotepath) {
     connectOrReconnect();
 } else {
     warn "RemotePort not set for debugger\n";
     # Keep going
+    disable();
 }
 
-if ($OUT) {
+sub setupOnceAfterConnection {
+    return if $setup_once_after_connection;
     # Unbuffer DB::OUT. We need to see responses right away. 
     my $previous = select($OUT);
     # for DB::OUT
@@ -674,9 +684,7 @@ if ($OUT) {
     if (!$skip_alarm) {
 	$SIG{ALRM} = \&_break_check_handler;
     }
-} else {
-    # Disable the debugger to keep the Perl program running
-    disable();
+    $setup_once_after_connection = 1;
 }
 
 # Set a breakpoint for the first line of breakable code now,
@@ -2253,8 +2261,6 @@ sub DB {
     if ($PID != $$) {
         connectOrReconnect();
         unless ($OUT) {
-            # Disable the debugger to keep the Perl program running
-            disable();
             ($@, $!, $,, $/, $\, $^W) = @saved;
             return;
         }
@@ -4746,6 +4752,8 @@ sub parse_options {
 	    $remotepath = $val;
 	} elsif ($option eq 'Xdebug') {
 	    $xdebug_file_line_in_step = $xdebug_no_value_tag = $xdebug_full_values_in_context = !!$val;
+	} elsif ($option eq 'ConnectAtStart') {
+	    $connect_at_start = !!$val;
 	} elsif ($option eq 'LogFile' && length($val)) {
 	    my $logThing;
 	    if (lc $val eq 'stdout') {
