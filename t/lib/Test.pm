@@ -185,8 +185,10 @@ sub _extract_command_data {
         return $res if ref $res ne 'ARRAY';
         return [
             map {
-                _extract_command_data($res->[$_], $expected->[$_])
-            } 0 .. $#$expected
+                $_ > $#$expected ? '<extra element in response>' :
+                $_ > $#$res      ? '<missing element in response>' :
+                    _extract_command_data($res->[$_], $expected->[$_])
+            } 0 .. ($#$expected > $#$res ? $#$expected : $#$res)
         ];
     } else {
         die "Can't extract ", ref $expected, "value";
