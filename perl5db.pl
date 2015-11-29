@@ -4682,13 +4682,6 @@ sub parse_options {
     local ($_) = @_;
     local $\ = '';
 
-    # These options need a value. Don't allow them to be clobbered by accident.
-    my %opt_needs_val = map { ($_ => 1) } qw{
-      dumpDepth arrayDepth hashDepth LineInfo maxTraceLen ornaments windowSize
-      pager quote ReadLine recallCommand RemotePort ShellBang TTY CommandSet
-      LogFile RemotePath Xdebug
-      };
-
     while (length) {
         my $val_defaulted;
 
