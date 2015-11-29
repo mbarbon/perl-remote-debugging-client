@@ -20,6 +20,9 @@ command_is(['step_into'], {
     lineno      => undef,
 });
 
+is(wait_line(), "STDOUT 15\n");
+is(wait_line(), "STDERR 15\n");
+
 command_is(['step_into'], {
     apperr  => 4,
     code    => 6,

@@ -43,6 +43,7 @@ our @EXPORT = (
         start_listening
         stop_listening
         wait_connection
+        close_connection
         wait_line
         send_line
   )
@@ -112,10 +113,16 @@ sub run_debugger {
 }
 
 sub wait_connection {
+    my ($reject) = @_;
     my $conn = $LISTEN->accept;
 
     die "Did not receive any connection from the debugged program: ", $LISTEN->error
         unless $conn;
+
+    if ($reject) {
+        close $conn;
+        return;
+    }
 
     require DBGp::Client::Stream;
     require DBGp::Client::Parser;

@@ -29,6 +29,7 @@ t/010_basic_step.t
 t/011_basic_stack.t
 t/012_basic_eval.t
 t/030_detach_reconnect.t
+t/031_keep_running.t
 t/035_connect_after.t
 t/036_no_connect_at_start.t
 t/110_typemap.t

@@ -539,6 +539,7 @@ my $current_filename = '';
 $remoteport = undef;
 $remotepath = undef;
 $connect_at_start = 1;
+$keep_running = 0;
 $xdebug_file_line_in_step = undef;
 $xdebug_no_value_tag = undef;
 $xdebug_full_values_in_context = undef;
@@ -2413,8 +2414,14 @@ sub DB {
 	    # dblog("About to get the command...\n") if $ldebug;
 	    $cmd = &readline();
 	    if ($cmd eq '') {
-		# dblog("Got no command\n") if $ldebug;
-		exit 0;
+		if ($keep_running) {
+		    disconnect();
+		    disable();
+		    last CMD;
+		} else {
+		    # dblog("Got no command\n") if $ldebug;
+		    exit 0;
+		}
 	    }
 	    dblog("Got command [$cmd]\n") if $ldebug;
 
@@ -4754,6 +4761,8 @@ sub parse_options {
 	    $xdebug_file_line_in_step = $xdebug_no_value_tag = $xdebug_full_values_in_context = !!$val;
 	} elsif ($option eq 'ConnectAtStart') {
 	    $connect_at_start = !!$val;
+	} elsif ($option eq 'KeepRunning') {
+	    $keep_running = !!$val;
 	} elsif ($option eq 'LogFile' && length($val)) {
 	    my $logThing;
 	    if (lc $val eq 'stdout') {

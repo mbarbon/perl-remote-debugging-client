@@ -306,6 +306,9 @@ sub printWithLength {
 ####   };
   # dblog $finalStr;
   $OUT = \*STDOUT unless $OUT;
+  # brokn connection is handled one way or the other the next time
+  # the main look is re-entered
+  local $SIG{PIPE} = 'IGNORE';
   print $OUT $finalStr;
 }
   
