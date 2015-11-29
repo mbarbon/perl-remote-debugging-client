@@ -56,7 +56,7 @@ sub parse {
 
         my $cmd = $root->{attrib}{command};
 
-        if ($cmd eq 'step_into' || $cmd eq 'step_over' ||
+        if ($cmd eq 'step_into' || $cmd eq 'step_over' || $cmd eq 'run' ||
                 $cmd eq 'step_out' || $cmd eq 'detach' || $cmd eq 'stop') {
             return bless $root, 'DBGp::Client::Response::Step';
         } elsif ($cmd eq 'stack_get') {
