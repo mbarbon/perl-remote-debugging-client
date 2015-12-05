@@ -1130,10 +1130,10 @@ sub lookForPerlFileName {
     # and find one that canonicalizes to the same thing
 
     my @perlKeys = grep /_</, (grep !/eval/, keys %{*main::});
+    my $result = undef;
     foreach my $perlFileKey (@perlKeys) {
 	$perlFileKey =~ s/_<//;
 	my $origKey = $perlFileKey;
-	my $result;
 	local $@;
 	eval {
 	    $perlFileKey = canonicalizeFName(uriToFilename(filenameToURI($perlFileKey, 1)));
@@ -2293,7 +2293,7 @@ sub DB {
 	    $stopReason = STOP_REASON_BREAK;
 	}
     }
-    if ($ldebug && $pkg !~ /^DB::/) {
+    if ($ldebug && ($pkg !~ /^DB::/ || $filename !~ /dbgp[\/\\]perllib/)) {
 	dblog("In $pkg, $filename, $line\n");
     }
     
@@ -2355,7 +2355,7 @@ sub DB {
     if ($filename =~ /\(eval (\d+)\)\[(.*):(\d+)\]$/) {
 	internEvalURI($filename, \@dbline);
     }
-    if ($pkg !~ /^DB::/) {
+    if ($pkg !~ /^DB::/ || $filename !~ /dbgp[\/\\]perllib/) {
 	if (! exists $firstFileInfo{file}) {
 	    $firstFileInfo{file} = $filename; # Perl file name
 	    $firstFileInfo{pkg} = $pkg;
@@ -2374,7 +2374,7 @@ sub DB {
     }
 
     # If we have any watch expressions ...
-    if (!$single && ($trace & 2) && $pkg !~ /^DB::/) {
+    if (!$single && ($trace & 2) && ($pkg !~ /^DB::/ || $filename !~ /dbgp[\/\\]perllib/)) {
         for (my $i = 0 ; $i <= $#to_watch ; $i++) {
             $evalarg = $to_watch[$i];
 
@@ -2395,7 +2395,7 @@ sub DB {
     }
 
     if (($single || $signal)
-	&& ($pkg eq 'DB::fake' || $pkg !~ /^DB::/)
+	&& ($pkg eq 'DB::fake' || $pkg !~ /^DB::/ || $filename !~ /dbgp[\/\\]perllib/)
 	&& !$inPostponed) {
         # Yes, go down a level.
         local $level = $level + 1;
@@ -4259,7 +4259,7 @@ sub DB {
 
 	    }
 	}
-    } elsif ($pkg =~ /^DB::/) {
+    } elsif ($pkg =~ /^DB::/ && $filename =~ /dbgp[\/\\]perllib/) {
 	dblog("Skipping package [$pkg]\n") if $ldebug;
     } elsif ($inPostponed) {
 	dblog("Still postponed: [$pkg/$filename/$line]\n") if $ldebug;
@@ -4381,7 +4381,7 @@ sub sub
     $single &= 1;
     $single |= 4 if $#stack == $deep;
     my ($pkg, $filename, $line) = caller;
-    my $inDB = ($pkg && index($pkg, "DB::") == 0);
+    my $inDB = ($pkg && index($pkg, "DB::") == 0 && $filename =~ /dbgp[\/\\]perllib/);
     tryBreaking($sub, 'call') unless $inDB;
 	    
     if (wantarray)
@@ -4640,7 +4640,7 @@ sub dump_trace {
         elsif ($sub eq '(eval)') {
             $sub = "eval {...}";
         }
-	if ($sub =~ /^DB::/) {
+	if ($sub =~ /^DB::/ && $file =~ /dbgp[\/\\]perllib/) {
 	    next;
 	}
 
