@@ -27,6 +27,15 @@ sub find_debugger_files {
     };
 }
 
+sub find_pm_files {
+    my ($self) = @_;
+
+    return {
+        map +($_ => File::Spec->catfile('lib', $_)),
+            @{$self->rscan_dir('Devel', qr/\.pm/)}
+    };
+}
+
 sub htmlify_pods { }
 sub manify_lib_pods { }
 

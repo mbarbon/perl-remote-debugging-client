@@ -7,11 +7,9 @@ use lib 'inc';
 use Module::Build::DBGp;
 
 my $build = Module::Build::DBGp->new(
-    module_name     => 'Devel::Debug::DBGp',
-    dist_version    => '0.01',
-    dist_author     => 'Mattia Barbon <mbarbon@cpan.org>',
-    dist_abstract   => 'Perl DBGp debugger (derived from Komodo remote debugging helper)',
-    license         => 'artistic',
+    module_name          => 'Devel::Debug::DBGp',
+    dist_version_from    => 'Devel/Debug/DBGp.pm',
+    license              => 'artistic',
     requires => {
         'perl'      => 5.006,
     },
