@@ -1785,7 +1785,8 @@ sub _getProximityVars($$$$) {
     my $limBack = 30;
     my $limFwd = 2;
     my $finalBack = $line - $limBack;
-    $finalBack = 0 if $finalBack < 0;
+    # Line 0 contains the 'require perl5db.pl thing'?
+    $finalBack = 1 if $finalBack < 1;
     my $finalFwd;
     my $areaStart;
     my $inSub = 0;
