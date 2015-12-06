@@ -1101,6 +1101,7 @@ sub lookupBkptInfo {
 
 sub lookForPerlFileName {
     my ($bFileName) = @_;
+    my $result;
     # Look at all keys that start with '_<', aren't in eval blocks
     # and find one that canonicalizes to the same thing
 
@@ -1108,7 +1109,6 @@ sub lookForPerlFileName {
     foreach my $perlFileKey (@perlKeys) {
 	$perlFileKey =~ s/_<//;
 	my $origKey = $perlFileKey;
-	my $result;
 	local $@;
 	eval {
 	    $perlFileKey = canonicalizeFName(uriToFilename(filenameToURI($perlFileKey, 1)));
