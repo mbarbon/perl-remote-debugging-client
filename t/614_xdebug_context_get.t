@@ -2,6 +2,8 @@
 
 use t::lib::Test;
 
+$ENV{DBGP_PERL_IGNORE_PADWALKER} = 1;
+
 run_debugger('t/scripts/variables.pl', 'Xdebug=nested_properties_in_context');
 
 send_command('run');
