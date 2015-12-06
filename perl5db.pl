@@ -4695,6 +4695,12 @@ sub parse_options {
     local ($_) = @_;
     local $\ = '';
 
+    my %xdebug_map = (
+	send_position_after_stepping	=> \$xdebug_file_line_in_step,
+	property_without_value_tag	=> \$xdebug_no_value_tag,
+	nested_properties_in_context	=> \$xdebug_full_values_in_context,
+    );
+
     while (length) {
         my $val_defaulted;
 
@@ -4758,7 +4764,13 @@ sub parse_options {
 	} elsif ($option eq 'RemotePath' && $val =~ /^\//) {
 	    $remotepath = $val;
 	} elsif ($option eq 'Xdebug') {
-	    $xdebug_file_line_in_step = $xdebug_no_value_tag = $xdebug_full_values_in_context = !!$val;
+	    $val = $val ? 'send_position_after_stepping,property_without_value_tag,nested_properties_in_context' : ''
+		if $val =~ /^\d+$/;
+	    for my $tag (split /,/, $val) {
+		die "Invalid Xdebug compatibility tag: '$tag'"
+		    unless exists $xdebug_map{$tag};
+		${$xdebug_map{$tag}} = 1;
+	    }
 	} elsif ($option eq 'ConnectAtStart') {
 	    $connect_at_start = !!$val;
 	} elsif ($option eq 'KeepRunning') {

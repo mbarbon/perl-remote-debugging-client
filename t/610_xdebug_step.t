@@ -2,7 +2,7 @@
 
 use t::lib::Test;
 
-run_debugger('t/scripts/base.pl', 'Xdebug=1');
+run_debugger('t/scripts/base.pl', 'Xdebug=send_position_after_stepping');
 
 command_is(['step_into'], {
     reason      => 'ok',

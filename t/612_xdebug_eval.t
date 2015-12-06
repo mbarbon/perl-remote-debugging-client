@@ -4,7 +4,7 @@ use t::lib::Test;
 
 use MIME::Base64 qw(encode_base64);
 
-run_debugger('t/scripts/base.pl', 'Xdebug=1');
+run_debugger('t/scripts/base.pl', 'Xdebug=property_without_value_tag');
 
 command_is(['eval', encode_base64('$i')], {
     command => 'eval',

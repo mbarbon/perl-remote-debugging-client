@@ -2,7 +2,7 @@
 
 use t::lib::Test;
 
-run_debugger('t/scripts/variables.pl', 'Xdebug=1');
+run_debugger('t/scripts/variables.pl', 'Xdebug=nested_properties_in_context');
 
 send_command('run');
 
