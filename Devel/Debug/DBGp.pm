@@ -11,6 +11,15 @@ use warnings;
 
 our $VERSION = '0.01';
 
+sub debugger_path {
+    for my $dir (@INC) {
+        return "$dir/dbgp-helper"
+            if -f "$dir/dbgp-helper/perl5db.pl"
+    }
+
+    die "Unable to find debugger library 'dbgp-helper' in \@INC (@INC)";
+}
+
 1;
 
 __END__
