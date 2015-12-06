@@ -1,5 +1,9 @@
 Revision history for Devel-Debug-DBGp
 
+0.03      2015-12-06 22:49:27 CET
+
+    - Test fixes for 5.14
+
 0.02      2015-12-06 20:10:37 CET
 
     - More compatibility fixes for existing Xdebug clients

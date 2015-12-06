@@ -9,7 +9,7 @@ Devel::Debug::DBGp - Perl DBGp debugger (derived from Komodo remote debugging he
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub debugger_path {
     for my $dir (@INC) {
