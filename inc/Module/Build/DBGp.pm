@@ -4,6 +4,14 @@ use strict;
 use warnings;
 use parent qw(Module::Build);
 
+sub new {
+    my $self = shift->SUPER::new(@_);
+
+    $self->add_build_element('debugger');
+
+    return $self;
+}
+
 sub find_debugger_files {
     my ($self) = @_;
     my $pm_files = [

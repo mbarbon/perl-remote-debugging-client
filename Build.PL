@@ -11,7 +11,6 @@ my $build = Module::Build::DBGp->new(
     dist_version    => '0.01',
     dist_author     => 'Mattia Barbon <mbarbon@cpan.org>',
     dist_abstract   => 'Perl DBGp debugger (derived from Komodo remote debugging helper)',
-    debugger_files  => ['perl5db.pl'],
     license         => 'artistic',
     requires => {
         'perl'      => 5.006,
@@ -25,5 +24,4 @@ my $build = Module::Build::DBGp->new(
         'XML::Parser::EasyTree'     => 0,
     },
 );
-$build->add_build_element('debugger');
 $build->create_build_script;
