@@ -1,0 +1,19 @@
+Revision history for Devel-Debug-DBGp
+
+0.02      2015-12-06 20:10:37 CET
+
+    - More compatibility fixes for existing Xdebug clients
+    - Optionally do not open a DBGp connection during startup,
+      and don't terminate the program when the debugger disconnects
+
+0.01      2015-11-26 15:29:27 CET
+
+    - Xdebug compatibility mode (to be able to use existing
+      IDE debugger plugins)
+    - Speed up program execution when the debugger is loaded but
+      debugging is disabled
+    - Add the option to connect throug an Unix-domain socket
+    - Fixes for working under uWSGI (multi-process, one DBGp
+      connection per HTTP request)
+    - Minimal test suite and CPAN packaging
+    - Imported Komodo-PerlRemoteDebugging-8.5.4-86985
