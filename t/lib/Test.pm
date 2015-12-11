@@ -6,22 +6,9 @@ use warnings;
 use parent 'Test::Builder::Module';
 
 use Test::More;
-
-BEGIN {
-    my @prereqs = qw(Test::Differences XML::Parser XML::Parser::EasyTree);
-    my %failed;
-
-    for my $prereq (@prereqs) {
-        $failed{$prereq} = $@ unless eval "require $prereq; 1";
-    }
-
-    if (%failed) {
-        note $_ for values %failed;
-        plan skip_all => 'Some dependencies failed: ' . join(" ", keys %failed);
-    }
-}
-
 use Test::Differences;
+use XML::Parser;
+use XML::Parser::EasyTree;
 
 use IO::Socket::INET;
 use IPC::Open3 ();
