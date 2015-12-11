@@ -27,8 +27,7 @@ use IO::Socket::INET;
 use IPC::Open3 ();
 use MIME::Base64 qw(encode_base64);
 use Cwd;
-
-require feature;
+use File::Spec::Functions;
 
 our @EXPORT = (
   @Test::More::EXPORT,
@@ -54,7 +53,6 @@ sub import {
 
     strict->import;
     warnings->import;
-    feature->import(':5.12');
 
     goto &Test::Builder::Module::import;
 }
@@ -63,7 +61,8 @@ my ($LISTEN, $CLIENT, $INIT, $SEQ, $PORT);
 my ($PID, $CHILD_IN, $CHILD_OUT, $CHILD_ERR);
 
 sub abs_uri {
-    return 'file://' . Cwd::abs_path($_[0]);
+    return 'file://' . File::Spec::Functions::rel2abs(
+        $_[0], Cwd::getcwd());
 }
 
 sub start_listening {

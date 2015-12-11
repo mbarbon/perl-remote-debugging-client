@@ -10,7 +10,7 @@ command_is(['step_into'], {
     command     => 'step_into',
     filename    => undef,
     lineno      => undef,
-}) for 1 .. 9;
+}) for 1 .. ($] < 5.008 ? 14 : 9);
 
 command_is(['step_into'], {
     reason      => 'ok',
