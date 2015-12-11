@@ -1,4 +1,3 @@
-Build.PL
 Changes
 DB/CGI/Util.pm
 DB/Data/Dump.pm
@@ -18,8 +17,8 @@ DB/OSType.pm
 DB/RedirectStdOutput.pm
 DB/Text/Balanced.pm
 Devel/Debug/DBGp.pm
-inc/Module/Build/DBGp.pm
 LICENSE.txt
+Makefile.PL
 MANIFEST			This list of files
 META.yml
 META.json
