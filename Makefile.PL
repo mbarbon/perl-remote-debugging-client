@@ -14,7 +14,7 @@ if ($mm_ver =~ /_/) {
 }
 
 my %test_requires = (
-    'Test::Differences'         => 0,
+    'Test::DBGp'                => 0,
     'DBGp::Client'              => 0,
 );
 
