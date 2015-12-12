@@ -38,17 +38,6 @@ t/140_context_get.t
 t/610_xdebug_step.t
 t/612_xdebug_eval.t
 t/614_xdebug_context_get.t
-t/lib/DBGp/Client/Parser.pm
-t/lib/DBGp/Client/Response/ContextGet.pm
-t/lib/DBGp/Client/Response/Error.pm
-t/lib/DBGp/Client/Response/Eval.pm
-t/lib/DBGp/Client/Response/Init.pm
-t/lib/DBGp/Client/Response/Property.pm
-t/lib/DBGp/Client/Response/Simple.pm
-t/lib/DBGp/Client/Response/StackGet.pm
-t/lib/DBGp/Client/Response/Step.pm
-t/lib/DBGp/Client/Response/Typemap.pm
-t/lib/DBGp/Client/Stream.pm
 t/lib/Test.pm
 t/scripts/base.pl
 t/scripts/connect_after.pl

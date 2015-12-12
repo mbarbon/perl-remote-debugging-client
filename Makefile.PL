@@ -15,8 +15,7 @@ if ($mm_ver =~ /_/) {
 
 my %test_requires = (
     'Test::Differences'         => 0,
-    'XML::Parser'               => 0,
-    'XML::Parser::EasyTree'     => 0,
+    'DBGp::Client'              => 0,
 );
 
 my %pm = (
