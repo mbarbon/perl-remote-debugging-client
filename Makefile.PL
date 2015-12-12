@@ -54,4 +54,9 @@ WriteMakefile(
                             ( PREREQ_PM         => \%test_requires ) ),
     ( $mm_ver >= 6.31 ?     ( LICENSE           => 'artistic' ) :
                             () ),
+    ( $mm_ver >= 6.46 ?
+      ( META_MERGE  => {
+          "meta-spec" => { version => 2 },
+        },
+      ) : () ),
 );
