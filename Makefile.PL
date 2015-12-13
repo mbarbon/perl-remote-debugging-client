@@ -56,6 +56,18 @@ WriteMakefile(
     ( $mm_ver >= 6.46 ?
       ( META_MERGE  => {
           "meta-spec" => { version => 2 },
+          resources   => {
+              license     => [ 'http://dev.perl.org/licenses/artistic.html' ],
+#              homepage    => 'https://github.com/mbarbon/perl-remote-debugging-client',
+              bugtracker  => {
+                  web    => 'https://github.com/mbarbon/perl-remote-debugging-client/issues',
+              },
+              repository  => {
+                  url  => 'git@github.com:mbarbon/perl-remote-debugging-client.git',
+                  web  => 'https://github.com/mbarbon/perl-remote-debugging-client',
+                  type => 'git',
+              },
+          },
         },
       ) : () ),
 );
