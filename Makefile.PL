@@ -56,6 +56,10 @@ WriteMakefile(
     ( $mm_ver >= 6.46 ?
       ( META_MERGE  => {
           "meta-spec" => { version => 2 },
+          no_index    => {
+              file      => [ 'perl5db.pl' ],
+              directory => [ 'DB', 'Syntax' ],
+          },
           resources   => {
               license     => [ 'http://dev.perl.org/licenses/artistic.html' ],
 #              homepage    => 'https://github.com/mbarbon/perl-remote-debugging-client',
