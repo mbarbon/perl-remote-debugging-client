@@ -1,5 +1,9 @@
 Revision history for Devel-Debug-DBGp
 
+0.05      2015-12-15 20:18:03 CET
+
+    - Run tests using an Unix-domain socket on non-Windows platforms
+
 0.04      2015-12-15 10:10:10 CET
 
     - Test fixes for Perl 5.6

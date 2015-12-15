@@ -200,7 +200,7 @@ Disconnects from the debugger client.
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 sub debugger_path {
     for my $dir (@INC) {
