@@ -56,7 +56,10 @@ sub run_program {
     $opts ||= '';
 
     my $port = dbgp_listening_port();
-    local $ENV{PERLDB_OPTS} = "RemotePort=localhost:$port $opts";
+    my $path = dbgp_listening_path();
+    local $ENV{PERLDB_OPTS} = $port ?
+        "RemotePort=localhost:$port $opts" :
+        "RemotePath=$path $opts";
     local $ENV{PERL5LIB} = $ENV{PERL5LIB} ? ".:$ENV{PERL5LIB}" : ".";
     $PID = IPC::Open3::open3(
         $CHILD_IN, $CHILD_OUT, $CHILD_ERR,
