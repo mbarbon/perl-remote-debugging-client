@@ -44,7 +44,7 @@ WriteMakefile(
     MAN3PODS          => {
         # do not generate manpages for all internal POD
         'Devel/Debug/DBGp.pm'   =>
-            'blib/man3/Devel::Debug::Devel::Debug::DBGp.3',
+            'blib/man3/Devel::Debug::DBGp.3',
     },
     ( $mm_ver >= 6.48 ?     ( MIN_PERL_VERSION  => 5.006 ) :
                             () ),
