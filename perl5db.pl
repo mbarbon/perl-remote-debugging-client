@@ -4861,14 +4861,16 @@ sub end_report {
 		     ));
 }
 
-{
+BEGIN {
     %ORIG_DB_SUB = %DISABLED_DB_SUB = map {
         ($_ => *DB::sub{$_}) x !!*DB::sub{$_}
     } qw(CODE SCALAR ARRAY HASH);
     delete $DISABLED_DB_SUB{CODE};
+    die "Failed to save DB::sub" unless $ORIG_DB_SUB{CODE};
 }
 
 sub enable {
+    die "DB::enable() called too early" unless %ORIG_DB_SUB;
     $DB::single = 1;
     $^P = DEBUG_DEFAULT_FLAGS;
     undef *DB::sub;
@@ -4876,6 +4878,7 @@ sub enable {
 }
 
 sub disable {
+    die "DB::disable() called too early" unless %ORIG_DB_SUB;
     $DB::single = 0;
     $^P = DEBUG_PREPARE_FLAGS;
     undef *DB::sub;
