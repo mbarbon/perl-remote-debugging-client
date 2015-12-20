@@ -1,5 +1,9 @@
 Revision history for Devel-Debug-DBGp
 
+0.06      2015-12-20 16:15:44 CET
+
+    - Prevent a failed connection at startup from breaking breakpoints
+
 0.05      2015-12-15 20:18:03 CET
 
     - Run tests using an Unix-domain socket on non-Windows platforms
