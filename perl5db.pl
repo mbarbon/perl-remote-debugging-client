@@ -3183,7 +3183,7 @@ sub DB {
 		    if (defined $perlFileName && $bStateVal != BKPT_DISABLE) {
 			local $internalName = $main::{'_<' . $perlFileName};
 			local (*dbline) = $main::{'_<' . $perlFileName};
-			if (!($a = $dbline[$bLine]) || $a =~ /^\s*$/s) {
+			if ($bLine < 1 || $bLine > $#dbline || $dbline[$bLine] == 0) {
 			    my $code = (($bLine < 1 || $bLine > $#dbline)
 					? DBP_E_Unbreakable_InvalidCodeLine
 					: DBP_E_Unbreakable_EmptyCodeLine);

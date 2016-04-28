@@ -29,6 +29,7 @@ t/001_load.t
 t/010_basic_step.t
 t/011_basic_stack.t
 t/012_basic_eval.t
+t/013_basic_breakpoint.t
 t/030_detach_reconnect.t
 t/031_keep_running.t
 t/035_connect_after.t
