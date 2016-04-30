@@ -122,6 +122,8 @@ sub DEBUG_DEFAULT_FLAGS() # 0x73f
 sub DEBUG_PREPARE_FLAGS() # 0x73c
        { DEBUG_ALL & ~(DEBUG_USE_SUB_ADDRESS|DEBUG_REPORT_GOTO|DEBUG_SINGLE_STEP_ON) }
 
+sub DB_RECURSIVE_DEBUG()    { 0x40000000 }
+
 my (%ORIG_DB_SUB, %DISABLED_DB_SUB);
 
 # 'my' variables used here could leak into (that is, be visible in)
@@ -146,7 +148,12 @@ sub eval {
         local $otrace  = $trace; 
         local $osingle = $single;
         local $od      = $^D;
+        local $op      = $^P;
 	local ($^W) = 0;    # Switch run-time warnings off during eval.
+
+        # speed up evaluation if no recursive debugging is required
+        clobber_db_sub() unless $^D & DB_RECURSIVE_DEBUG;
+        $^P = DEBUG_PREPARE_FLAGS unless $^D & DB_RECURSIVE_DEBUG;
 
         # Untaint the incoming eval() argument.
         { ($evalarg) = $evalarg =~ /(.*)/s; }
@@ -246,6 +253,8 @@ sub eval {
         $trace  = $otrace;
         $single = $osingle;
         $^D     = $od;
+        $^P     = $op;
+        restore_db_sub() unless $^D & DB_RECURSIVE_DEBUG;
     }
 
     # Save the current value of $@, and preserve it in the debugger's copy
@@ -4881,6 +4890,16 @@ sub disable {
     die "DB::disable() called too early" unless %ORIG_DB_SUB;
     $DB::single = 0;
     $^P = DEBUG_PREPARE_FLAGS;
+    undef *DB::sub;
+    *DB::sub = $DISABLED_DB_SUB{$_} for keys %DISABLED_DB_SUB;
+}
+
+sub restore_db_sub {
+    undef *DB::sub;
+    *DB::sub = $ORIG_DB_SUB{$_} for keys %ORIG_DB_SUB;
+}
+
+sub clobber_db_sub {
     undef *DB::sub;
     *DB::sub = $DISABLED_DB_SUB{$_} for keys %DISABLED_DB_SUB;
 }
