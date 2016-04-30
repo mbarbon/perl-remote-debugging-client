@@ -41,6 +41,7 @@ t/612_xdebug_eval.t
 t/614_xdebug_context_get.t
 t/lib/Test.pm
 t/scripts/base.pl
+t/scripts/breakpoint.pl
 t/scripts/connect_after.pl
 t/scripts/reconnect.pl
 t/scripts/variables.pl
