@@ -15,12 +15,7 @@ package DB::DbgrCommon;
 use DB::CGI::Util qw();
 use DB::MIME::Base64 qw();
 use File::Basename qw(dirname);
-
-BEGIN	{
-    if ($] >= 5.008) {
-	require Encode;
-    }
-}
+use Encode;
 
 $VERSION = 0.10;
 require Exporter;
@@ -326,10 +321,6 @@ sub xmlAttrEncode {
 
 sub wide_char_safe_encode {
     my ($str) = @_;
-    if ($] < 5.007) {
-	# Don't bother trying to do wide-char processing with 5.6
-	return $str;
-    }
     require bytes;
     if (bytes::length($str) == length($str)) {
 	# don't utf-8-encode a string in latin* or cp1251
@@ -349,7 +340,7 @@ sub safe_dump {
 
 sub wide_char_safe_decode {
     my ($str) = @_;
-    if ($] < 5.007 || $str !~ /[^\x00-\x7f]/) {
+    if ($str !~ /[^\x00-\x7f]/) {
 	return $str;
     }
 
@@ -373,18 +364,12 @@ sub wide_char_safe_decode {
 
 sub nonXmlChar_Encode {
     my ($str) = @_;
-    if ($] >= 5.007) {
-	$str = wide_char_safe_encode($str);
-    }
-    return $str;
+    return wide_char_safe_encode($str);
 }
 
 sub nonXmlChar_Decode {
     my ($str) = @_;
-    if ($] >= 5.008) {
-	$str = wide_char_safe_decode($str);
-    }
-    return $str;
+    return wide_char_safe_decode($str);
 }
 
 sub xmlEncode {
@@ -393,11 +378,7 @@ sub xmlEncode {
     $str =~ s/</&lt;/g;
     $str =~ s/>/&gt;/g;
     $str =~ s/([\x00-\x08\x0b\x0c\x0e-\x1f])/'&#' . ord($1) . ';'/eg;
-    if ($] >= 5.007) {
-	$str = wide_char_safe_encode($str);
-    }
-    # No need to escape quotes.
-    return $str;
+    return wide_char_safe_encode($str);
 }
 
 sub xmlHeader() {

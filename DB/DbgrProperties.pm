@@ -222,19 +222,7 @@ sub getContextProperties($$) {
 		# must detect sigpipe failures  - not catching
 		# then will cause the debugger to die.
 		eval {
-		    if ($^V ge v5.8) {
-			# Interface changed with 5.8
-			&main::dumpvar(
-				       $packageName,
-				       -1, # dumpDepth
-				       ()
-				       );
-		    } else {
-			&main::dumpvar(
-				       $packageName,
-				       ()
-				       );
-		    }
+		    &main::dumpvar($packageName, -1);
 		};
 
 		# The die does not need to include the $@, because 
@@ -452,7 +440,7 @@ sub containsWideChar {
     require bytes;
     if (bytes::length($str) > length($str)
 	|| $str =~ /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]/
-	|| ($] >= 5.008 && $str =~ /[^\0-\xff]/)) {
+	|| $str =~ /[^\0-\xff]/) {
 	return 1;
     }
     return 0;

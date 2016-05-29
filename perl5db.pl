@@ -4592,12 +4592,8 @@ sub parse_options {
 	    }
 	} elsif (lc $option eq 'alarm' || lc $option eq 'async') {
 	    # Both options mean the same
-	    if ($] >= 5.008) {
-		$val = eval($val) if $val =~ /^\d+$/;
-		$skip_alarm = 0 if $val;
-	    } elsif ($val) {
-		print STDERR "Info: PERLDB_OPTS option $option not supported for Perl version $].\n" . "Minimum supporting version is Perl 5.8.0\n";
-	    }
+	    $val = eval($val) if $val =~ /^\d+$/;
+	    $skip_alarm = 0 if $val;
         } elsif ($option eq 'RecursionCheckDepth' && $val =~ /^\d+$/) {
 	    $deep = $val;
 	}
