@@ -7,7 +7,6 @@ DB/DbgrURI.pm
 DB/MIME/Base64.pm
 DB/OSType.pm
 DB/RedirectStdOutput.pm
-DB/Text/Balanced.pm
 Devel/Debug/DBGp.pm
 LICENSE.txt
 Makefile.PL
