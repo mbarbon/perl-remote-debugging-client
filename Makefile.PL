@@ -46,7 +46,7 @@ WriteMakefile(
         'Devel/Debug/DBGp.pm'   =>
             'blib/man3/Devel::Debug::DBGp.3',
     },
-    ( $mm_ver >= 6.48 ?     ( MIN_PERL_VERSION  => 5.006 ) :
+    ( $mm_ver >= 6.48 ?     ( MIN_PERL_VERSION  => 5.008 ) :
                             () ),
     ( $mm_ver >= 6.64 ?     ( TEST_REQUIRES     => \%test_requires ) :
       $mm_ver >= 6.5503 ?   ( BUILD_REQUIRES    => \%test_requires ) :
