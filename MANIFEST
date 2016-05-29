@@ -4,14 +4,6 @@ DB/Data/Dump.pm
 DB/DbgrCommon.pm
 DB/DbgrProperties.pm
 DB/DbgrURI.pm
-DB/IO/AtomicFile.pm
-DB/IO/InnerFile.pm
-DB/IO/Lines.pm
-DB/IO/Scalar.pm
-DB/IO/ScalarArray.pm
-DB/IO/Stringy.pm
-DB/IO/Wrap.pm
-DB/IO/WrapTie.pm
 DB/MIME/Base64.pm
 DB/OSType.pm
 DB/RedirectStdOutput.pm
