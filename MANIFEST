@@ -24,7 +24,6 @@ META.yml
 META.json
 perl5db.pl
 README
-Syntax/Highlight/Perl/Improved.pm
 t/001_load.t
 t/010_basic_step.t
 t/011_basic_stack.t

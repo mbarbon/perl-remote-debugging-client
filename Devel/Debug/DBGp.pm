@@ -150,9 +150,7 @@ If set, overrides the value of the C<hostname> attribute in the C<init> message.
 =head2 DBGP_PERL_IGNORE_PADWALKER
 
 If set to a true value, does not use L<PadWalker> to get the list of
-local variables, but uses the (bundled)
-C<Syntax::Highlight::Perl::Improved> to parse the source around the
-current point.
+local variables, but uses a combination of L<B> and C<eval STRING>.
 
 =head1 FUNCTIONS
 

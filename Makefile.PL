@@ -32,7 +32,7 @@ sub _fill_lib {
     $pm{$_} = "blib/lib/$_";
 }
 
-find({ wanted => \&_fill_dbgp, no_chdir => 1 }, 'DB', 'Syntax');
+find({ wanted => \&_fill_dbgp, no_chdir => 1 }, 'DB');
 find({ wanted => \&_fill_lib,  no_chdir => 1 }, 'Devel');
 
 WriteMakefile(
@@ -58,7 +58,7 @@ WriteMakefile(
           "meta-spec" => { version => 2 },
           no_index    => {
               file      => [ 'perl5db.pl' ],
-              directory => [ 'DB', 'Syntax' ],
+              directory => [ 'DB' ],
           },
           resources   => {
               license     => [ 'http://dev.perl.org/licenses/artistic.html' ],
