@@ -175,48 +175,10 @@ sub eval {
 	    eval { @_ = @DB::args; };
 	    @_ = () if $@;
 	}
-	if ($interact) {
-	    # Export the special pattern vars out of the eval's lexical
-	    # context by saving in the var @DB::interact_pvs
-	    
-	    my $___kodb___saveCode = "\@DB::interact_pvs = map { defined \$-[\$_] ? \${\$_} : undef } (1 .. \$#-);push \@DB::interact_pvs, \$`, \$'";
-	    my $___kodb___cmd = "$usercontext do { my \@thisRes=$evalarg ; $___kodb___saveCode; \@thisRes }";
-	    if ($interact_str && $interact_ptn) {
-		# Restore the pattern-vars by matching the string we set
-		# up on the last interaction with the pattern we set up.
-		$interact_str =~ qr/$interact_ptn/;
-		@res = eval "$usercontext $___kodb___cmd\n"; # '\n' for nice recursive debug
-	    } else {
-		@res = eval "$usercontext $___kodb___cmd\n";
-	    }
-	    if ($@ || index($res[0], substr($___kodb___saveCode, 0, -10)) >= 0) {
-		@res = eval "$usercontext $evalarg;\n";
-	    } else {
-		# Write the saved pattern-var info into strings to match
-		# next time we're here to restore the special pattern vars
-		# in this lexical context.
-		$interact_str = $DB::interact_pvs[-2] || "";
-		$interact_ptn = "";
-		foreach my $pv (@DB::interact_pvs[0 .. $#DB::interact_pvs - 2]) {
-		    if (length $pv) {
-			$interact_str .= $pv;
-			$interact_ptn .= "(" . quotemeta($pv) . ")";
-		    } else {
-			$interact_str .= "";
-			# This pattern always succeeds, but leaves an
-			# undefined pattern var.  Exactly what we want.
-			$interact_ptn .= "((?=x)(?=y))?"; #optional failure
-		    }
-		}
-		$interact_ptn = ".?" unless length $interact_ptn;
-		$interact_str .= $DB::interact_pvs[-1] if $DB::interact_pvs[-1];
-	    }
-	} else {
-	    my $usercontext2 = (($evalarg =~ /[\$\@\%]\w*[^\x00-\x7f]/)
-                                ? "$usercontext use utf8; "
-                                : $usercontext);
-	    @res = eval "$usercontext2 $evalarg;\n"; # '\n' for nice recursive debug
-	}
+	my $usercontext2 = (($evalarg =~ /[\$\@\%]\w*[^\x00-\x7f]/)
+                            ? "$usercontext use utf8; "
+                            : $usercontext);
+	@res = eval "$usercontext2 $evalarg;\n"; # '\n' for nice recursive debug
 	if (!$@ && scalar @res == 1 && !defined $res[0]) {
 	    $res[0] = '';
 	}
@@ -344,10 +306,6 @@ $signal = $single = $finished = $runnonstop = 0;
 $inPostponed = 0;
 @postponedFiles = ();
 $fall_off_end = 0;
-$interact = 0;
-$interact_str = undef;
-$interact_ptn = undef;
-@interact_pvs = undef;
 # Uninitialized warning suppression
 # (local $^W cannot help - other packages!).
 
@@ -393,7 +351,7 @@ Keep track of the various settings in this hash
 		      stdin => 0,
 		      break => 0,
 		      'eval' => 1,
-		      interact => 1,
+		      interact => 0,
 		      );
 		      
 
@@ -1852,44 +1810,6 @@ sub _isPrintable($$) {
             || (ref $valRef) =~ /Regexp/);
 }
 
-sub _removeLocalizers($) {
-    require DB::Text::Balanced;
-    my ($code) = @_;
-    if ($code =~ /<</) {
-	# Workaround bug in DB::Text::Balanced (or my understanding of it),
-	# if there's a here-doc here
-	#
-	# This is a known bug
-	# See http://rt.cpan.org/NoAuth/Bug.html?id=752
-	# for more info.
-	
-	s/^\s*(?:my|local)\b//;
-	return $code;
-    }
-    
-    my @list = (sub { DB::Text::Balanced::extract_quotelike($_[0],'') },
-		sub { DB::Text::Balanced::extract_codeblock($_[0],'{}','') },
-    );
-    my @parts = DB::Text::Balanced::extract_multiple($code, \@list);
-    if (!join("", @parts)) {
-        return $code;
-    }
-    local $_;
-    foreach (@parts) {
-	my $char1 = substr($_, 0, 1);
-	if ($char1 eq '{') {
-	    # Do nothing
-	} elsif ($char1 =~ /^[\"\']/
-		 || /^q[rwxq]?\b/) {
-	    # Do nothing
-	} else {
-	    s/^\s*(?:my|local)\b//g;
-	    s/([;\\])\s*(?:\#.*\n\s*)*(?:my|local)\b/$1/g;
-	}
-    }
-    return join("", @parts);
-}
-
 sub _source_handle_missing_podlines {
     my ($beginLine, $endLine, $dblines) = @_;
     my @copy = @$dblines[$beginLine .. $endLine];
@@ -2428,7 +2348,6 @@ sub DB {
 		    $fakeFirstStepInto = 0;
 		} else {
 		    $getNextCmd = 0;
-		    $interact_str = undef;
 		}
 		# dblog("Continuing...\n") if $ldebug;
 
@@ -2481,7 +2400,6 @@ sub DB {
 				     fileAndLineIfXdebug()));
 		    next CMD;
 		}
-		$interact_str = undef;
 
 		$lastContinuationCommand = $cmd;
 		$lastContinuationStatus = 'break';
@@ -2512,8 +2430,6 @@ sub DB {
 				     fileAndLineIfXdebug()));
 		    next CMD;
 		}
-
-		$interact_str = undef;
 
 		$lastContinuationCommand = $cmd;
 		$lastContinuationStatus = 'break';
@@ -2547,7 +2463,6 @@ sub DB {
 		} else {
 		    $getNextCmd = 0;
 		}
-		$interact_str = undef;
 
 		$lastContinuationCommand = $cmd;
 		$lastContinuationStatus = 'break';
@@ -2591,7 +2506,6 @@ sub DB {
 	    } elsif ($cmd eq 'detach') {
 		$stopReason = STOP_REASON_STOPPED;
 		$runnonstop = 1;
-		$interact_str = undef;
 		# continue
 		for ($i=0; $i <= $#stack; ) {
 		    $stack[$i++] &= ~1;
@@ -3849,206 +3763,6 @@ sub DB {
 					 $decodedData,
 					 $res,
 					 $maxDataSize);
-	    } elsif ($cmd eq 'interact') {
-		local %opts = ();
-		{
-		    local *ARGV = *cmdArgs;
-		    shift @ARGV;
-		    getopts('am:', \%opts);
-		}
-		my $abort = $opts{a};
-		my $mode = $opts{m};
-		my ($actualDataLength, $currDataEncoding, $decodedData);
-		if (scalar @cmdArgs) {
-		    ($actualDataLength, $currDataEncoding, $decodedData) =
-			decodeCmdLineData($advertisedDataLength, \@cmdArgs);
-		}
-		$stopReason = STOP_REASON_INTERACT;
-		if ($ibState == IB_STATE_NONE) {
-		    $ibState = IB_STATE_START;
-		}
-		if (defined $mode) {
-		    if ($mode == 0) {
-			$ibState = IB_STATE_NONE;
-			if ($startedAsInteractiveShell) {
-			    $stopReason = STOP_REASON_STOPPED;
-			} else {
-			    $stopReason = STOP_REASON_BREAK;
-			}
-			printWithLength(sprintf
-					(qq(%s\n<response %s command="%s"
-					    transaction_id="%s"
-					    status="%s"
-					    reason="ok"
-					    more="0"
-					    prompt=""
-					    />),
-					 xmlHeader(),
-					 namespaceAttr(),
-					 $cmd,
-					 $transactionID,
-					 getStopReason(),
-					 ));
-			next CMD;
-		    }
-		}
-		$stopReason = STOP_REASON_INTERACT;
-		my $valRef;
-		my $evalStdoutSideEffects = '';
-		my $doContinue;
-		my $moreValue;
-		my $prompt;
-		if (!$abort && defined $decodedData) {
-		    # Decide what to do next
-		    if ($ibState == IB_STATE_START) {
-			$ibBuffer = $decodedData;
-		    } else {
-			# dblog("Have [$ibBuffer], appending [\\n$decodedData]");
-			$ibBuffer .= "\n$decodedData";
-			# Check for ending a here-doc
-			if ($ibBuffer =~ /<<(\w+).+^\1$/sm) {
-				# dblog("Found bareword here-doc ending for [$ibBuffer]");
-			    $ibBuffer .= "\n";
-			} elsif ($ibBuffer =~ /<<([\"\'])((?:\.|.)*?)\1.*^\2$/sm) {
-				# dblog("Found quoted-target here-doc ending for [$ibBuffer]");
-			    $ibBuffer .= "\n";
-			} elsif ($ibBuffer =~ /<< .*\n$/s) {
-				# dblog("Found empty-line here-doc ending for [$ibBuffer]");
-			    $ibBuffer .= "\n";
-			}
-			# dblog("Have -- 1 ** [$ibBuffer]");
-		    }
-		    my $tmpVal;
-		    my @tmpArray;
-		    my $evalWarning;
-		    my $mainError;
-		    $ibBuffer =~ s/^\s+$//s; # Remove all white-space
-		    if (length $ibBuffer) {
-			# dblog("Have -- 2 ** [$ibBuffer]");
-			if ($ibBuffer =~ /^(.*?(?<!\\.)(?:\\\\)*)\\$/s) {
-				# Make sure the final \\ isn't an escaped
-				# \\ at the end of a string.
-			    $ibBuffer = $1;
-			    dblog("found it, now: $ibBuffer");
-			    $doContinue = 1;
-			} else {
-			    open my $ah, ">", \$evalStdoutSideEffects;
-			    my $oh = select $ah;
-			    local $| = 1;
-			    eval {
-				local $SIG{__WARN__} = sub {
-				    $evalWarning = $_[0];
-				    dblog("warn handler fired: $evalWarning");
-				# print STDERR "Invalid expression: @_\n";
-				};
-				# dblog("Have -- 3 ** [$ibBuffer]");
-				my $fixedBuffer = _removeLocalizers($ibBuffer);
-				# dblog("_removeLocalizers($ibBuffer) => [$fixedBuffer]");
-				$evalarg = $fixedBuffer;
-				local $interact = 1;
-				my @tmp = &eval();
-				if ($evalarg =~ /^[\@\%]/) {
-				    $valRef = \@tmp;
-				    $::_ = undef;
-				} else {
-				    $valRef = _guessScalarOrArray(\@tmp);
-				    $::_ = $tmp[0] if 0+@tmp == 1;
-				}
-			    };
-			    if ($@) {
-				$mainError = $@;
-				if ($mainError =~ /^syntax error/m) {
-				    if ($mainError =~ /^Missing right curly or square bracket/m) {
-					dblog("We'll continue: $@");
-					dblog("  Using [$ibBuffer]");
-					$doContinue = 1;
-				    }
-				} elsif ($mainError =~ /^Can.t find string terminator/m) {
-				    dblog("We'll continue (2): $@");
-				    dblog("  Using [$ibBuffer]");
-				    $doContinue = 1;
-				}
-				if (!$doContinue) {
-				    $mainError =~ s/at \(eval \d+\).*$//;
-				}
-				dblog("Error: $@");
-				if ($evalWarning) { 
-				    dblog("Extra error: $evalWarning");
-				    if (!$doContinue) {
-					$evalWarning =~ s/^\s+//;
-					$mainError .= "\n$evalWarning";
-				    }
-				}
-			    }
-			    $ah->close() if $ah;
-			    select $oh if $oh;
-			}
-		    }
-		    if ($doContinue) {
-			# dblog("State pending");
-			$ibState = IB_STATE_PENDING;
-			$moreValue = 1;
-			$prompt = '>';
-		    } else {
-			# dblog("=> State start");
-			$ibState = IB_STATE_START;
-			$moreValue = 0;
-			$prompt = '%';
-			if ($mainError) {
-			    $mainError =~ s/\n+$/\n/;
-			    print STDERR $mainError;
-			} elsif (length $evalStdoutSideEffects) {
-				# Do nothing more
-			    _preprocess_results($ibBuffer, $evalStdoutSideEffects);
-			} else {
-			    if (ref $valRef) {
-				if (!_isPrintable($ibBuffer, $valRef)) {
-				    # Don't print anything.
-				} elsif ($ibBuffer !~ /^\s*use\b/) {
-				    _preprocess_results($ibBuffer, DB::Data::Dump::dump($valRef));
-				}
-			    } elsif ($valRef && length("$valRef")) {
-				if ($ibBuffer !~ /^\s*printf?\b/) {
-				    _preprocess_results($ibBuffer, $valRef);
-				} elsif ($ldebug) {
-				    dblog("squelching [$ibBuffer] => [$valRef]");
-				}
-			    } else {
-				# Do this in case the thing being
-				# eval'ed wrote to stderr but for some
-				# reason hasn't flushed (I'm talking about
-				# you, Devel::Peek).
-				print STDERR "";
-			    }
-			}
-		    }
-		} else {
-		    dblog("interact: \$decodedData not defined\n") if $ldebug;
-		    if (!$mode || $ibState == IB_STATE_START) {
-			# dblog("State start");
-			$moreValue = 0;
-			$prompt = '%';
-		    } else {
-			# dblog("State pending");
-			$moreValue = 1;
-			$prompt = '>';
-		    }
-		}
-		printWithLength(sprintf
-				(qq(%s\n<response %s command="%s" 
-				    transaction_id="%s"
-				    status="%s"
-				    more="%d"
-				    prompt="%s"
-				    />),
-				 xmlHeader(),
-				 namespaceAttr(),
-				 $cmd,
-				 $transactionID,
-				 getStopReason(),
-				 $moreValue,
-				 $prompt,
-				 ));
 	    } else {
 		# Fallback
 		printWithLength(sprintf
@@ -4074,22 +3788,6 @@ sub DB {
     db_alarm($_pending_check_interval);
     $_pending_check_enabled = 1 unless $skip_alarm;
     return ();
-}
-
-sub _preprocess_results {
-    my ($ibBuffer, $val) = @_;
-
-    $val =~ s/(?<!\n)$/\n/;
-    $val =~ s/\x00/^@/g;
-    my @a;
-    if ($ibBuffer =~ /^\s*[\$\@\%][a-zA-Z0-9_:]+\s*=/
-	&& scalar (@a = split(/\n/, $val, 10)) > 8) {
-	pop @a;
-	pop @a;
-	print STDOUT join("\n", @a, "...\n");
-    } else {
-	print STDOUT nonXmlChar_Encode($val);
-    }
 }
 
 # Avoid re-entrancy problems by putting newly entered files in a
