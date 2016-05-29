@@ -212,10 +212,8 @@ sub getContextProperties($$) {
 	$packageName =~ s/(?<!::)$/::/;
 	my @results;
 	eval {
-	    require DB::IO::Scalar;
 	    my @data;
-	    my $data;
-	    my $ah = DB::IO::Scalar->new(\$data);
+	    open my $ah, '>', \my $data;
 	    defined &main::dumpValue || do 'dumpvar.pl';
 	    if (defined &main::dumpValue) {
 		my $oh = select $ah;

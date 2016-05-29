@@ -3932,14 +3932,9 @@ sub DB {
 			    dblog("found it, now: $ibBuffer");
 			    $doContinue = 1;
 			} else {
-			    my $ah;
-			    my $oh;
-			    eval {
-				require DB::IO::Scalar;
-				$ah = DB::IO::Scalar->new(\$evalStdoutSideEffects);
-				$oh = select $ah;
-				$| = 1;
-			    };
+			    open my $ah, ">", \$evalStdoutSideEffects;
+			    my $oh = select $ah;
+			    local $| = 1;
 			    eval {
 				local $SIG{__WARN__} = sub {
 				    $evalWarning = $_[0];
