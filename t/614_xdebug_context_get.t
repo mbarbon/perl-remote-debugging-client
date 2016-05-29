@@ -12,14 +12,6 @@ command_is(['context_get'], {
     command => 'context_get',
     values  => [
         {
-            name        => '$DB::single',
-            fullname    => '$DB::single',
-            type        => 'int',
-            constant    => '0',
-            children    => '0',
-            value       => '0',
-        },
-        {
             name        => '$foo',
             fullname    => '$foo',
             type        => 'int',

@@ -1735,6 +1735,32 @@ sub _extractVars {
     return $res;
 }
 
+sub _hasActiveArrayIterator {
+    my ($b) = @_;
+    for (my $magic = $b->MAGIC ; $magic; $magic = $magic->MOREMAGIC) {
+        next if $magic->TYPE ne '@';
+        # undocumented internals? which undocumented internals?
+        return unpack('j', $magic->PTR) != 0;
+    }
+    return 0;
+}
+
+sub _hasActiveIterator {
+    my ($sigil, $vref) = @_;
+    require B;
+    if ($sigil eq '$' && (my $kind = ref $$vref)) {
+        if ($kind eq 'ARRAY') {
+            return _hasActiveArrayIterator(B::svref_2object($$vref));
+        } elsif ($kind eq 'HASH') {
+            return B::svref_2object($$vref)->RITER == -1;
+        }
+    } elsif ($sigil eq '@') {
+        return _hasActiveArrayIterator(B::svref_2object($vref));
+    } elsif ($sigil eq '%') {
+        return B::svref_2object($vref)->RITER != -1;
+    }
+}
+
 sub _getProximityVarsViaPadWalker($$$$) {
     my ($pkg, $filename, $line, $stackDepth) = @_;
     $stackDepth += 3; # Because we're three levels above the user code here.
@@ -1746,18 +1772,7 @@ sub _getProximityVarsViaPadWalker($$$$) {
 
     my @results = ();
     while(my($k, $v) = each %merged_vars) {
-        my $displayVar = 1;
-        if ($k =~ /^[\$\%]/) {
-            my $k1 = substr($k, 1);
-            # Don't return vars used in each blocks, because then we
-            # break the iterator.  Perl has only one iterator per variable.
-            # print STDERR "Skipping var $k\n";
-            # This is overly conservative, but it's safer than breaking the code.
-            if ($sourceText =~ /\beach\s+\%[\$\{]*$k1\b/) {
-                $displayVar = 0;
-            }
-        }
-        if ($displayVar) {
+        if (!_hasActiveIterator(substr($k, 0, 1), $v)) {
             push(@results, [$k, $v, 1]);
         }
     }
@@ -1770,11 +1785,43 @@ sub _getProximityVarsViaPadWalker($$$$) {
     return \@results;
 }
 
+sub _getProximityVarsViaB {
+    my ($pkg, $filename, $line, $stackDepth) = @_;
+    $stackDepth += 3; # Because we're three levels above the user code here.
+    require B;
+    undef *lex_var_hook;
+    my $b_cv = eval "sub DB::lex_var_hook {};
+                     B::svref_2object(\\&DB::lex_var_hook)->OUTSIDE->OUTSIDE";
+    my ($evaltext, %vars, @vars) = ('');
+    for ( ; $b_cv && !$b_cv->isa('B::SPECIAL'); $b_cv = $b_cv->OUTSIDE) {
+        my $pad = $b_cv->PADLIST->ARRAYelt(0);
+        for my $i (1 .. $pad->FILL) {
+            my $v = $pad->ARRAYelt($i);
+            next if $v->isa('B::SPECIAL');
+            my $name = ${$v->object_2svref};
+            next if $vars{$name};
+            $vars{$name} = 1;
+            push @vars, $name;
+            # take a reference to avoid resetting hash iterators
+            $evaltext .= "scalar eval '\\$name',\n";
+        }
+    }
+    eval "use strict; \@DB::lex_vars_list = ($evaltext)";
+    my @results;
+    for my $i (0 .. $#lex_vars_list) {
+        next unless my $value = $lex_vars_list[$i];
+        next if _hasActiveIterator(substr($vars[$i], 0, 1), $value);
+        push @results, [$vars[$i], undef, 1] ;
+    }
+    return \@results;
+}
+
 # -1: unknown, 0: no, 1:yes  #### Do not init as 1, only -1 or 0.
 # bug 93570 - allow padwalker detection/use to be disabled
 my $havePadWalker = $ENV{DBGP_PERL_IGNORE_PADWALKER} ? 0 : -1;
 
 sub _getProximityVars($$$$) {
+    my ($pkg, $filename, $line, $stackDepth) = @_;
     if ($havePadWalker == -1) {
         local $@;
         eval {
@@ -1788,7 +1835,13 @@ sub _getProximityVars($$$$) {
     }
     if ($havePadWalker) {
         return &_getProximityVarsViaPadWalker;
-    };
+    } elsif ($stackDepth == 0) {
+        return &_getProximityVarsViaB;
+    } else {
+        # there is no accurate way of getting these without PadWalker, and
+        # there is no way to get the values without PadWalker anyway
+        return [];
+    }
     my ($pkg, $filename, $line, $stackDepth) = @_;
     local *dbline = $main::{'_<' . $filename};
     my $limBack = 30;
