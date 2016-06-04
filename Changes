@@ -1,5 +1,13 @@
 Revision history for Devel-Debug-DBGp
 
+0.09      2016-06-04 10:14:56 CEST
+
+    - Require perl 5.8
+    - Use B instead of code parsing to implement context_get when
+      PadWalker is not installed
+    - Remove 'interact' command
+    - Use 'open $fh, $mode, \$scalar' instead of IO::Scalar
+
 0.08      2016-05-01 19:40:42 CEST
 
     - Speed up evaluation of complex evals from inside the debugger

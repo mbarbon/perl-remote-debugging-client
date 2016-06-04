@@ -198,7 +198,7 @@ Disconnects from the debugger client.
 use strict;
 use warnings;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 sub debugger_path {
     for my $dir (@INC) {
