@@ -1,5 +1,9 @@
 Revision history for Devel-Debug-DBGp
 
+0.10      2016-06-04 16:07:33 CEST
+
+    - Perl 5.22 fixes
+
 0.09      2016-06-04 10:14:56 CEST
 
     - Require perl 5.8
