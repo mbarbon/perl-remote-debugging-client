@@ -1725,10 +1725,10 @@ sub _getProximityVarsViaB {
     my ($evaltext, %vars, @vars) = ('');
     for ( ; $b_cv && !$b_cv->isa('B::SPECIAL'); $b_cv = $b_cv->OUTSIDE) {
         my $pad = $b_cv->PADLIST->ARRAYelt(0);
-        for my $i (1 .. $pad->FILL) {
+        for my $i (1 .. ($] < 5.022 ? $pad->FILL : $pad->MAX)) {
             my $v = $pad->ARRAYelt($i);
-            next if $v->isa('B::SPECIAL');
-            my $name = ${$v->object_2svref};
+            next if $v->isa('B::SPECIAL') || !$v->LEN;
+            my $name = $] < 5.022 ? ${$v->object_2svref} : $v->PV;
             next if $vars{$name};
             $vars{$name} = 1;
             push @vars, $name;
