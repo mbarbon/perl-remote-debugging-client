@@ -4307,6 +4307,8 @@ sub answerLastContinuationCommand {
 }
 
 END {
+    # avoid breakpoints if we call code outside DB
+    $DB::single = 0;
     # Do not stop in at_exit() and destructors on exit:
     $DB::finished = 1;
     if ($DB::fall_off_end) {
