@@ -5,6 +5,9 @@
 # Copyright (c) 2003-2006 ActiveState Software Inc.
 # All rights reserved.
 # 
+# Xdebug compatibility, UNIX domain socket support and misc fixes
+# by Mattia Barbon <mattia@barbon.org>
+# 
 # This software (the Perl-DBGP package) is covered by the Artistic License
 # (http://www.opensource.org/licenses/artistic-license.php).
 
