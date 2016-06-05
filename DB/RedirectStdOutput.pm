@@ -63,7 +63,6 @@ sub doOutput($$$$) {
 
 sub WRITE {
     my $self = shift;
-    my $h_new = $self->{h_new};
     my $h_old = $self->{h_old};
     my $streamType = $self->{streamType};
     my $redirectState = $self->{redirectState};
@@ -74,7 +73,6 @@ sub WRITE {
 
 sub PRINT { 
     my $self = shift;
-    my $h_new = $self->{h_new};
     my $h_old = $self->{h_old};
     my $streamType = $self->{streamType};
     my $redirectState = $self->{redirectState};
@@ -84,7 +82,6 @@ sub PRINT {
 
 sub PRINTF { 
     my $self = shift;
-    my $h_new = $self->{h_new};
     my $h_old = $self->{h_old};
     my $streamType = $self->{streamType};
     my $redirectState = $self->{redirectState};
