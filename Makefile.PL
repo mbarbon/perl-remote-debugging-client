@@ -14,8 +14,8 @@ if ($mm_ver =~ /_/) {
 }
 
 my %test_requires = (
-    'Test::DBGp'                => '0.06',
-    'DBGp::Client'              => 0,
+    'Test::DBGp'                => '0.07',
+    'DBGp::Client'              => '0.09',
 );
 
 my %pm = (

@@ -110,12 +110,8 @@ sub UNTIE {
 #    die "Not expected";
 }
 
-sub DESTROY {
-    my $self = shift;
-    my $h_new = $self->{h_new};
-    my $h_old = $self->{h_old};
-    close $h_new;
-}
+# there used to be a DESTROY closing h_new, but this will close
+# DBGp communication socket on a double redirect
 
 sub FILENO {
     my $self = shift;
