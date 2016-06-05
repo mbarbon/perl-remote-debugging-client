@@ -1,0 +1,59 @@
+- breakpoint on error
+- make stop not exit
+- fix property_value
+  - DBGp spec is a bit vague, and of course Xdebug does something different
+    (and saner) than perl5db.pl:
+
+    perl5db.pl just dumps the value as a string
+    Xdebug formats the response the same way as a <property> tag,
+    except that there is no separate property tag, e.g.:
+
+      <response command="property_value" transaction_id="jared"
+                type="object" children="1" classname="test"
+                numchildren="2">...</response>
+
+    the two are sort of similar for strings, entirely different for
+    array/hashes
+- fix stack depth/context id handling in properrty_get
+  - stack depth > 0 for anything but function arguments
+  - if there is both a lexical $foo and a package $foo, there is no
+    way of fetching the package variable
+  - kill evalArgument, it can be emulated via aliasing + eval, or
+    kill the eval for everything else, and use evalArgument
+- fix breakpoint_set return value
+- fix the fact that breakpoint_set can set multiple breakpoints
+- add extended_properties feature
+- aggressively disable DB::DB/DB::sub
+  - when entering DB::DB
+  - when evaluating breakpoint conditions
+  - when calling DB::RedirectStdOutput methods
+- try very hard not to reset iterator state on arrays/hashes,
+  or at least try to restore it afterwards
+- test
+  - that all URI default to file:// if no protocol is set
+    (workarouhd for broken clients)
+  - feature_set/feature_get
+    - individual features
+  - step_into/step_over/step_out
+  - breakpoints
+    - breakpoint_get/update/remove/list
+    - conditional breakpoints (file/line or just file)
+    - sub entry/exit breakpoints
+    - postponed breakpoints
+    - watchpoints
+    - breakpoints with file:// or dbgp:// URLs
+    - enabled/disabled state
+    - temporary breakpoints
+    - hit value/hit count/hit condition (enabled and disabled breakpoints)
+  - stack_depth
+  - stack_get depth
+  - context_names
+  - context_get (combinations of stack depth and context)
+  - property_set
+  - property_get/property_value
+    - stck depth/context combination
+    - max size
+    - long names
+    - paging for arrays/hashes
+  - source
+  - break
