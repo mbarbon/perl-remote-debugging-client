@@ -283,8 +283,6 @@ BEGIN {
 
 local ($^W) = 0;    # Switch run-time warnings off during init.
 
-# placeholder: dumpvar vars
-
 # True if we're logging
 $ldebug = 0;
 

@@ -203,67 +203,29 @@ sub emitEvaluatedPropertyGetInfo($$$$$$$) {
 
 sub getContextProperties($$) {
     my ($context_id, $packageName) = @_;
-    
+
     # Here just show the top-level.
-    my @results;
     local $settings{max_depth}[0] = 0;
     if ($context_id == GlobalVars) {
+	require B if $] >= 5.010;
 	# Globals
 	# Variables on the calling frame
-	# To get the vars, we need the '::' at the end
-	$packageName =~ s/(?<!::)$/::/;
+	my $stash = \%{"${packageName}::"};
 	my @results;
-	eval {
-	    my @data;
-	    open my $ah, '>', \my $data;
-	    defined &main::dumpValue || do 'dumpvar.pl';
-	    if (defined &main::dumpValue) {
-		my $oh = select $ah;
-		# must detect sigpipe failures  - not catching
-		# then will cause the debugger to die.
-		eval {
-		    &main::dumpvar($packageName, -1);
-		};
-
-		# The die does not need to include the $@, because 
-		# it will automatically get propagated for us.
-		if ($@) {
-		    dblog("eval globals: $@\n");
-		} else {
-		    my @hits = ($data =~ m/^([\$\@\%][\w_]+)\s+=\s+/gm);
-		    foreach my $h (@hits) {
-			# dblog("examining '$h' in package [$packageName]\n") if $ldebug;
-			my ($h1, $h2) = split(//, $h, 2);
-			if ($h1 ne "\$") {  # q($) confuses emacs
-			    # dblog("not a scalar ($h1)\n");
-			    # Get the main evaluator to eval this
-			    push @results, ["$h", undef, 1];
-			} elsif (exists $packageName->{$h2}) {
-			    # dblog("'$h' lives in package '$packageName'\n") if $ldebug;
-			    push @results, ["$h", $tmp, 0];
-			} else {
-			    # dblog("'$h' is in no package\n") if $ldebug;
-			    push @results, ["$h", undef, 1];
-			}
-		    }
-		}
-		select $oh;
-  	        if ($ldebug) {
-		    dblog("vars:", DB::Data::Dump::dump(@results), "\n");
-	        }
-	    } else {
-		dblog("getContextProperties -- don't have dumpValue");
-	    }
-	};
-	if ($@) {
-	    dblog($@);
-	    die "code:(1):error:($@)";
+	for my $key (keys %$stash) {
+	    next if $key =~ /^(?:_<|[^0a-zA-Z_])/;
+	    next if $key =~ /::$/;
+	    my $glob = \($stash->{$key});
+	    my $has_scalar = $] >= 5.010 ?
+		!B::svref_2object($glob)->SV->isa('B::SPECIAL') :
+		defined ${*{$glob}{SCALAR}};
+	    my $array = *{$glob}{ARRAY};
+	    my $hash = *{$glob}{HASH};
+	    next unless $has_scalar || $array || $hash;
+	    push @results, ["\$${key}", undef, 1] if $has_scalar;
+	    push @results, ["\@${key}", undef, 1] if $array;
+	    push @results, ["\%${key}", undef, 1] if $hash;
 	}
-	return \@results;
-    } elsif ($context_id == FunctionArguments) {
-        # This should be evaluated in the caller, in the main event
-	# loop in DB::DB
-	@results = (['@_', undef, 1]);
 	return \@results;
     } elsif ($context_id == PunctuationVariables) {
 	my ($packageName, $filename, $line) = caller(1);
