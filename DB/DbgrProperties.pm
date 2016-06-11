@@ -21,12 +21,10 @@ require Exporter;
 	     emitContextProperties
 	     emitEvalResultAsProperty
 	     emitEvaluatedPropertyGetInfo
-	     emitFinalPropertyValue
 	     figureEncoding
 	     getContextProperties
 	     getFullPropertyInfoByValue
 	     getPropertyInfo
-	     getPropertyValue
 	     sortArrayOfNames
 	     GlobalVars
 	     LocalVars
@@ -174,21 +172,25 @@ sub emitEvaluatedPropertyGetInfo($$$$$$$) {
 	$pageIndex) = @_;
 
     my $res = sprintf(qq(%s\n<response %s command="%s" 
-			 transaction_id="%s" >),
+			 transaction_id="%s" ),
 		      xmlHeader(),
 		      namespaceAttr(),
 		      $cmd,
 		      $transactionID);
     my $finalVal = $nameAndValue->[NV_VALUE];
-    
+
+    $res .= '>' if $cmd ne 'property_value';
+    my $startTag = $cmd ne 'property_value' ? '<property' : '';
+    my $endTag = $cmd ne 'property_value' ? '</property>' : '';
     my $finalName = makeFullName($property_long_name, $propertyKey);
-    $res .= getFullPropertyInfoByValue($propertyKey || $finalName, # name
-				       $finalName,
-				       $finalVal,
-				       $maxDataSize,
-				       $pageIndex, # page
-				       0, # current depth
-				       );
+    $res .= _getFullPropertyInfoByValue($startTag, $endTag,
+					$propertyKey || $finalName, # name
+					$finalName,
+					$finalVal,
+					$maxDataSize,
+					$pageIndex, # page
+					0, # current depth
+					);
     $res .= "\n</response>";
     printWithLength($res);
 }
@@ -303,61 +305,6 @@ sub _truncateIfNecessary {
     return $res;
 }
 
-sub emitFinalPropertyValue($$$$$) {
-    my ($cmd,
-	$transactionID,
-	$property_long_name,
-	$valRefs,
-	$maxDataSize) = @_;
-    my $propValue;
-    my $res;
-    if (scalar @$valRefs > 1 || $property_long_name =~ /^[\@\%][_:\w]+$/) {
-	# Call in array context to get value back
-	$DB::Data::Dump::maxDataSize = $maxDataSize;
-	local $@;
-	eval {
-	    ($res) = DB::Data::Dump::dump(@$valRefs);
-	    $res = _truncateIfNecessary($res, $maxDataSize, 1);
-	    $propValue = "($res)";
-	};
-	if ($@) {
-	    dblog("Error in emitFinalPropertyValue: [[$@]]");
-	    $propValue = "";
-	}
-    } else {
-	my $val = $valRefs->[0];
-	if (ref $val) {
-	    $DB::Data::Dump::maxDataSize = $maxDataSize;
-	    ($res) = DB::Data::Dump::dump($val);
-	    $res = _truncateIfNecessary($res, $maxDataSize, 1);
-	    if (ref($val) =~ /ARRAY/) {
-		$propValue = "[$res]";
-	    } elsif (ref($val) =~ /HASH/) {
-		$propValue = "{$res}";
-	    } else {
-		$propValue = "($res)";
-	    }
-	} else {
-	    $propValue = _truncateIfNecessary($val, $maxDataSize, 0);
-	}
-    }
-    my $size = length $propValue;
-    ($encoding, $encVal) = figureEncoding($propValue);
-    $res = sprintf(qq(%s\n<response %s command="%s" 
-		      transaction_id="%s"
-		      size="%d"
-		      encoding="%s">%s</response>),
-		   xmlHeader(),
-		   namespaceAttr(),
-		   $cmd,
-		   $transactionID,
-		   $size,
-		   $encoding,
-		   $encVal);
-    printWithLength($res);
-}
-
-
 sub emitEvalResultAsProperty($$$$$) {
     my ($cmd,
 	$transactionID,
@@ -380,44 +327,6 @@ sub emitEvalResultAsProperty($$$$$) {
     $res .= "\n</response>";
     printWithLength($res);
 }
-
-# This routine either returns a (name, value, evalRequest) array
-# Locals are evaluated here everywhere but at the top-level
-# Everthing else we attempt to evaluate here.  If we fail, we'll
-# get the DB::DB main loop to eval it, and then the second
-# function will fill in the full value.
-
-# Precondition: we're inside an eval block.
-
-sub getPropertyValue($$$$$$$) {
-    my ($cmd,
-	$context_id,
-	$requestedStackDepth,
-	$currStackSize,
-	$packageName,
-	$property_long_name,
-	$callDepthAdjustment) = @_;
-
-    my $finalVal;
-    if ($context_id == FunctionArguments) {
-	# Get the args, and then get the full property
-        my @xargs;
-	{
-	    package DB;
-	    my ($packageName, $filename, $line) = caller($requestedStackDepth + $callDepthAdjustment - 1);
-	    dblog("getPropertyValue: curr args are [", join(", ", @DB::args), "]");
-	    @xargs = @DB::args;
-	}
-	if (@xargs) {
-	    my $indexer = $property_long_name;
-	    if ($indexer =~ m/^\$_\[(\d+)\]/) {
-		return [$property_long_name, $xargs[$indexer], 0];
-	    }
-	}
-    }
-    return [$property_long_name, undef, 1];
-}
-
 
 sub getPropertyInfo($$) {
     my ($property_long_name, $propertyKey) = @_;
@@ -471,7 +380,13 @@ sub _attr_needs_base64_encoding {
 }
 
 sub getFullPropertyInfoByValue($$$$$$) {
-    my ($name,
+    _getFullPropertyInfoByValue('<property', '</property>', @_);
+}
+
+sub _getFullPropertyInfoByValue {
+    my ($startTag,
+	$endTag,
+	$name,
 	$fullname,
 	$val,
 	$maxDataSize,
@@ -480,7 +395,7 @@ sub getFullPropertyInfoByValue($$$$$$) {
 	) = @_;
     # dblog("getFullPropertyInfoByValue: (@_)\n");
     my $encoding;
-    my $res = '<property';
+    my $res = $startTag;
     if ($currentDepth > 0) {
 	$res .= propertyTagSpacer($currentDepth);
     }
@@ -663,7 +578,7 @@ sub getFullPropertyInfoByValue($$$$$$) {
 	    $res .= qq( >);
 	    $res .= _getFullPropertyInfoByValue_emitNames($maxDataSize, %b_attr);
 	}
-	$res .= qq(</property>\n);
+	$res .= $endTag . qq(\n);
     } else {
 	$res .= qq( size="$encValLength") if defined $encValLength;
 	$res .= qq( >);
@@ -677,7 +592,7 @@ sub getFullPropertyInfoByValue($$$$$$) {
 			    $encoding ? qq( encoding="$encoding") : "",
 			    $encVal);
 	}
-	$res .= "</property>";
+	$res .= $endTag;
 	$res .= "\n" if $currentDepth == 0;
     }
     # dblog("getFullPropertyInfoByValue: \{$res}\n");

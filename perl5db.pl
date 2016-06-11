@@ -3194,7 +3194,7 @@ sub DB {
 	    } elsif ($cmd eq 'typemap_get') {
 		emitTypeMapInfo($cmd, $transactionID);
 
-	    } elsif ($cmd eq 'property_get') {
+	    } elsif ($cmd eq 'property_get' || $cmd eq 'property_value') {
 		# First get the args, and then sanity check.
 		local %opts = ();
 		{
@@ -3391,100 +3391,6 @@ sub DB {
 		    }
 		}
 
-	    } elsif ($cmd eq 'property_value') {
-		# First get the args, and then sanity check.
-		local %opts = ();
-		{
-		    local *ARGV = *cmdArgs;
-		    shift @ARGV;
-		    getopts('c:d:k:n:', \%opts);
-		}
-		local $context_id = $opts{c};
-		local $stackDepth = $opts{d} || 0;
-		local $propertyKey = $opts{k}; # Used only for arguments?
-		local $property_long_name = $opts{n};
-		$property_long_name = nonXmlChar_Decode($property_long_name);
-		my $currStackSize = scalar dump_trace(0);
-		my $nameAndValue;
-		if ($context_id != FunctionArguments) {
-		    $nameAndValue = eval {
-			getPropertyValue($cmd,
-					 $context_id,
-					 $stackDepth,
-					 $currStackSize,
-					 $pkg,
-					 $property_long_name,
-					 2);
-		    };
-		} else {
-		    my $key;
-		    if ($property_long_name =~ /^\$_\[(.*)\]$/) {
-			$key = $1;
-		    } elsif ($propertyKey =~ /^\[?(.*)\]?$/) {
-			#XXX: Need to nonXMlChar_Decode($propertyKey)?
-			$key = $1;
-		    } else {
-			$key = 0;
-		    }
-		    @stuff = caller($stackDepth + 1);
-		    @stuff2 = @DB::args;
-		    $nameAndValue = [sprintf('$_[%d]', $key),
-				     $DB::args[$key], 0];
-		}
-		if ($@) {
-		    my ($code, $error) = ($@ =~ /code:(.*):error<:<(.*?)>:>/);
-		    if (!$code) {
-			$code = DBP_E_CantGetProperty;
-			$error = _trimExceptionInfo($@);
-		    }
-		    makeErrorResponse($cmd,
-				      $transactionID,
-				      $code,
-				      $error);
-		    next CMD;
-		} elsif ($nameAndValue) {
-		    my @valList;
-		    if ($nameAndValue->[NV_NEED_MAIN_LEVEL_EVAL]) {
-			eval {
-			    $evalarg = $nameAndValue->[NV_NAME];
-			    @valList = &eval();
-			};
-			if ($@) {
-			    makeErrorResponse($cmd,
-					      $transactionID,
-					      DBP_E_CantGetProperty,
-					      $@);
-			    next CMD;
-			}
-		    } else {
-			(@valList) = $nameAndValue->[NV_VALUE];
-		    }
-		    eval {
-			# Think about truncating valList here
-			local $maxDataSize = $opts{m} || $settings{max_data}[0];
-			if ($maxDataSize > 0) {
-			    dblog("property_value: emitFinalPropertyValue(... \$maxDataSize=$maxDataSize");
-			    my $amt_read = 0;
-			    my $i;
-			    for ($i = 0; $i < $#valList; $i++) {
-				if (($amt_read += length $valList[$i]) > $maxDataSize) {
-				    splice(@valList, $i + 1);
-				    $valList[$i + 1] = '...';
-				    last;
-				}
-			    }
-			} else {
-			    dblog("property_value: emitFinalPropertyValue(... \$maxDataSize=$maxDataSize");
-			}
-			emitFinalPropertyValue($cmd,
-					       $transactionID,
-					       $property_long_name,
-					       \@valList,
-					       $maxDataSize);
-		    };
-		} else {
-		    # We already emitted either the value or an error message.
-		}
 	    } elsif ($cmd eq 'source') {
 		my %opts;
 		{
