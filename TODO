@@ -15,6 +15,8 @@
   - when calling DB::RedirectStdOutput methods
 - try very hard not to reset iterator state on arrays/hashes,
   or at least try to restore it afterwards
+- source command on Perl 5.8 and 5.10 does not return POD
+  check in-memory and on-disk source match and get the POD from the disk file
 - test
   - that all URI default to file:// if no protocol is set
     (workarouhd for broken clients)
@@ -41,5 +43,4 @@
     - max size
     - long names
     - paging for arrays/hashes
-  - source
   - break

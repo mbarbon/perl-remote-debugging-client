@@ -1810,7 +1810,7 @@ sub _isPrintable($$) {
             || (ref $valRef) =~ /Regexp/);
 }
 
-sub _source_handle_missing_podlines {
+sub _fillMissingPodlines {
     my ($beginLine, $endLine, $dblines) = @_;
     my @copy = @$dblines[$beginLine .. $endLine];
     # Perl strips away the pod lines as a cheap way of
@@ -1859,17 +1859,42 @@ sub _source_handle_missing_podlines {
     return join("", @copy);
 }
 
-sub _source_handle_missing_podlines_1 {
+sub _fileSource {
     my ($perlFileName, $beginLine, $endLine, $dblines) = @_;
+    my $sourceKey = '_<' . $perlFileName;
     my $sourceString;
     local $@;
-    if ($perlFileName) {
+    if (!defined $sourceString && defined &INC && $perlFileName =~ m,^/(Perl\w{3}/|<.*?>)(.*),) {
+	my $pdkUtilityName = $1;
+	$sourceString = INC($2);
+	if ($ldebug && defined $sourceString) {
+	    my @lines = split(/\n/, $sourceString);
+	    $lines = \@lines;
+	    dblog("Debugging a $pdkUtilityName module, grab source and get [" . join("\n", @lines[0..2]) . "]");
+	}
+    }
+    if (!defined $sourceString && exists $main::{$sourceKey}) {
+	local *dbline = $main::{$sourceKey};
+	if (@dbline > 0) {
+	    $endLine = $#dbline if !$endLine;
+	    $endLine < $beginLine and $endLine = $beginLine;
+	    $sourceString = $] >= 5.012 ?
+		join('', @dbline[$beginLine .. $endLine]) :
+		_fillMissingPodlines($beginLine, $endLine, $dblines);
+	}
+    }
+    if (!defined $sourceString) {
 	dblog("source: using file [$perlFileName]\n") if $ldebug;
 	eval {
 	    open my $fh, "<", $perlFileName;
 	    if ($fh) {
-		local $/ = undef;
-		$sourceString = <$fh>;
+		if ($beginLine == 1 && !$endLine) {
+		    local $/ = undef;
+		    $sourceString = <$fh>;
+		} else {
+		    my @lines = <$fh>;
+		    $sourceString = join '', @lines[($beginLine - 1) .. ((!$endLine || $endLine >= @lines) ? @lines - 1 : $endLine - 1)];
+		}
 		close $fh;
 	    }
 	};
@@ -1878,35 +1903,13 @@ sub _source_handle_missing_podlines_1 {
 	}
     }
     if (!defined $sourceString) {
-	if (defined &INC && $perlFileName =~ m,^/(Perl\w{3}/|<.*?>)(.*),) {
-	    my $pdkUtilityName = $1;
-	    $sourceString = INC($2);
-	    if ($ldebug && defined $sourceString) {
-		my @lines = split(/\n/, $sourceString);
-		$lines = \@lines;
-		dblog("Debugging a $pdkUtilityName module, grab source and get [" . join("\n", @lines[0..2]) . "]");
-	    }
-	};
-	if (!defined $sourceString) {
-	    my $fname = '_<' . $perlFileName;
-	    eval {
-		local *dbline = $main::{$fname};
-		$endLine = $opts{e} || $#dbline;
-		$endLine < $beginLine and $endLine = $beginLine;
-		$sourceString = _source_handle_missing_podlines($beginLine,
-								$endLine,
-								$dblines);
-	    };
-	}
-	if (!defined $sourceString) {
-	    if (!$@) {
-		$@ = "# Error: Komodo couldn't find the file $perlFileName\n";
-	    }
+	if (!$@) {
+	    $@ = "# Error: Komodo couldn't find the file $perlFileName\n";
 	}
     }
     return ($sourceString, $@);
 }
-    
+
 
 sub _trimExceptionInfo($) {
     my $error = shift;
@@ -3406,69 +3409,30 @@ sub DB {
 		my $endLine;
 		my $sourceString;
 		my $error;
-		if (!defined $opts{f}) {
-		    dblog("source: -f not defined");
-		    my $lines;
-		    if ($perlFileName) {
-			if (defined &INC &&
-			    $perlFileName =~ m,^/(Perl\w{3}/|<.*?>)(.*),) {
-			    my $pdkUtilityName = $1;
-			    my @lines = split(/\n/, INC($2));
-			    $lines = \@lines;
-			    dblog("Debugging a $pdkUtilityName module, grab source and get [" . join("\n", @lines[0..2]) . "]");
-			} else {
-			    local *dbline = $main::{"_<$filename"};
-			    $lines = \@dbline;
-			}
-		    } else {
-			dblog("source -- yipes -- no -f url and no local filename");
-			$lines = [];
-		    }
-		    $endLine = $opts{e} || $#lines;
-		    $endLine < $beginLine and $endLine = $beginLine;
-		    
-		    dblog("** source -- file $filename, perl name not given");
-		    ($sourceString, $error) =
-			_source_handle_missing_podlines_1(undef,
-							  $beginLine,
-							  $endLine,
-							  $lines);
-		} elsif (defined &INC && $opts{f} =~ m@^dbgp:///perl//(PerlApp/|<.*?>)(.*)@) {
+		$opts{f} = calcFileURI $filename unless exists $opts{f};
+		if (defined &INC && $opts{f} =~ m@^dbgp:///perl//(PerlApp/|<.*?>)(.*)@) {
 		    # Definitely three slashes between 'perl' and 'PerlApp'
 		    my $pdkUtilityName = $1;
 		    my @lines = split(/\n/, INC($2));
+		    $endLine = $opts{e} || $#lines;
 		    dblog("Line " . __LINE__ . ": Debugging a $pdkUtilityName module, grab source($1) and get [" . join("\n", @lines[0..2]) . "]");
 		    ($sourceString, $error) =
-			_source_handle_missing_podlines_1($1,
-							  $beginLine,
-							  $endLine,
-							  \@lines);
+			_fileSource($1,
+				    $beginLine,
+				    $endLine,
+				    \@lines);
 		    # One slash or two in this next pattern?
-		} elsif ($opts{f} =~ m@^dbgp:///?perl/.*(\d+/\(eval\s\d+\).*)$@) {
-		    dblog("source: it's a dbgp thing ($1)");
-		    my $dynamicLocation = $1;
-		    if ($dynamicLocation =~ /^(\d+)\/\(eval\s*\d+\)/) {
-			my $dynLocnIdx = $1;
-			if (defined $evalTableIdx[$dynLocnIdx]
+		} elsif ($opts{f} =~ m@^dbgp:///?perl/.*(\d+)(/\(eval\s\d+\).*)$@ || $opts{f} =~ m@^dbgp:///?perl/.*(\d+)(/%28eval%20\d+%29.*)$@) {
+		    dblog("source: it's a dbgp thing ($1/$2)");
+		    my $dynLocnIdx = $1;
+		    my $dynamicLocation;
+		    if (defined $evalTableIdx[$dynLocnIdx]
 			    && exists $evalTable{$evalTableIdx[$dynLocnIdx]}) {
-			    dblog("source -- mapping \$dynamicLocation = $dynamicLocation to evalstring" . $evalTableIdx[$dynLocnIdx]) if $ldebug;
-			    $dynamicLocation = $evalTableIdx[$dynLocnIdx];
-			} else {
-			    dblog("source -- can't resolve numeric \$dynamicLocation = $dynamicLocation") if $ldebug;
-			    $error = "Can't find src for location $dynamicLocation";
-			}
-		    } elsif ($dynamicLocation =~ /^\d+$/) {
-			if (defined $evalTableIdx[$dynamicLocation]
-			    && exists $evalTable{$evalTableIdx[$dynamicLocation]}) {
-				# dblog("source -- mapping \$dynamicLocation = $dynamicLocation to evalstring" . $evalTableIdx[$dynamicLocation]) if $ldebug;
-			    $dynamicLocation = $evalTableIdx[$dynamicLocation];
-			} else {
-			    dblog("source -- can't resolve numeric \$dynamicLocation = $dynamicLocation") if $ldebug;
-			    $error = "Can't find src for location $dynamicLocation";
-			}
+			dblog("source -- mapping \$dynamicLocation = $dynamicLocation to evalstring" . $evalTableIdx[$dynLocnIdx]) if $ldebug;
+			$dynamicLocation = $evalTableIdx[$dynLocnIdx];
 		    } else {
-			dblog("source -- got old-style dbgp value \$dynamicLocation") if $ldebug;
-			$dynamicLocation = decodeData($dynamicLocation, 'urlescape');
+			dblog("source -- can't resolve numeric \$dynamicLocation = $dynamicLocation") if $ldebug;
+			$error = "Can't find src for location $dynamicLocation";
 		    }
 		    # dblog("source: locn = ", $dynamicLocation) if $ldebug;
 		    if (!$error) {
@@ -3510,11 +3474,10 @@ sub DB {
 			$bFileURINo,
 			$bFileName,
 			$perlFileName);
-		    if (exists $opts{f}) {
-			# work around broken clients
-			$opts{f} =~ s@^(/|\\|[a-zA-Z]:\\)@file://$1@;
-			$opts{f} =~ s@^file%3[Aa]//@file://@;
-		    }
+		    # work around broken clients
+		    $opts{f} =~ s@^(/|\\|[a-zA-Z]:\\)@file://$1@;
+		    $opts{f} =~ s@^file%3[Aa]//@file://@;
+		    $endLine = $opts{e};
 
 		    getFileInfo(\%opts, 'f', $filename,
 				\$bFileURI,
@@ -3523,10 +3486,11 @@ sub DB {
 				\$perlFileName);
 		    dblog("** source -- file $filename, perl name $perlFileName");
 		    ($sourceString, $error) =
-			_source_handle_missing_podlines_1($perlFileName,
-							  $beginLine,
-							  $endLine,
-							  \@dbline);
+			_fileSource($perlFileName,
+				    $beginLine,
+				    $endLine,
+				    \@dbline)
+			if $perlFileName;
 		}
 		if ($error || !$sourceString) {
 		    if (!$error) {
