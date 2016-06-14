@@ -65,8 +65,9 @@ $ldebug = 0;
 		      Special => PunctuationVariables);
 @contextProperties = sort { $contextProperties{$a} <=> $contextProperties{$b} } keys %contextProperties;
 
-@_punctuationVariables = ('$_', '$?', '$@', '$.', '@+', '@-', '$+', '$&', '$!', '$\'', '$`', '$$', '$0');
-
+@_punctuationVariables = ('$_', '$?', '$@', '$.', '@+', '@-', '$+', '$!', '$$', '$0');
+# $`, $& and $' are special-cased to avoid the performance penalty
+@_rxPunctuationVariables = ('`', '&', '\'');
 
 # Exported subs
 
@@ -233,6 +234,10 @@ sub getContextProperties($$) {
 	my @results;
 	foreach my $pv (@_punctuationVariables) {
 	    push (@results, [$pv, undef, 1]);
+	}
+	foreach my $pv (@_rxPunctuationVariables) {
+	    # somebody might use @' and trigger the condition, I'm willing to risk it
+	    push (@results, ["\$$pv", undef, exists $main::{$pv} ? 1 : 0]);
 	}
 	return \@results;
 	

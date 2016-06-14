@@ -31,6 +31,7 @@ t/141_globals.t
 t/142_context_get_padwalker.t
 t/144_context_get_no_padwalker.t
 t/145_property_get.t
+t/147_punctuation.t
 t/148_context_names.t
 t/230_source.t
 t/250_redirection.t
@@ -43,6 +44,7 @@ t/scripts/breakpoint.pl
 t/scripts/connect_after.pl
 t/scripts/globals.pl
 t/scripts/output.pl
+t/scripts/punctuation.pl
 t/scripts/reconnect.pl
 t/scripts/source.pl
 t/scripts/variables.pl
