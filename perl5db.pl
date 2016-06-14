@@ -3123,7 +3123,7 @@ sub DB {
 			# dblog("stack depth [$stackDepth]: curr args are [", join(", ", @DB::args), "]") if $ldebug;
 			$namesAndValues = [];
 			for (my $j = 0; $j < @savedArgs; $j++) {
-			    push (@$namesAndValues, [sprintf('$_[%d]', $j), $savedArgs[$j]]);
+			    push @$namesAndValues, [sprintf('$_[%d]', $j), $savedArgs[$j], 0];
 			}
 		    }
 		} elsif ($context_id == LocalVars) {
