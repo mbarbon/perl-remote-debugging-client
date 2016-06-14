@@ -3159,8 +3159,7 @@ sub DB {
 		}
 		# dblog("sorted vars:", DB::Data::Dump::dump(@sortedNames), "\n") if $ldebug;
 		foreach my $entry (@sortedNames) {
-		    if ($entry->[NV_NEED_MAIN_LEVEL_EVAL]
-			|| !$entry->[NV_VALUE]) {
+		    if ($entry->[NV_NEED_MAIN_LEVEL_EVAL]) {
 			eval {
 			    $entry->[NV_VALUE] = eval_term($entry->[NV_NAME]);
 			};
