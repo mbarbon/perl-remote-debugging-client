@@ -1,3 +1,7 @@
+- use strict, at least 'vars' and 'subs'
+  - perl5db.pl
+  - DB/DbgrProperties.pm
+  - DB/DbgrCommon.pm
 - breakpoint on error
 - make stop not exit
 - fix stack depth/context id handling in properrty_get
@@ -43,3 +47,4 @@
     - long names
     - paging for arrays/hashes
   - break
+- (maybe) replace DB::Data::Dump with a trampoline that loads data dumper
