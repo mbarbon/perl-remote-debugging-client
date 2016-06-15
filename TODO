@@ -2,6 +2,8 @@
   - perl5db.pl
   - DB/DbgrProperties.pm
   - DB/DbgrCommon.pm
+- dblog() calls perform potentially expensive operations
+  even when logging is disabled
 - breakpoint on error
 - make stop not exit
 - fix stack depth/context id handling in properrty_get
