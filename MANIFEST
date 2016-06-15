@@ -35,6 +35,7 @@ t/147_context_get_punctuation.t
 t/148_context_names.t
 t/150_property_get.t
 t/160_stack_depth.t
+t/162_stack_get.t
 t/230_source.t
 t/250_redirection.t
 t/610_xdebug_step.t

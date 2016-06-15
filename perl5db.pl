@@ -3013,9 +3013,7 @@ sub DB {
 					       lineno="%s"
 					       where="%s"/>),
 					    $stackDepth,
-					    ($stackDepth == scalar @sub
-					     ? $pkg
-					     : checkForEvalStackType($sub[$stackDepth]->{sub})),
+					    checkForEvalStackType($sub[$stackDepth]->{sub}),
 					    calcFileURI $sub2->{file},
 					    $sub2->{line},
 					    ($stackDepth == scalar @sub
@@ -3030,7 +3028,7 @@ sub DB {
 					   lineno="%s"
 					   where="%s"/>),
 					0,
-					$pkg,
+					checkForEvalStackType($sub[0]->{sub}),
 					calcFileURI $filename,
 					$line,
 					(($#sub >= 0 && $sub[0]{sub})
@@ -3074,7 +3072,7 @@ sub DB {
 				       lineno="%s"
 				       where="%s"/>),
 				    $i,
-				    $pkg,
+				    checkForEvalStackType($sub[$#sub]->{sub}),
 				    calcFileURI $sub[$#sub]->{file},
 				    $sub[$#sub]->{line},
 				    'main');
@@ -3912,15 +3910,12 @@ sub dump_trace {
     # These variables are used to capture output from caller();
     my ($p, $file, $line, $sub, $h, $context);
 
-    my ($e, $r, @a, @sub, $args);
+    my ($e, $r, @sub);
 
-    # XXX Okay... why'd we do that?
-    my $nothard = not $frame & 8;
     local $frame = 0;
 
     # Do not want to trace this.
-    my $otrace = $trace;
-    $trace = 0;
+    local $trace = 0;
 
     # Start out at the skip count.
     # If we haven't reached the number of frames requested, and caller() is
@@ -3935,64 +3930,10 @@ sub dump_trace {
         $i++
       )
     {
-        if ($p eq 'DB') {
+        if ($p eq 'DB' || $p =~ /^DB::/) {
 	    # Don't count debugger entries
 	    next;
 	}
-        # Go through the arguments and save them for later.
-        @a = ();
-        # Grab the args and hold on to them, since they seem to change
-	# as we run through this code -- this fixes bug 32384.
-	if ($hasArgs) {
-	    my @fixArgs;
-	    eval {@fixArgs = @DB::args;};
-	    if ($@) {
-		dblog("Failed to get function args at stack level $i: $@");
-		@fixArgs = ();
-	    }
-	    for $arg (@fixArgs) {
-		my $type;
-		if (not defined $arg) {	# undefined parameter
-		    push @a, "undef";
-		}
-
-		elsif ($nothard and tied $arg) { # tied parameter
-		    push @a, "tied";
-		}
-		elsif ($nothard and $type = ref $arg) {	# reference
-		    push @a, "ref($type)";
-		}
-		else {		# can be stringified
-		    local $_ =
-			"$arg";	# Safe to stringify now - should not call f().
-
-		    # Backslash any single-quotes or backslashes.
-		    s/([\'\\])/\\$1/g;
-
-		    # Single-quote it unless it's a number or a colon-separated
-		    # name.
-		    s/(.*)/'$1'/s
-			unless /^(?: -?[\d.]+ | \*[\w:]* )$/x;
-
-		    # Turn high-bit characters into meta-whatever.
-		    s/([\200-\377])/sprintf("M-%c",ord($1)&0177)/eg;
-
-		    # Turn control characters into ^-whatever.
-		    s/([\0-\37\177])/sprintf("^%c",ord($1)^64)/eg;
-
-		    push (@a, $_);
-		}		## end else [ if (not defined $arg)
-	    }			## end for $arg (@args)
-	    $args = [@a];
-	} else {
-	    $args = undef;
-	}
-
-        # If context is true, this is array (@)context.
-        # If context is false, this is scalar ($) context.
-        # If neither, context isn't defined. (This is apparently a 'can't 
-        # happen' trap.)
-        $context = $context ? '@' : (defined $context ? "\$" : '.');
 
         # remove trailing newline-whitespace-semicolon-end of line sequence
         # from the eval text, if any.
@@ -4023,9 +3964,7 @@ sub dump_trace {
         push (
             @sub,
             {
-                context => $context,
                 sub     => $sub,
-                args    => $args,
                 file    => $file,
                 line    => $line
             }
@@ -4035,8 +3974,6 @@ sub dump_trace {
         last if $signal;
     } ## end for ($i = $skip ; $i < ...
 
-    # Restore the trace value again.
-    $trace = $otrace;
     @sub;
 } ## end sub dump_trace
 
