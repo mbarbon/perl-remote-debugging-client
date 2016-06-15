@@ -2930,14 +2930,14 @@ sub DB {
 				 $transactionID));
 
 	    } elsif ($cmd eq 'stack_depth') {
-		my @stackTrace = dump_trace(1);
+		my $stackCount = count_trace(1);
 		printWithLength(sprintf
 				(qq(%s\n<response %s command="%s" 
 				    depth="%d" transaction_id="%s" />),
 				 xmlHeader(),
 				 namespaceAttr(),
 				 $cmd,
-				 scalar(@stackTrace),
+				 $stackCount,
 				 $transactionID,
 				 ));
 
@@ -3094,7 +3094,7 @@ sub DB {
 		$stackDepth = 0 unless defined $stackDepth;
 		local $settings{max_depth}[0] = 0
                     unless $xdebug_full_values_in_context;
-		my $currStackSize = scalar dump_trace(0); # , $numLevelsToShow;
+		my $currStackSize = count_trace(0); # , $numLevelsToShow;
 		dblog("main->getContextProperties: \$currStackSize = $currStackSize\n") if $ldebug;
 		my $namesAndValues;
 		if ($context_id == FunctionArguments) {
@@ -4039,6 +4039,55 @@ sub dump_trace {
     $trace = $otrace;
     @sub;
 } ## end sub dump_trace
+
+# equivalent to scalar dump_trace(...)
+sub count_trace {
+
+    # How many levels to skip.
+    my $skip = shift;
+
+    # How many levels to show. (1e9 is a cheap way of saying "all of them";
+    # it's unlikely that we'll have more than a billion stack frames. If you
+    # do, you've got an awfully big machine...)
+    my $count = shift || 1e9;
+
+    # We increment skip because caller(1) is the first level *back* from
+    # the current one.  Add $skip to the count of frames so we have a 
+    # simple stop criterion, counting from $skip to $count+$skip.
+    $skip++;
+    $count += $skip;
+
+    my ($p, $frames);
+
+    # Do not want to trace this.
+    local $trace = 0;
+
+    # Start out at the skip count.
+    # If we haven't reached the number of frames requested, and caller() is
+    # still returning something, stay in the loop. (If we pass the requested
+    # number of stack frames, or we run out - caller() returns nothing - we
+    # quit.
+    # Up the stack frame index to go back one more level each time.
+    for (
+        $i = $skip ;
+        $i < $count
+        and ($p) = caller($i) ;
+        $i++
+      )
+    {
+        if ($p eq 'DB' || $p =~ /^DB::/) {
+	    # Don't count debugger entries
+	    next;
+	}
+
+        $frames++;
+
+        # Stop processing frames if the user hit control-C.
+        last if $signal;
+    } ## end for ($i = $skip ; $i < ...
+
+    $frames;
+}
 
 =head2 C<parse_options>
 
