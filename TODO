@@ -8,6 +8,8 @@
 - breakpoint on return should break before the function
   returns, otherwise they're not that useful
   (probably not possible with pure Perl)
+- review breakpoint_list logic for file breakpoints,
+  it can probably be simplified
 - make stop not exit
 - fix stack depth/context id handling in properrty_get
   - stack depth > 0 for anything but function arguments

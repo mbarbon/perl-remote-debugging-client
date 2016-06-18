@@ -22,6 +22,7 @@ our @EXPORT = (
         run_program
         send_command
         command_is
+        breakpoint_list_is
         eval_value_is
         start_listening
         stop_listening
@@ -101,6 +102,17 @@ sub eval_value_is {
     my $res = send_command('eval', encode_base64($expr));
 
     is($res->result->value, $value);
+}
+
+sub breakpoint_list_is {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my ($expected) = @_;
+
+    my $breakpoints = send_command('breakpoint_list')->breakpoints;
+    my $sorted_breakpoints = [sort { $a->id <=> $b->id } @$breakpoints];
+
+    dbgp_parsed_response_cmp($sorted_breakpoints, $expected);
 }
 
 sub _cleanup {

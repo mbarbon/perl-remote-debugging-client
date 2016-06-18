@@ -1458,7 +1458,9 @@ sub getBreakpointInfoString($%) {
 			    ($extraInfo{function} || $bFunction));
 	}
 	$res .= sprintf(' state="%s"',
-			$bState == BKPT_TEMPORARY ? BKPT_ENABLE : $bState);
+			$bState == BKPT_TEMPORARY ? 'enabled' :
+			$bState == BKPT_DISABLE	  ? 'disabled' :
+						    'enabled');
 	$res .= sprintf(' temporary="%d"',
 			$bState == BKPT_TEMPORARY ? 1 : 0);
 	$res .= sprintf(' exception="%s"',
@@ -2709,6 +2711,7 @@ sub DB {
 				     $cmd,
 				     $transactionID);
 
+		my %displayed; # horrible hack, need to review
 		while (my ($fileURI, $fileURINo) = each %fileURILookupTable) {
 		    my $fileURIInfo = $bkptLookupTable[$fileURINo];
 		    if (!$fileURIInfo) {
@@ -2716,10 +2719,10 @@ sub DB {
 			next;
 		    }
 		    while (my ($lineNo, $bkptID) = each %$fileURIInfo) {
+			next if $displayed{$bkptID};
 			my $bpInfo = getBreakpointInfoString($bkptID, fileURI => $fileURINo, lineNo => $lineNo);
-			if ($bpInfo) {
-			    $res .= $bpInfo;
-			}
+			$res .= $bpInfo if $bpInfo;
+			$displayed{$bkptID} = 1;
 		    }
 		}
 		dblog("bpList: FQFnNameLookupTable: ", DB::Data::Dump::dump(%FQFnNameLookupTable)) if $ldebug;
@@ -2727,6 +2730,7 @@ sub DB {
 		    dblog("info($bFunction, $val): ", DB::Data::Dump::dump($val)) if $ldebug;
 		    while (my ($bType, $bkptID) = each %$val) {
 			my $bpInfo = getBreakpointInfoString($bkptID, function => $bFunction);
+			$res .= $bpInfo if $bpInfo;
 		    }
 		}
 		$res .= "\n</response>\n";

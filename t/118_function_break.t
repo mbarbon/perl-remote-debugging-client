@@ -28,6 +28,27 @@ command_is(['breakpoint_set', '-t', 'call', '-m', 'moo'], {
     command     => 'breakpoint_set',
 });
 
+breakpoint_list_is([
+    {
+        id          => 0,
+        type        => 'call',
+        state       => 'enabled',
+        function    => 'main::sub_break',
+    },
+    {
+        id          => 1,
+        type        => 'call',
+        state       => 'enabled',
+        function    => 'bar::sub_break',
+    },
+    {
+        id          => 2,
+        type        => 'return',
+        state       => 'enabled',
+        function    => 'main::return_break',
+    },
+]);
+
 command_is(['run'], {
     reason      => 'ok',
     status      => 'break',
@@ -86,6 +107,21 @@ command_is(['stack_get', '-d', 0], {
 
 # not an error
 isa_ok(send_command('breakpoint_remove', '-d', 1), 'DBGp::Client::Response::BreakpointGetUpdateRemove');
+
+breakpoint_list_is([
+    {
+        id          => 0,
+        type        => 'call',
+        state       => 'enabled',
+        function    => 'main::sub_break',
+    },
+    {
+        id          => 2,
+        type        => 'return',
+        state       => 'enabled',
+        function    => 'main::return_break',
+    },
+]);
 
 command_is(['run'], {
     reason      => 'ok',
