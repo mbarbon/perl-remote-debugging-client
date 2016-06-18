@@ -267,7 +267,6 @@ BEGIN {
     $deep = -1;
     $ready = 0;
     $setup_once_after_connection = undef;
-    %postponed_file = ();
     %firstFileInfo = ();
     $OUT_selector = $_pending_check_enabled = undef;
     $skip_alarm = 1;
@@ -2915,7 +2914,6 @@ sub DB {
 			    $str .= "\n";
 			    dblog($str);
 			}
-			$postponed_fileuri{$bFileURINo} = 1;
 		    }
 		}
 
@@ -3700,9 +3698,6 @@ sub finish_postponed {
 	    $fileNameTable[$bFileURINo] = [$bFileURI,
 					   $bFileName,
 					   $perlFileName];
-	}
-	if (exists $postponed_fileuri{$bFileURINo}) {
-	    delete $postponed_fileuri{$bFileURINo};
 	}
 
 	if (defined $bkptLookupTable[$bFileURINo]) {
