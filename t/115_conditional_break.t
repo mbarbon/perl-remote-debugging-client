@@ -16,11 +16,6 @@ command_is(['breakpoint_set', '-t', 'conditional', '-f', 'file://t/scripts/break
     id          => 1,
 });
 
-command_is(['breakpoint_set', '-t', 'call', '-m', 'main::sub_break'], {
-    state       => 'enabled',
-    id          => 0, # this is wrong
-});
-
 command_is(['run'], {
     reason      => 'ok',
     status      => 'break',
@@ -48,27 +43,6 @@ command_is(['eval', encode_base64('$i')],{
         type        => 'int',
         value       => '10',
     },
-});
-
-command_is(['run'], {
-    reason      => 'ok',
-    status      => 'break',
-    command     => 'run',
-    filename    => undef,
-    lineno      => undef,
-});
-
-command_is(['stack_get', '-d', 0], {
-    command => 'stack_get',
-    frames  => [
-        {
-            level       => '0',
-            type        => 'file',
-            filename    => abs_uri('t/scripts/breakpoint.pl'),
-            where       => 'main::sub_break',
-            lineno      => '14',
-        },
-    ],
 });
 
 done_testing();
