@@ -5,6 +5,9 @@
 - dblog() calls perform potentially expensive operations
   even when logging is disabled
 - breakpoint on error
+- breakpoint on return should break before the function
+  returns, otherwise they're not that useful
+  (probably not possible with pure Perl)
 - make stop not exit
 - fix stack depth/context id handling in properrty_get
   - stack depth > 0 for anything but function arguments
@@ -32,7 +35,6 @@
   - breakpoints
     - breakpoint_get/update/remove/list
     - conditional breakpoints (file/line or just file)
-    - sub entry/exit breakpoints
     - postponed breakpoints
     - watchpoints
     - breakpoints with file:// or dbgp:// URLs

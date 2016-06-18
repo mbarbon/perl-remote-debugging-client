@@ -1164,7 +1164,7 @@ sub addSubBreakPoint($$$$$$$$$) {
     } else {
 	setNullBkPtHitInfo($bkptID);
     }
-    
+    return $bkptID;
 }
 
 sub findAndAddFunctionBreakPoints($$$$$$$$$) {
@@ -1182,14 +1182,17 @@ sub findAndAddFunctionBreakPoints($$$$$$$$$) {
     # First try the direct lookup approach
     if (exists $sub{$fqSubName}) {
 	@possibleSubNames = ($fqSubName);
-    } else {
+    } elsif (!$isQualified) {
 	my ($baseFunctionName) = ($bFunctionName =~ /([^:]+)$/);
 	@possibleSubNames = grep(/$baseFunctionName$/, keys %sub);
+    } else {
+	# postponed
+	@possibleSubNames = ($fqSubName);
     }
-    
+
     # First find all the packages
-    return 0 if (!@possibleSubNames);
-    my $totals = 0;
+    return if (!@possibleSubNames);
+    my @bkptIDs;
     foreach my $possibleSub (@possibleSubNames) {
 	my $addIt = 0;
 	my ($fileName, $startLineNo, $endLineNo) = ($sub{$possibleSub} =~ /^(.*):(\d+)-(\d+)$/);
@@ -1208,24 +1211,27 @@ sub findAndAddFunctionBreakPoints($$$$$$$$$) {
 			  || ($lineNumber >= $startLineNo
 			      && $lineNumber <= $endLineNo));
 	    }
+	} elsif ($isQualified) {
+	    # postponed
+	    $addIt = 1;
 	}
 	if ($addIt) {
-	    ++$totals;
 	    my $bFileURINo;
 	    my $fileURI = filenameToURI($fileName, 1);
 	    my $fileURINo = internFileURI($fileURI);
-	    addSubBreakPoint($possibleSub,
-			     $fileURINo,
-			     $lineNumber,
-			     $bState,
-			     $possibleSub,
-			     $bCondition,
-			     $bType,
-			     $bHitCount,
-			     $bHitConditionOperator);
+	    my $bkptID = addSubBreakPoint($possibleSub,
+					  $fileURINo,
+					  $lineNumber,
+					  $bState,
+					  $possibleSub,
+					  $bCondition,
+					  $bType,
+					  $bHitCount,
+					  $bHitConditionOperator);
+	    push @bkptIDs, $bkptID;
 	}
     }
-    return $totals;
+    return @bkptIDs;
 }
 
 # I try to make the types transparent, but we need to give a typemap
@@ -2853,7 +2859,7 @@ sub DB {
 		}
 
 		if ($bFunctionName) {
-		    my $bptCount =
+		    my @bptIDs =
 			findAndAddFunctionBreakPoints($bFunctionName,
 						      defined $opts{f} && $perlFileName,
 						      $opts{n},
@@ -2863,7 +2869,7 @@ sub DB {
 						      $bType,
 						      $bHitCount,
 						      $bHitConditionOperator);
-		    if ($bptCount == 0) {
+		    if (@bptIDs == 0) {
 			# No breakpoints found
 			my $fname = $opts{f} || "any loaded file";
 			my $msg = "Currently can't find sub $bFunctionName in $fname.";
@@ -2872,6 +2878,8 @@ sub DB {
 					  DBP_E_NoSuchBreakpoint,
 					  $msg);
 			next CMD;
+		    } elsif (@bptIDs == 1) {
+			$bkptID = $bptIDs[0];
 		    }
 		} else {
 		    # None of these can fail
@@ -3750,6 +3758,7 @@ sub sub
     {
 	@i = &$sub;
         $single |= $stack[$stack_depth--];
+        # it would be nicer to break on return statement inside the function
 	tryBreaking($sub, 'return') unless $inDB;
 	@i;
     }
@@ -3761,6 +3770,7 @@ sub sub
             &$sub; undef $i;
         };
         $single |= $stack[$stack_depth--];
+        # it would be nicer to break on return statement inside the function
 	tryBreaking($sub, 'return') unless $inDB;
 	$i;
     }
