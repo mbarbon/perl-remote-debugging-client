@@ -106,6 +106,11 @@ Return up to C<max_depth> levels for properties in the C<context_get>
 response, rather than returning just the root value and letting the
 debugger drill down if needed.
 
+=item temporary_breakpoint_state
+
+Return temporary breakpoint state as C<temporary> instead of returning it
+as C<enabled>.
+
 =back
 
 =item ConnectAtStart

@@ -482,6 +482,7 @@ $keep_running = 0;
 $xdebug_file_line_in_step = undef;
 $xdebug_no_value_tag = undef;
 $xdebug_full_values_in_context = undef;
+$xdebug_temporary_breakpoint_state = undef;
 # If the PERLDB_OPTS variable has options in it, parse those out next.
 if (defined $ENV{PERLDB_OPTS}) {
     parse_options($ENV{PERLDB_OPTS});
@@ -1458,7 +1459,8 @@ sub getBreakpointInfoString($%) {
 			    ($extraInfo{function} || $bFunction));
 	}
 	$res .= sprintf(' state="%s"',
-			$bState == BKPT_TEMPORARY ? 'enabled' :
+			$bState == BKPT_TEMPORARY ?
+			    ($xdebug_temporary_breakpoint_state ? 'temporary' : 'enabled') :
 			$bState == BKPT_DISABLE	  ? 'disabled' :
 						    'enabled');
 	$res .= sprintf(' temporary="%d"',
@@ -4049,6 +4051,7 @@ sub parse_options {
 	send_position_after_stepping	=> \$xdebug_file_line_in_step,
 	property_without_value_tag	=> \$xdebug_no_value_tag,
 	nested_properties_in_context	=> \$xdebug_full_values_in_context,
+	temporary_breakpoint_state	=> \$xdebug_temporary_breakpoint_state,
     );
 
     while (length) {
