@@ -2,8 +2,6 @@
 
 use t::lib::Test;
 
-use MIME::Base64 qw(encode_base64);
-
 start_listening();
 
 run_program('t/scripts/connect_after.pl', 'ConnectAtStart=0');

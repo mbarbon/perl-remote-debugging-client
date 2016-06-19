@@ -2,8 +2,6 @@
 
 use t::lib::Test;
 
-use MIME::Base64 qw(encode_base64);
-
 run_debugger('t/scripts/hitcount_breakpoint.pl');
 
 command_is(['breakpoint_set', '-t', 'line', '-f', 'file://t/scripts/hitcount_breakpoint.pl', '-n', 2, '-h', 3, '-o', '>='], {

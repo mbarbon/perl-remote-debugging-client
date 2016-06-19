@@ -2,8 +2,6 @@
 
 use t::lib::Test;
 
-use MIME::Base64 qw(encode_base64);
-
 run_debugger('t/scripts/reconnect.pl');
 
 eval_value_is('$i', undef);
