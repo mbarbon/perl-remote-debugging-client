@@ -16,6 +16,12 @@ command_is(['breakpoint_set', '-t', 'conditional', '-f', 'file://t/scripts/break
     id          => 1,
 });
 
+command_is(['breakpoint_set', '-t', 'conditional', '-f', 'file://t/scripts/breakpoint.pl', '-n', 4], {
+    apperr      => 4,
+    code        => 3,
+    message     => 'Condition required for setting a conditional breakpoint.',
+});
+
 breakpoint_list_is([
     {
         id          => 0,
