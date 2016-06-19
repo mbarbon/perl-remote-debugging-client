@@ -41,6 +41,17 @@ breakpoint_list_is([
     },
 ]);
 
+command_is(['breakpoint_get', '-d', 1], {
+    breakpoint => {
+        id          => 1,
+        type        => 'line',
+        state       => 'enabled',
+        filename    => abs_uri('t/scripts/breakpoint.pl'),
+        lineno      => '4',
+        expression  => 'should_break()',
+    },
+});
+
 command_is(['run'], {
     reason      => 'ok',
     status      => 'break',

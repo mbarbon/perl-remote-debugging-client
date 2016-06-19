@@ -49,6 +49,15 @@ breakpoint_list_is([
     },
 ]);
 
+command_is(['breakpoint_get', '-d', 1], {
+    breakpoint => {
+        id          => 1,
+        type        => 'call',
+        state       => 'enabled',
+        function    => 'bar::sub_break',
+    },
+});
+
 command_is(['run'], {
     reason      => 'ok',
     status      => 'break',

@@ -867,8 +867,8 @@ sub getURIByNo {
 }
 
 sub storeBkPtInfo {
-    my ($bkptID, $bFileURINo, $bLine, $bstate, $bType, $bCondition) = @_;
-    $bkptInfoTable{$bkptID} = [$bFileURINo, $bLine, $bstate, $bType, undef, $bCondition, undef, undef];
+    my ($bkptID, $bFileURINo, $bLine, $bstate, $bType, $bFunction, $bCondition) = @_;
+    $bkptInfoTable{$bkptID} = [$bFileURINo, $bLine, $bstate, $bType, $bFunction, $bCondition, undef, undef];
 }
 
 # No conditions, but we want to maintain a hit count on the breakpoint.
@@ -1158,7 +1158,7 @@ sub addSubBreakPoint($$$$$$$$$) {
     my $bkptID = internFunctionName_CallType_Breakpoint($functionName, $bType);
     dblog("FQFnNameLookupTable: ", DB::Data::Dump::dump(%FQFnNameLookupTable), "\n") if $ldebug;
     storeBkPtInfo($bkptID, $fileURINo, $lineNumber, $bState,
-		  $bType, $bCondition);
+		  $bType, $functionName, $bCondition);
     if ($bHitCount) {
 	setBkPtHitInfo($bkptID, $bHitCount, $bHitConditionOperator);
     } else {
@@ -2892,7 +2892,7 @@ sub DB {
 		    } else {
 			$bkptID = internFileURINo_LineNo($bFileURINo, $bLine);
 		    }
-		    storeBkPtInfo($bkptID, $bFileURINo, $bLine, $bStateVal, $bType, $bCondition);
+		    storeBkPtInfo($bkptID, $bFileURINo, $bLine, $bStateVal, $bType, undef, $bCondition);
 		    if ($bHitCount) {
 			setBkPtHitInfo($bkptID, $bHitCount, $bHitConditionOperator);
 		    } else {
