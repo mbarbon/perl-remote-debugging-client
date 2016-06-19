@@ -25,6 +25,7 @@ t/031_keep_running.t
 t/035_connect_after.t
 t/036_no_connect_at_start.t
 t/110_typemap.t
+t/112_hit_break.t
 t/115_conditional_break.t
 t/118_function_break.t
 t/140_context_get.t
@@ -50,6 +51,7 @@ t/scripts/breakpoint.pl
 t/scripts/connect_after.pl
 t/scripts/function_breakpoint.pl
 t/scripts/globals.pl
+t/scripts/hitcount_breakpoint.pl
 t/scripts/output.pl
 t/scripts/punctuation.pl
 t/scripts/reconnect.pl
