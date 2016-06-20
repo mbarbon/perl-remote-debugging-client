@@ -1,5 +1,13 @@
 Revision history for Devel-Debug-DBGp
 
+0.11      2016-06-20 19:38:41 CEST
+
+    - Another Xdebug compatibility option (for temporary breakpoints)
+    - Don't crash when changing output redirection mode multiple times
+    - Made property_value response more compatible with Xdebug
+    - Various fixes for 'source', 'stack_get', 'breakpoint_set',
+      'breakpoint_list', 'breakpoint_get' (see git log for full description)
+
 0.10      2016-06-04 16:07:33 CEST
 
     - Perl 5.22 fixes
