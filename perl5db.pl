@@ -2576,7 +2576,7 @@ sub DB {
 					       $bpCmd == BKPT_DISABLE ? 'dis' : 'en',
 
 					       $bkptID);
-		    } else {
+		    } elsif ($bHitCount || $bHitConditionOperator) {
 			# Komodo only sends in changed values, so merge in old values
 			if (!$bHitCount && $bHitInfo->[HIT_TBL_VALUE]) {
 			    $bHitCount = $bHitInfo->[HIT_TBL_VALUE];
