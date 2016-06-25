@@ -189,4 +189,45 @@ command_is(['stack_get', '-d', 0], {
     ],
 });
 
+command_is(['breakpoint_update', '-d', 2, '-s', 'disabled'], {
+    breakpoint => {
+        id              => 2,
+        type            => 'line',
+        state           => 'disabled',
+        filename        => abs_uri('t/scripts/hitcount_breakpoint.pl'),
+        lineno          => '10',
+        hit_value       => 2,
+        hit_condition   => '%',
+        hit_count       => 4,
+    },
+});
+
+send_command('run');
+
+command_is(['breakpoint_get', '-d', 2], {
+    breakpoint => {
+        id              => 2,
+        type            => 'line',
+        state           => 'disabled',
+        filename        => abs_uri('t/scripts/hitcount_breakpoint.pl'),
+        lineno          => '10',
+        hit_value       => 2,
+        hit_condition   => '%',
+        hit_count       => 4,
+    },
+});
+
+command_is(['stack_get', '-d', 0], {
+    command => 'stack_get',
+    frames  => [
+        {
+            level       => '0',
+            type        => 'file',
+            filename    => abs_uri('t/scripts/hitcount_breakpoint.pl'),
+            where       => 'main',
+            lineno      => '15',
+        },
+    ],
+});
+
 done_testing();
