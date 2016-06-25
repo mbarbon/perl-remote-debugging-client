@@ -32,6 +32,7 @@ t/120_temporary_break.t
 t/122_breakpoint_update.t
 t/124_breakpoint_remove.t
 t/126_watchpoint.t
+t/128_eval_breakpoint.t
 t/140_context_get.t
 t/141_context_get_globals.t
 t/142_context_get_padwalker.t
@@ -54,6 +55,7 @@ t/scripts/base.pl
 t/scripts/break.pm
 t/scripts/breakpoint.pl
 t/scripts/connect_after.pl
+t/scripts/eval_breakpoint.pl
 t/scripts/function_breakpoint.pl
 t/scripts/globals.pl
 t/scripts/hitcount_breakpoint.pl

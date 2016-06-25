@@ -25,6 +25,7 @@
 - sub eval {} goes to great lenghts to always produce at least one value
   which looks suspicious
 - breakpoint_update to disable does not work with watchpoints
+- breakpoints with dbgp:// URIs don'work (t/128_eval_breakpoint.t)
 - add extended_properties feature
 - aggressively disable DB::DB/DB::sub
   - when entering DB::DB
@@ -41,14 +42,10 @@
     - individual features
   - step_into/step_over/step_out
   - breakpoints
-    - breakpoint_get/update/remove/list
-    - conditional breakpoints (file/line or just file)
-    - postponed breakpoints
-    - watchpoints
-    - breakpoints with file:// or dbgp:// URLs
-    - enabled/disabled state
-    - temporary breakpoints
-    - hit value/hit count/hit condition (enabled and disabled breakpoints)
+    - breakpoint_get/update/remove/list for all breakpoint types
+      (line/call/return/conditional/watch)
+    - temporary breakpoints for all breakpoint types, plus
+      interaction with enable/disable
   - stack_get depth
   - context_get (combinations of stack depth and context)
   - property_set
