@@ -30,6 +30,7 @@ t/115_conditional_break.t
 t/118_function_break.t
 t/120_temporary_break.t
 t/122_breakpoint_update.t
+t/124_breakpoint_remove.t
 t/140_context_get.t
 t/141_context_get_globals.t
 t/142_context_get_padwalker.t
