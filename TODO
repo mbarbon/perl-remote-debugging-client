@@ -19,6 +19,7 @@
     kill the eval for everything else, and use evalArgument
 - fix breakpoint_set return value
 - fix the fact that breakpoint_set can set multiple breakpoints
+- fix breakpoint_update -n option
 - add extended_properties feature
 - aggressively disable DB::DB/DB::sub
   - when entering DB::DB
