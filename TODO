@@ -20,6 +20,11 @@
 - fix breakpoint_set return value
 - fix the fact that breakpoint_set can set multiple breakpoints
 - fix breakpoint_update -n option
+- watchpoints do not distinguish undef from empty string
+  (because of eval)
+- sub eval {} goes to great lenghts to always produce at least one value
+  which looks suspicious
+- breakpoint_update to disable does not work with watchpoints
 - add extended_properties feature
 - aggressively disable DB::DB/DB::sub
   - when entering DB::DB

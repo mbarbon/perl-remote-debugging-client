@@ -31,6 +31,7 @@ t/118_function_break.t
 t/120_temporary_break.t
 t/122_breakpoint_update.t
 t/124_breakpoint_remove.t
+t/126_watchpoint.t
 t/140_context_get.t
 t/141_context_get_globals.t
 t/142_context_get_padwalker.t
@@ -64,4 +65,5 @@ t/scripts/stack.pl
 t/scripts/variables.pl
 t/scripts/variables_complex.pl
 t/scripts/variables_complex_510.pl
+t/scripts/watchpoint.pl
 TODO
