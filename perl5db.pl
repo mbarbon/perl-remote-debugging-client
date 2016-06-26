@@ -3365,13 +3365,6 @@ sub DB {
 		}
 
 		if ($nameAndValue->[NV_NEED_MAIN_LEVEL_EVAL]) {
-		    if ($context_id == FunctionArguments && $stackDepth > 0) {
-			makeErrorResponse($cmd,
-					  $transactionID,
-					  DBP_E_CantSetProperty,
-					  "Can't modify function arguments inside current frame");
-			next CMD;
-		    }
 		    $evalarg = $nameAndValue->[NV_NAME] . '=' . $decodedData;
 		    eval {
 			&eval();
