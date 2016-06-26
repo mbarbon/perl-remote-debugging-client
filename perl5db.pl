@@ -2767,9 +2767,10 @@ sub DB {
 		    $opts{f} =~ s@^dbgp:///file:/@file:/@;
 		    $opts{f} =~ s@^file:/([^/])@file://$1@;
 		    # work around broken clients
-		    $opts{f} =~ s@^(/|\\|[a-zA-Z]:\\)@file://$1@;
 		    $opts{f} =~ s@^file%3[Aa]//@file://@;
-		}		
+		    $opts{f} = 'file://' . $opts{f} unless
+			$opts{f} =~ m@^(?:file|dbgp)://@;
+		}
 
 		getFileInfo(\%opts, 'f', $filename,
 			    \$bFileURI,
@@ -3475,8 +3476,9 @@ sub DB {
 			$bFileName,
 			$perlFileName);
 		    # work around broken clients
-		    $opts{f} =~ s@^(/|\\|[a-zA-Z]:\\)@file://$1@;
 		    $opts{f} =~ s@^file%3[Aa]//@file://@;
+		    $opts{f} = 'file://' . $opts{f} unless
+			$opts{f} =~ m@^(?:file|dbgp)://@;
 		    $endLine = $opts{e};
 
 		    getFileInfo(\%opts, 'f', $filename,

@@ -18,6 +18,21 @@ command_is(['source', '-f', 'file://t/scripts/source.pl'], {
     source  => _read_file('t/scripts/source.pl', 1, 10000),
 });
 
+command_is(['source', '-f', abs_path('t/scripts/source.pl')], {
+    success => 1,
+    source  => _read_file('t/scripts/source.pl', 1, 10000),
+});
+
+command_is(['source', '-f', abs_uri('t/scripts/source.pl')], {
+    success => 1,
+    source  => _read_file('t/scripts/source.pl', 1, 10000),
+});
+
+command_is(['source', '-f', 't/scripts/source.pl'], {
+    success => 1,
+    source  => _read_file('t/scripts/source.pl', 1, 10000),
+});
+
 command_is(['source', '-b', 10], {
     success => 1,
     source  => _read_file('t/scripts/source.pl', 10, 10000),

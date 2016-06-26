@@ -18,6 +18,7 @@ our @EXPORT = (
   @Test::DBGp::EXPORT,
   qw(
         abs_uri
+        abs_path
         run_debugger
         run_program
         send_command
@@ -46,6 +47,11 @@ my ($PID, $CHILD_IN, $CHILD_OUT, $CHILD_ERR);
 
 sub abs_uri {
     return 'file://' . File::Spec::Functions::rel2abs(
+        $_[0], Cwd::getcwd());
+}
+
+sub abs_path {
+    return File::Spec::Functions::rel2abs(
         $_[0], Cwd::getcwd());
 }
 
