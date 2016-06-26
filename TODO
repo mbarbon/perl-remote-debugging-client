@@ -36,6 +36,10 @@
 - property_set
   - implement data page, context id, stack depth
   - get rid of the special case that tries to manually quote strings
+- cleanup _getFullPropertyInfoByValue and kill analyzeVal
+  they can use Scalar::Util::reftype()/blessed() instead of performing
+  string operations on types, also, analyzeVal re-does some of the
+  checks already performed by _getFullPropertyInfoByValue
 - test
   - feature_set/feature_get
     - individual features
