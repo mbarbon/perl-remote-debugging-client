@@ -25,7 +25,6 @@ require Exporter;
 	     getContextProperties
 	     getFullPropertyInfoByValue
 	     getPropertyInfo
-	     sortArrayOfNames
 	     GlobalVars
 	     LocalVars
 	     FunctionArguments
@@ -637,12 +636,6 @@ sub analyzeVal($) {
 	$refstr =~ s/=.*//;
 	return ($refstr, 1, undef);
     }
-}
-
-sub sortArrayOfNames {
-    my ($a1, $a2) = split(//, $a, 2);
-    my ($b1, $b2) = split(//, $b, 2);
-    return ($a2 cmp $b2 || $a1 cmp $b1);
 }
 
 #############################################################################
