@@ -35,6 +35,9 @@
   or at least try to restore it afterwards
 - source command on Perl 5.8 and 5.10 does not return POD
   check in-memory and on-disk source match and get the POD from the disk file
+- property_set
+  - implement data page, context id, stack depth
+  - get rid of the special case that tries to manually quote strings
 - test
   - that all URI default to file:// if no protocol is set
     (workarouhd for broken clients)
@@ -47,7 +50,6 @@
     - temporary breakpoints for all breakpoint types, plus
       interaction with enable/disable
   - context_get (combinations of stack depth and context)
-  - property_set
   - property_get/property_value
     - stck depth/context combination
     - max size
