@@ -2,8 +2,6 @@
   - perl5db.pl
   - DB/DbgrProperties.pm
   - DB/DbgrCommon.pm
-- dblog() calls perform potentially expensive operations
-  even when logging is disabled
 - breakpoint on error
 - breakpoint on return should break before the function
   returns, otherwise they're not that useful

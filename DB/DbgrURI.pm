@@ -93,9 +93,11 @@ sub canonicalizeURI {
     my $new_URI = eval { filenameToURI(uriToFilename($bFileURI), 1) };
     if ($@ || !$new_URI) {
 	$new_URI = $bFileURI;
-	dblog($@) if ($@);
+	if ($@) {
+	    dblog($@) if $ldebug;
+	}
     } elsif ($new_URI ne $bFileURI) {
-	dblog("canonicalizeURI($bFileURI) ==> $new_URI");
+	dblog("canonicalizeURI($bFileURI) ==> $new_URI") if $ldebug;
     }
     $mem_canonicalizeURI{$bFileURI} = $new_URI;
     return $new_URI;

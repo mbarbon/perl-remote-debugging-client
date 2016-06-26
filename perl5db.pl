@@ -402,9 +402,7 @@ sub decodeData($;$) {
 	} elsif ($currDataEncoding eq 'base64') {
 	    $finalStr = DB::MIME::Base64::decode_base64($str);
 	} else {
-	    if ($ldebug) {
-		dblog("Converting $str with unknown encoding of $currDataEncoding\n");
-	    }
+            dblog("Converting $str with unknown encoding of $currDataEncoding\n") if $ldebug;
 	    $finalStr = $str;
 	}
     };
@@ -741,10 +739,10 @@ $specialVarRgx = qr/(\$(?:\^\w
 	$hostname = Sys::Hostname::hostname();
 	$hostname =~ s/\..*$//;	# Keep only the first part of a dotted name
 	$hostname =~ s/[^-_\w\d]+/_/g; # Turn non-alnums to safe chars
-	dblog("**** \$hostname=$hostname");
+	dblog("**** \$hostname=$hostname") if $ldebug;
     };
     if ($@) {
-	dblog("Error -- [$@]\n");
+	dblog("Error -- [$@]\n") if $ldebug;
     }
     $partial_dbgp_prefix = "dbgp://perl";
     $full_dbgp_prefix = "$partial_dbgp_prefix/$hostname/$$";
@@ -1055,7 +1053,7 @@ sub lookForPerlFileName {
 	};
 	if ($@) {
 	    dblog("Called uriToFilename in " .
-		  join("\n", dump_trace(0)));
+		  join("\n", dump_trace(0))) if $ldebug;
 	}
     }
     return $result;
@@ -1396,7 +1394,7 @@ sub getFileInfo($$$$$$$) {
 	    };
 	    if ($@) {
 		dblog("Called uriToFilename in " .
-		      join("\n", dump_trace(0)));
+		      join("\n", dump_trace(0))) if $ldebug;
 	    }
 	}
     } else {
@@ -1409,7 +1407,7 @@ sub getFileInfo($$$$$$$) {
 	};
 	if ($@) {
 	    dblog("Called uriToFilename in " .
-		  join("\n", dump_trace(0)));
+		  join("\n", dump_trace(0))) if $ldebug;
 	    return;
 	}
 	$perlNameToFileURINo{canonicalizeFName($perlFileName)} = $bFileURINo;
@@ -1484,7 +1482,7 @@ sub getBreakpointInfoString($%) {
 	if ($ldebug) {
 	    dblog("bkptInfo($bkptID, ",
 	          join(", ", map{$_ => "($_, $extraInfo{$_})"} keys %extraInfo),
-	          "), not defined\n");
+	          "), not defined\n") if $ldebug;
 	}
 	return undef;
     }
@@ -1501,7 +1499,7 @@ sub processPossibleBreakpoint($$;$) {
 	return;
     }
     elsif ($bkptInfoRef->[BKPTBL_TYPE] eq 'watch') {
-	dblog("Don't break on watch-breakpoints in processPossibleBreakpoint");
+	dblog("Don't break on watch-breakpoints in processPossibleBreakpoint") if $ldebug;
 	return;
     }
     my $bHitInfo = $bkptInfoRef->[BKPTBL_HIT_INFO];
@@ -1583,7 +1581,7 @@ sub splitCommandLine {
             push @args, $1;
 	    $cmd = $2;
         } else {
-	    dblog "Can't deal with input [$cmd]";
+	    dblog("Can't deal with input [$cmd]") if $ldebug;
 	    push @args, substr($cmd, 0, 1);
 	    $cmd = substr($cmd, 1);
 	}
@@ -1606,7 +1604,7 @@ sub _extract_var {
     if ($context && $name =~ /^\$\W/) {
 	# Skip it;
     } else {
-        dblog("_extract_var: var $type: $name");
+        dblog("_extract_var: var $type: $name") if $ldebug;
 	if ($type eq 'va') {
 	    $name =~ s/^\$/@/;
 	} elsif ($type eq 'vh') {
@@ -1832,30 +1830,30 @@ sub _fillMissingPodlines {
 	$eol = "\n";
     }
     for (my $i = 0; $i <= $#copy; ++$i) {
-	dblog("Processing line $i : <<$copy[$i]>>");
+	dblog("Processing line $i : <<$copy[$i]>>") if $ldebug;
 	if (!defined $copy[$i]) {
 	    if (substr($copy[$i - 1], 0, 1) == "=") {
 		$copy[$i] = "<pod dropped>$eol";
-		dblog("Setting line $i to pod-dropped");
+		dblog("Setting line $i to pod-dropped") if $ldebug;
 		while (++$i <= $#copy && !defined $copy[$i]) {
 		    $copy[$i] = "?$eol";
-		    dblog("Setting line $i to unknown");
+		    dblog("Setting line $i to unknown") if $ldebug;
 		}
 		if ($i <= $#copy) {
 		    if ($copy[$i] !~ /[\r\n]$/) {
 			$copy[$i] = "=cut$eol";
 		    } else {
-			dblog("Hey, line $i : $copy[$i] already ends with nl");
+			dblog("Hey, line $i : $copy[$i] already ends with nl") if $ldebug;
 		    }
 		} else {
-		    dblog("Ran off the end of the file");
+		    dblog("Ran off the end of the file") if $ldebug;
 		}
 	    } else {
-		dblog("line $i is undefined, but prev line = $copy[$i - 1]");
+		dblog("line $i is undefined, but prev line = $copy[$i - 1]") if $ldebug;
 		$copy[$i] = "$eol";
 	    }
 	} elsif ($copy[$i] !~ /[\r\n]$/) {
-	    dblog("line $i ($copy[$i]) doesn't end with newline");
+	    dblog("line $i ($copy[$i]) doesn't end with newline") if $ldebug;
 	    if ($copy[$i - 1] =~ /^[\?=]/ && length($copy[$i]) == 0) {
 		$copy[$i] = "=cut$eol";
 	    } else {
@@ -1877,7 +1875,7 @@ sub _fileSource {
 	if ($ldebug && defined $sourceString) {
 	    my @lines = split(/\n/, $sourceString);
 	    $lines = \@lines;
-	    dblog("Debugging a $pdkUtilityName module, grab source and get [" . join("\n", @lines[0..2]) . "]");
+	    dblog("Debugging a $pdkUtilityName module, grab source and get [" . join("\n", @lines[0..2]) . "]") if $ldebug;
 	}
     }
     if (!defined $sourceString && exists $main::{$sourceKey}) {
@@ -1971,7 +1969,7 @@ sub eval_term {
 sub DB {
     if ($full_bypass) {
 	($pkg, $filename, $line) = caller;
-	dblog("Bypassing ($pkg, $filename, $line)");
+	dblog("Bypassing ($pkg, $filename, $line)") if $ldebug;
 	return;
     }
     # return unless $ready;
@@ -2005,7 +2003,7 @@ sub DB {
 	}
     }
     if ($ldebug && $pkg !~ /^DB::/) {
-	dblog("In $pkg, $filename, $line\n");
+	dblog("In $pkg, $filename, $line\n") if $ldebug;
     }
     
     $usercontext = '($@, $!, $,, $/, $\, $^W) = @saved;' .
@@ -2062,7 +2060,7 @@ sub DB {
 
     local(*dbline) = "::_<$filename";
     if ($ldebug && $pkg eq 'DB::fake') {
-	dblog $dbline[$line];
+	dblog($dbline[$line]) if $ldebug;
     }
     if ($filename =~ /\(eval (\d+)\)\[(.*):(\d+)\]$/) {
 	internEvalURI($filename, \@dbline);
@@ -2097,7 +2095,7 @@ sub DB {
 
             # Did it change?
             if ($val ne $old_watch[$i]) {
-		dblog("checking watches, {$to_watch[$i]} was [$old_watch[$i]], not [$val]");
+		dblog("checking watches, {$to_watch[$i]} was [$old_watch[$i]], not [$val]") if $ldebug;
                 # Yep! Show the difference, and fake an interrupt.
                 $signal = 1;
                 $old_watch[$i] = $val;
@@ -2112,8 +2110,8 @@ sub DB {
         # Yes, go down a level.
         local $level = $level + 1;
 	if ($ldebug) {
-	    dblog "file:$filename, line:$line, package:$pkg\n";
-	    dblog ($#stack . " levels deep in subroutine calls!\n") if $single & 4;
+	    dblog("file:$filename, line:$line, package:$pkg\n");
+	    dblog($#stack . " levels deep in subroutine calls!\n") if $single & 4;
 	}
 	# Send a status thing back
 	if ($pkg eq 'DB::fake') {
@@ -2348,11 +2346,13 @@ sub DB {
 		if ($fakeFirstStepInto) {
 		    $bkptInfoRef = lookupBkptInfo($fileNameURINo, $line);
 		    if ($bkptInfoRef) {
-			dblog("hit a breakpoint at first breakable line");
+			dblog("hit a breakpoint at first breakable line") if $ldebug;
 			$getNextCmd = 1;
 		    } else {
-			dblog("\$fakeFirstStepInto was true, turning it off.");
-			dblog("\$single = $single");
+			if ($ldebug) {
+			    dblog("\$fakeFirstStepInto was true, turning it off.");
+			    dblog("\$single = $single");
+			}
 			$getNextCmd = 0;
 		    }
 		    $fakeFirstStepInto = 0;
@@ -2463,10 +2463,10 @@ sub DB {
 		if ($fakeFirstStepInto) {
 		    $bkptInfoRef = lookupBkptInfo($fileNameURINo, $line);
 		    if ($bkptInfoRef) {
-			dblog("hit a breakpoint at first breakable line");
+			dblog("hit a breakpoint at first breakable line") if $ldebug;
 			$getNextCmd = 1;
 		    } else {
-			dblog("\$fakeFirstStepInto was true, turning it off.");
+			dblog("\$fakeFirstStepInto was true, turning it off.") if $ldebug;
 			$getNextCmd = 0;
 		    }
 		    $fakeFirstStepInto = 0;
@@ -2597,7 +2597,7 @@ sub DB {
 			     || !defined $bHitInfo->[HIT_TBL_EVAL_FUNC]) {
 			setNullBkPtHitInfo($bkptID);
 		    } else {
-			dblog("breakpoint_update -- doing nothing");
+			dblog("breakpoint_update -- doing nothing") if $ldebug;
 		    }
 		    dblog("doing op $cmd\n") if $ldebug;
 		    local $res = sprintf(qq(%s\n<response %s command="%s" 
@@ -2619,7 +2619,7 @@ sub DB {
 			printWithLength($res);
 		    }
 		} else {
-		    dblog "failed to do op $cmd (error code $bptErrorCode)\n" if $ldebug;
+		    dblog("failed to do op $cmd (error code $bptErrorCode)\n") if $ldebug;
 		    makeErrorResponse($cmd,
 				      $transactionID,
 				      $bptErrorCode,
@@ -2633,7 +2633,7 @@ sub DB {
 		local $bFileURI;
 		($bFileURINo, $bLine, $bState, $bType, $bFunction, $bExpression, $bException) = getBkPtInfo($bkptID);
 		if ($bType eq 'watch') {
-		    dblog("Deleting watchpoint [$bExpression]");
+		    dblog("Deleting watchpoint [$bExpression]") if $ldebug;
 		    my $i_cnt = 0;
 		    foreach (@to_watch) {
 			my $val = $to_watch[$i_cnt];
@@ -2648,11 +2648,11 @@ sub DB {
 			$i_cnt++;
 		    }		## end foreach (@to_watch)
 		    if (--$numWatchPoints <= 0) {
-			dblog("No more watching anything [\$numWatchPoints = $numWatchPoints]");
+			dblog("No more watching anything [\$numWatchPoints = $numWatchPoints]") if $ldebug;
 			$numWatchPoints = 0;
 			$trace &= ~2;
 		    } else {
-			dblog("Still watching $numWatchPoints watchPoints");
+			dblog("Still watching $numWatchPoints watchPoints") if $ldebug;
 		    }
 		} elsif (!defined $bFileURINo) {
 		    $bptErrorCode = DBP_E_NoSuchBreakpoint;
@@ -3304,7 +3304,7 @@ sub DB {
 						     $pageIndex);
 		    };
 		    if ($@) {
-			dblog("Error in emitEvaluatedPropertyGetInfo: [$@]");
+			dblog("Error in emitEvaluatedPropertyGetInfo: [$@]") if $ldebug;
 			makeErrorResponse($cmd,
 					  $transactionID,
 					  $code,
@@ -3399,7 +3399,7 @@ sub DB {
 		my %opts;
 		{
 		    local *ARGV = *cmdArgs;
-		    dblog("source: args={@ARGV}");
+		    dblog("source: args={@ARGV}") if $ldebug;
 
 		    shift @ARGV;
 		    getopts('b:e:f:', \%opts);
@@ -3416,7 +3416,7 @@ sub DB {
 		    my $pdkUtilityName = $1;
 		    my @lines = split(/\n/, INC($2));
 		    $endLine = $opts{e} || $#lines;
-		    dblog("Line " . __LINE__ . ": Debugging a $pdkUtilityName module, grab source($1) and get [" . join("\n", @lines[0..2]) . "]");
+		    dblog("Line " . __LINE__ . ": Debugging a $pdkUtilityName module, grab source($1) and get [" . join("\n", @lines[0..2]) . "]") if $ldebug;
 		    ($sourceString, $error) =
 			_fileSource($1,
 				    $beginLine,
@@ -3424,7 +3424,7 @@ sub DB {
 				    \@lines);
 		    # One slash or two in this next pattern?
 		} elsif ($opts{f} =~ m@^dbgp:///?perl/.*(\d+)(/\(eval\s\d+\).*)$@ || $opts{f} =~ m@^dbgp:///?perl/.*(\d+)(/%28eval%20\d+%29.*)$@) {
-		    dblog("source: it's a dbgp thing ($1/$2)");
+		    dblog("source: it's a dbgp thing ($1/$2)") if $ldebug;
 		    my $dynLocnIdx = $1;
 		    my $dynamicLocation;
 		    if (defined $evalTableIdx[$dynLocnIdx]
@@ -3486,7 +3486,7 @@ sub DB {
 				\$bFileURINo,
 				\$bFileName,
 				\$perlFileName);
-		    dblog("** source -- file $filename, perl name $perlFileName");
+		    dblog("** source -- file $filename, perl name $perlFileName") if $ldebug;
 		    ($sourceString, $error) =
 			_fileSource($perlFileName,
 				    $beginLine,
@@ -3496,7 +3496,7 @@ sub DB {
 		}
 		if ($error || !$sourceString) {
 		    if (!$error) {
-			dblog("Failed to set an error, but got no string");
+			dblog("Failed to set an error, but got no string") if $ldebug;
 			$error = "source cmd -- unknown error";
 		    } else {
 			dblog("source: $error\n") if $ldebug;
@@ -3700,7 +3700,7 @@ sub finish_postponed {
 	    };
 	    if ($@) {
 		dblog("Called uriToFilename in " .
-		      join("\n", dump_trace(0)));
+		      join("\n", dump_trace(0))) if $ldebug;
 		return;
 	    }
 	    $perlNameToFileURINo{canonicalizeFName($perlFileName)} = $bFileURINo;
@@ -3884,7 +3884,7 @@ sub _checkForBreak {
 	    || ($cmd =~ /^(\w+)\b/ && $supportedCommands{$1})) {
 	    unshift(@_pending_commands, $cmd);
 	} else {
-	    dblog("_checkForBreak: Appending [$cmd] onto $_pending_commands[0]\n");
+	    dblog("_checkForBreak: Appending [$cmd] onto $_pending_commands[0]\n") if $ldebug;
 	    $_pending_commands[0] .= $cmd;
 	}
     }
@@ -4137,6 +4137,7 @@ sub parse_options {
 		    DB::DbgrCommon::enableLogger($logThing);
 		    $ldebug = 1;
 		    $DB::DbgrProperties::ldebug = 1;
+		    $DB::DbgrCommon::ldebug = 1;
 		};
 		if ($@) {
 		    # Disable this.

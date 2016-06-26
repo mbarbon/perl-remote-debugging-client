@@ -260,13 +260,13 @@ sub _truncateIfNecessary {
     if ($maxDataSize > 0) {
 	$maxDataSize -= 2 if $stripOuterBrackets;
 	if (length($res) > $maxDataSize) {
-	    dblog("_truncateIfNecessary: Have length(\$res) = ", length($res), " > $maxDataSize");
+	    dblog("_truncateIfNecessary: Have length(\$res) = ", length($res), " > $maxDataSize") if $ldebug;
 	    if ($maxDataSize >= 3) {
 		$res = substr($res, 0, ($maxDataSize - 3)) . "...";
 	    } else {
 		$res = substr($res, 0, $maxDataSize);
 	    }
-	    dblog("_truncateIfNecessary: After: length(\$res) = ", length($res));
+	    dblog("_truncateIfNecessary: After: length(\$res) = ", length($res)) if $ldebug;
 	}
     }
     return $res;
@@ -613,12 +613,12 @@ sub analyzeVal($) {
     } elsif (overload::Overloaded($val)) {
 	my $overloadedRefStr;
 	if ($overloadedRefStr = overload::StrVal($val)) {
-	    dblog('qqq:analyzeVal ' . __LINE__);
-	    dblog("analyzeVal -- overloaded [$val] => $overloadedRefStr");
+	    dblog('qqq:analyzeVal ' . __LINE__) if $ldebug;
+	    dblog("analyzeVal -- overloaded [$val] => $overloadedRefStr") if $ldebug;
 	    my $className;
 	    if ($overloadedRefStr =~ /^(.*)=/) {
 		$className = $1;
-		dblog("  \$className = $className, \$overloadedRefStr = $overloadedRefStr");
+		dblog("  \$className = $className, \$overloadedRefStr = $overloadedRefStr") if $ldebug;
 		if ($overloadedRefStr =~ /=HASH\(0x\w+\)/) {
 		    return ('HASH', scalar keys %$val, $className, $overloadedRefStr);
 		} elsif ($overloadedRefStr =~ /=ARRAY\(0x\w+\)/) {
@@ -627,10 +627,10 @@ sub analyzeVal($) {
 		    return ('SCALAR', 0, $className, $overloadedRefStr);
 		}
 	    }
-	    dblog("Could pull className out of refstr [$overloadedRefStr]");
+	    dblog("Could pull className out of refstr [$overloadedRefStr]") if $ldebug;
 	}
 	# It's some other kind of bizarre overloaded operator.
-	dblog('qqq:analyzeVal ' . __LINE__);
+	dblog('qqq:analyzeVal ' . __LINE__) if $ldebug;
 	return ('SCALAR', 0, $overloadedRefStr);
     } else {
 	# Return whatever it is.

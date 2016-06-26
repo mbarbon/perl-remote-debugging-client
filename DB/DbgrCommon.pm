@@ -201,9 +201,9 @@ sub encodeData($;$) {
 	my $str = safe_dump($str);
 	if ($@) {
 	    $str = (substr($str, 0, 100) . '...') if length($str) > 100;
-	    dblog("encodeData('$str') => [$@]\n");
+	    dblog("encodeData('$str') => [$@]\n") if $ldebug;
 	} else {
-	    dblog("encodeData('$str') => ['$finalStr']\n");
+	    dblog("encodeData('$str') => ['$finalStr']\n") if $ldebug;
 	}
     }
     return $finalStr;
