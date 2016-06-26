@@ -46,7 +46,6 @@
       (line/call/return/conditional/watch)
     - temporary breakpoints for all breakpoint types, plus
       interaction with enable/disable
-  - stack_get depth
   - context_get (combinations of stack depth and context)
   - property_set
   - property_get/property_value

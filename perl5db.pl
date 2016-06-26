@@ -3028,9 +3028,9 @@ sub DB {
 					    checkForEvalStackType($sub[$stackDepth]->{sub}),
 					    calcFileURI $sub2->{file},
 					    $sub2->{line},
-					    ($stackDepth == scalar @sub
-					     ? 'main'
-					     : trimEvalSubNames ($sub[$stackDepth]{sub})),
+					    ($sub[$stackDepth]->{sub}
+					     ? trimEvalSubNames ($sub[$stackDepth]{sub})
+					     : 'main'),
 					    );
 			}
 		    } else {
