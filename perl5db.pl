@@ -535,6 +535,7 @@ sub disconnect {
 }
 
 sub connectOrReconnect {
+  dblog("Trying to open connection to client") if $ldebug;
   $PID = $$;
   disconnect() if $OUT;
   # If RemotePort was defined in the options, connect input and output
@@ -553,15 +554,19 @@ sub connectOrReconnect {
 			       );
   }
 
-  # diabled by 'detach'
+  # disabled by 'detach'
   map { $supportedCommands{$_} = 1 } (qw(run step_into step_over step_out detach));
 
   if (!$OUT) {
+      my ($error_num, $error_str) = ($!, "$!");
       if ($remoteport) {
-          warn "Unable to connect to remote host: $remoteport ($!)\n";
+          dblog("Unable to connect to remote host: $remoteport ($error_str)") if $ldebug;
+          warn "Unable to connect to remote host: $remoteport ($error_str)\n";
       } else {
-          warn "Unable to connect to Unix socket: $remotepath ($!)\n";
+          dblog("Unable to connect to Unix socket: $remotepath ($error_str)") if $ldebug;
+          warn "Unable to connect to Unix socket: $remotepath ($error_str)\n";
       }
+      dblog("Running program outside the debugger") if $ldebug;
       warn "Running program outside the debugger...\n";
       # Disable the debugger to keep the Perl program running
       disable();
@@ -605,6 +610,7 @@ if (!$connect_at_start) {
 } elsif (defined $remoteport || defined $remotepath) {
     connectOrReconnect();
 } else {
+    dblog("RemotePort not set for debugger") if $ldebug;
     warn "RemotePort not set for debugger\n";
     # Keep going
     disable();
@@ -4216,6 +4222,7 @@ BEGIN {
 }
 
 sub enable {
+    dblog("(Re-)enabling the debugger via DB::enable()") if $ldebug;
     die "DB::enable() called too early" unless %ORIG_DB_SUB;
     $DB::single = 1;
     $^P = DEBUG_DEFAULT_FLAGS;
@@ -4224,6 +4231,7 @@ sub enable {
 }
 
 sub disable {
+    dblog("Disabling the debugger via DB::disable()") if $ldebug;
     die "DB::disable() called too early" unless %ORIG_DB_SUB;
     $DB::single = 0;
     $^P = DEBUG_PREPARE_FLAGS;
