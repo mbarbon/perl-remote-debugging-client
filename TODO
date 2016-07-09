@@ -43,7 +43,6 @@
 - test
   - feature_set/feature_get
     - individual features
-  - step_into/step_over/step_out
   - breakpoints
     - breakpoint_get/update/remove/list for all breakpoint types
       (line/call/return/conditional/watch)

@@ -24,6 +24,8 @@ t/030_detach_reconnect.t
 t/031_keep_running.t
 t/035_connect_after.t
 t/036_no_connect_at_start.t
+t/102_step_over.t
+t/103_step_out.t
 t/110_typemap.t
 t/112_hit_break.t
 t/115_conditional_break.t
@@ -66,6 +68,7 @@ t/scripts/punctuation.pl
 t/scripts/reconnect.pl
 t/scripts/source.pl
 t/scripts/stack.pl
+t/scripts/step.pl
 t/scripts/variables.pl
 t/scripts/variables_complex.pl
 t/scripts/variables_complex_510.pl

@@ -23,6 +23,8 @@ our @EXPORT = (
         run_program
         send_command
         command_is
+        position_is
+        stack_depth_is
         breakpoint_list_is
         eval_value_is
         start_listening
@@ -99,6 +101,34 @@ sub command_is {
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     dbgp_command_is(@_);
+}
+
+sub position_is {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my ($file, $line) = @_;
+
+    dbgp_command_is(['stack_get', '-d', 0], {
+        command => 'stack_get',
+        frames  => [
+            {
+                level       => 0,
+                filename    => abs_uri($file),
+                lineno      => $line,
+            },
+        ],
+    });
+}
+
+sub stack_depth_is {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    my ($depth) = @_;
+
+    dbgp_command_is(['stack_depth'], {
+        command => 'stack_depth',
+        depth   => $depth,
+    });
 }
 
 sub eval_value_is {
