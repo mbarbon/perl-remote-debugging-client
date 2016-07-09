@@ -1,5 +1,7 @@
 - use strict, at least 'vars' and 'subs'
   - perl5db.pl
+- remove shared variables (our ())
+- use strict 'refs' in DB/DbgrProperties.pm and perl5db.pl
 - breakpoint on error
 - breakpoint on return should break before the function
   returns, otherwise they're not that useful
@@ -39,6 +41,7 @@
   string operations on types, also, analyzeVal re-does some of the
   checks already performed by _getFullPropertyInfoByValue
 - test
+  - that eval can see function arguments
   - feature_set/feature_get
     - individual features
   - breakpoints
