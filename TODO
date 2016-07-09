@@ -1,7 +1,6 @@
 - use strict, at least 'vars' and 'subs'
   - perl5db.pl
   - DB/DbgrProperties.pm
-  - DB/DbgrCommon.pm
 - breakpoint on error
 - breakpoint on return should break before the function
   returns, otherwise they're not that useful

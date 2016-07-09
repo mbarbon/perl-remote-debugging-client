@@ -12,15 +12,16 @@
 
 package DB::DbgrCommon;
 
+use strict;
 use DB::CGI::Util qw();
 use DB::MIME::Base64 qw();
 use File::Basename qw(dirname);
 use Encode;
 
-$VERSION = 0.10;
 require Exporter;
-@ISA = qw(Exporter);
-@EXPORT = qw(encodeData
+our @ISA = qw(Exporter);
+our @EXPORT = qw(
+	     encodeData
 	     endPropertyTag getCommonType
              isFloat
 	     makeErrorResponse namespaceAttr
@@ -63,12 +64,13 @@ require Exporter;
 	     NV_UNSET_FLAG
 
 	     %settings
+	     setLogFH
 	     dblog
 	     );
 
 # Leave the other parts of the logger unexported.
 
-@EXPORT_OK = qw();
+our @EXPORT_OK = qw();
 
 # Error codes
 
@@ -108,8 +110,11 @@ use constant NV_UNSET_FLAG => 3;
 
 # Real simple logging
 
-$doLogging = 0;
-$logFH = undef;
+my $doLogging = 0;
+my $logFH = undef;
+my $OUT = undef;
+our $ldebug;
+our %settings;
 
 # enableLogger(filename || filehandle);
 # dies if it fails to do logging
@@ -173,7 +178,9 @@ sub dblog {
     }
 }
 
-# our ($OUT, $ldebug);
+sub setLogFH {
+    $logFH = $_[0];
+}
 
 sub setDefaultOutput {
     $OUT = shift;
@@ -288,9 +295,9 @@ sub namespaceAttr() {
 }
 
 sub printWithLength {
-  local $mainArg = shift;
-  local $argLen = length($mainArg);
-  local $finalStr = sprintf("%d\0%s\0", $argLen, $mainArg);
+  my $mainArg = shift;
+  my $argLen = length($mainArg);
+  my $finalStr = sprintf("%d\0%s\0", $argLen, $mainArg);
 ####   local $SIG{__WARN__} = sub {
 ####       my $msg = shift;
 ####       dblog("**************** Warn hook: {$msg}");

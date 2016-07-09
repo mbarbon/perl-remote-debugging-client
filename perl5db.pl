@@ -3560,7 +3560,7 @@ sub DB {
 			tie(*STDOUT, 'DB::RedirectStdOutput', *ActualSTDOUT, $OUT, $cmd, $copyType);
 			$tiedFileHandles{'stdout'} = 1;
 			if ($DB::outLogName && $DB::outLogName == \*STDOUT) {
-			    $DB::DbgrCommon::logFH = \*ActualSTDOUT;
+			    setLogFH(\*ActualSTDOUT);
 			}
 		    } elsif ($cmd eq 'stderr' && !$ldebug) {
 			if (exists $tiedFileHandles{'stderr'}) {
@@ -3577,7 +3577,7 @@ sub DB {
 			tie(*STDERR, 'DB::RedirectStdOutput', *ActualSTDERR, $OUT, $cmd, $copyType);
 			$tiedFileHandles{'stderr'} = 1;
 			if ($DB::outLogName && $DB::outLogName == \*STDERR) {
-			    $DB::DbgrCommon::logFH = \*ActualSTDERR;
+			    setLogFH(\*ActualSTDERR);
 			}
 		    }
 		    local $res = sprintf(qq(%s\n<response %s command="%s" 
