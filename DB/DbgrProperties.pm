@@ -12,10 +12,12 @@
 
 package DB::DbgrProperties;
 
-$VERSION = 0.10;
+use strict qw(vars subs);
+
+our $VERSION = 0.10;
 require Exporter;
-@ISA = qw(Exporter);
-@EXPORT = qw(
+our @ISA = qw(Exporter);
+our @EXPORT = qw(
 	     doPropertySetInfo
 	     emitContextNames
 	     emitContextProperties
@@ -30,7 +32,7 @@ require Exporter;
 	     FunctionArguments
 	     PunctuationVariables
 	     );
-@EXPORT_OK = ();
+our @EXPORT_OK = ();
 
 use overload;
 
@@ -54,19 +56,21 @@ use constant GlobalVars => 1;
 use constant FunctionArguments => 2;
 use constant PunctuationVariables => 3;
 
-$ldebug = 0;
+our $ldebug = 0;
 
 # Private Data
 
-%contextProperties = (Globals => GlobalVars,
-		      Locals => LocalVars,
-		      Arguments => FunctionArguments,
-		      Special => PunctuationVariables);
-@contextProperties = sort { $contextProperties{$a} <=> $contextProperties{$b} } keys %contextProperties;
+my %contextProperties = (
+    Globals => GlobalVars,
+    Locals => LocalVars,
+    Arguments => FunctionArguments,
+    Special => PunctuationVariables,
+);
+my @contextProperties = sort { $contextProperties{$a} <=> $contextProperties{$b} } keys %contextProperties;
 
-@_punctuationVariables = ('$_', '$?', '$@', '$.', '@+', '@-', '$+', '$!', '$$', '$0');
+my @_punctuationVariables = ('$_', '$?', '$@', '$.', '@+', '@-', '$+', '$!', '$$', '$0');
 # $`, $& and $' are special-cased to avoid the performance penalty
-@_rxPunctuationVariables = ('`', '&', '\'');
+my @_rxPunctuationVariables = ('`', '&', '\'');
 
 # Exported subs
 
@@ -113,7 +117,7 @@ sub emitContextNames($$) {
 		      $transactionID);
     # todo: the spec suggests that locals be the default,
     # but globals (package globals) make more sense for Perl.
-    for ($i = 0; $i <= $#contextProperties; $i++) {
+    for (my $i = 0; $i <= $#contextProperties; $i++) {
 	$res .= sprintf(qq(<context name="%s" id="%d" />\n),
 			$contextProperties[$i],
 			$i);
@@ -425,7 +429,7 @@ sub _getFullPropertyInfoByValue {
 		$hasChildren = $numChildren && 1;
 		if ($className) {
 		    $typeString = $className;
-		    if ($maxDataSize >= 0 && $dataSize > $maxDataSize) {
+		    if ($maxDataSize >= 0 && length($val) > $maxDataSize) {
 			# dblog("getFullPropertyInfoByValue: truncating data down to $maxDataSize bytes:\n[$val]\n");
 			$val = substr($val, 0, $maxDataSize);
 		    }
