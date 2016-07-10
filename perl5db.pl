@@ -234,6 +234,11 @@ sub eval {
     @res;
 } ## end sub eval
 
+# moved here to avoid it seeing the lexical context
+sub simple_eval {
+    eval $_[0];
+}
+
 use IO::Handle;
 
 # Debugger for Perl 5.00x; perl5db.pl patch level:
@@ -1747,7 +1752,7 @@ sub _getProximityVarsViaB {
             $evaltext .= "scalar eval '\\$name',\n";
         }
     }
-    eval "use strict; \@DB::lex_vars_list = ($evaltext)";
+    simple_eval("use strict; \@DB::lex_vars_list = ($evaltext)");
     my @results;
     for my $i (0 .. $#lex_vars_list) {
         next unless my $value = $lex_vars_list[$i];
