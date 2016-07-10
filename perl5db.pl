@@ -664,10 +664,6 @@ use constant HIT_TBL_VALUE => 1; # Target hit value
 use constant HIT_TBL_EVAL_FUNC => 2; # Function to call(VALUE, COUNT)
 use constant HIT_TBL_COND_STRING => 3; # Condition string
 
-use constant IB_STATE_NONE => 0;
-use constant IB_STATE_START => 1;
-use constant IB_STATE_PENDING => 2;
-
 use constant STOP_REASON_STARTING => 0;
 use constant STOP_REASON_STOPPING => 1;
 use constant STOP_REASON_STOPPED => 2;
@@ -708,8 +704,6 @@ $nextBkPtIndex = 0;
 
 $numWatchPoints = 0;
 
-$ibState = IB_STATE_NONE;
-$ibBuffer = undef;
 $startedAsInteractiveShell = undef;
 
 # End of initialization code.
@@ -1797,19 +1791,6 @@ sub _guessScalarOrArray($) {
 	# They're all strings
 	return join('', @$valsARef);
     }
-}
-
-sub _isPrintable($$) {
-    my($ibBuffer, $valRef) = @_;
-    if ($ibBuffer =~ /^[\s\(]*[\*\&]/) {
-	return;
-    } elsif ($ibBuffer =~ /^\s*sub\b/) {
-	return;
-    }
-    require overload;
-    return (overload::Overloaded($valRef)
-            || $valRef =~ /HASH|ARRAY|SCALAR/
-            || (ref $valRef) =~ /Regexp/);
 }
 
 sub _fillMissingPodlines {
