@@ -41,6 +41,8 @@
   string operations on types, also, analyzeVal re-does some of the
   checks already performed by _getFullPropertyInfoByValue
 - test
+  - interactive mode (prints banner when used with -e, maybe it does
+    other stuff as well)
   - that eval can see function arguments
   - feature_set/feature_get
     - individual features

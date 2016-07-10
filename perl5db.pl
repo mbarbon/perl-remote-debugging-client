@@ -501,25 +501,23 @@ if ($remoteport =~ /^\d+$/) {
 }
 
 sub emitBanner {
-    require Config;
-    local *Config = *Config::Config;
     my $version_str;
-    if ($Config{PERL_REVISION}) {
-	$version_str = $Config{PERL_REVISION};
-	if ($Config{PERL_VERSION}) {
-	    $version_str .= '.' . $Config{PERL_VERSION};
-	    if ($Config{PERL_SUBVERSION}) {
-		$version_str .= '.' . $Config{PERL_SUBVERSION};
+    if ($Config::Config{PERL_REVISION}) {
+	$version_str = $Config::Config{PERL_REVISION};
+	if ($Config::Config{PERL_VERSION}) {
+	    $version_str .= '.' . $Config::Config{PERL_VERSION};
+	    if ($Config::Config{PERL_SUBVERSION}) {
+		$version_str .= '.' . $Config::Config{PERL_SUBVERSION};
 	    }
 	}
     } else {
 	$version_str = $];
     }
     my $str = "# ";
-    $str .= ($Config{cf_by} =~ /activestate/i
-	     ? "ActivePerl" : ($Config{perl} || "Perl"));
+    $str .= ($Config::Config{cf_by} =~ /activestate/i
+	     ? "ActivePerl" : ($Config::Config{perl} || "Perl"));
     $str .= " v$version_str";
-    $str .= " [$Config{archname}]\n";
+    $str .= " [$Config::Config{archname}]\n";
     # $str .= "# Type    `perl -v`   for more info.\n";
     print STDOUT $str;
 }
