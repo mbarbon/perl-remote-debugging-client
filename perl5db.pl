@@ -124,8 +124,6 @@ sub DEBUG_PREPARE_FLAGS() # 0x73c
 
 sub DB_RECURSIVE_DEBUG()    { 0x40000000 }
 
-my (%ORIG_DB_SUB, %DISABLED_DB_SUB);
-
 # 'my' variables used here could leak into (that is, be visible in)
 # the context that the code being evaluated is executing in. This means that
 # the code could modify the debugger's variables.
@@ -4212,6 +4210,8 @@ sub end_report {
 		     $cmd,
 		     ));
 }
+
+my (%ORIG_DB_SUB, %DISABLED_DB_SUB);
 
 BEGIN {
     %ORIG_DB_SUB = %DISABLED_DB_SUB = map {
