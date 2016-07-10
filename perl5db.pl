@@ -423,19 +423,13 @@ sub decodeData($;$) {
     return $finalStr;
 }
 
-$stopReason = 0;
 $lastContinuationCommand = undef;
 # $lastContinuationCommand = 'step_into';
 $lastContinuationStatus = 'break';
 $lastTranID = 0;  # The transactionID that started
 
-@stopReasons = (qw(starting stopping stopped running break interactive));
-sub getStopReason {
-  if ($stopReason >= 0 && $stopReason <= $#stopReasons) {
-    return $stopReasons[$stopReason];
-  }
-  die "Bad \$stopReason = $stopReason\n";    
-}
+my $stopReason = STOP_REASON_STARTING();
+my @stopReasons = (qw(starting stopping stopped running break interactive));
 
 =head1 StopReasons
 
@@ -533,7 +527,7 @@ sub disconnect {
       $OUT->shutdown(2);
   }
   $OUT = $IN = $OUT_selector = undef;
-  $stopReason = 0;
+  $stopReason = STOP_REASON_STARTING();
   $lastContinuationCommand = undef;
   $lastContinuationStatus = 'break';
   $lastTranID = 0;  # The transactionID that started
@@ -577,7 +571,7 @@ sub connectOrReconnect {
       disable();
   } else {
       $signal = $single = $finished = $runnonstop = 0;
-      $stopReason = 0;
+      $stopReason = STOP_REASON_STARTING();
       $sentInitString = 0;
       $fakeFirstStepInto = 1;
       setDefaultOutput($OUT);
@@ -2138,7 +2132,7 @@ sub DB {
 				  $lastTranID,
 				  fileAndLineIfXdebug()));
 	}
-	$stopReason = STOP_REASON_BREAK;
+	$stopReason = STOP_REASON_BREAK unless $finished;
 
 	# command loop
 	local $@;
@@ -2216,7 +2210,7 @@ sub DB {
 				    reason="ok" transaction_id="%s"/>),
 				 xmlHeader(),
 				 namespaceAttr(),
-				 $startedAsInteractiveShell ? 'interactive' : getStopReason(),
+				 $startedAsInteractiveShell ? 'interactive' : $stopReasons[$stopReason],
 				 $transactionID));
 
 	    } elsif ($cmd eq 'feature_get') {
@@ -4182,6 +4176,7 @@ END {
     $single = 0;
     # Do not stop in at_exit() and destructors on exit:
     $DB::finished = 1;
+    $stopReason = STOP_REASON_STOPPING;
     if ($DB::fall_off_end) {
 	dblog("END block: single <= 0\n") if $ldebug;
 	$single = 0;
