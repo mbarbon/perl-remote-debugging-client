@@ -323,6 +323,9 @@ Keep track of the various settings in this hash
 
 =cut
 
+use DB::DbgrCommon;
+use DB::DbgrProperties;
+
 %supportedCommands = (
 		      status => 1,
 		      feature_get => 1,
@@ -374,8 +377,9 @@ Keep track of the various settings in this hash
 
 # Feature name => [value, allowed settable values, if constrained]
 
+# this is shared with DB::DbgrCommon and DB::DbgrProperties via exporting
 %settings = ( encoding => ['UTF-8', ['UTF-8', 'iso-8859-1']],
-	      data_encoding => ['base64', ['urlescape', 'base64', 'none', 'binary']], # binary  and 'none' are the same
+	      data_encoding => ['base64', ['urlescape', 'base64', 'none', 'binary']], # binary	and 'none' are the same
 	      max_children => [10, 1],
 	      max_data => [32767, 1],
 	      max_depth => [1, 1],
@@ -383,7 +387,6 @@ Keep track of the various settings in this hash
 	      language_version => [sprintf("%vd", $^V)],
 	      protocol_version => ['1.0'],
 	      );
-*DB::DbgrCommon::settings = *settings;
 
 sub xsdNamespace() {
   return q(xmlns:xsd="http://www.w3.org/2001/XMLSchema");
@@ -642,8 +645,6 @@ sub setupOnceAfterConnection {
 
 # Data structures for managing breakpoints
 
-use DB::DbgrCommon;
-use DB::DbgrProperties;
 use DB::DbgrURI qw(canonicalizeFName
 		   canonicalizeURI
 		   filenameToURI
