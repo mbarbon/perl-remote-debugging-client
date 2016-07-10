@@ -713,17 +713,6 @@ $ibBuffer = undef;
 $startedAsInteractiveShell = undef;
 
 # End of initialization code.
-$proximityrgx = qr/((?:\$\#?
-                     |\%
-                     |(?<!\w)\@)   # Avoid email addrs in strings
-                    [a-zA-Z_]\w*[\[\{]?)/x;
-$specialVarRgx = qr/(\$(?:\^\w
-                        |\{\^.*?\}
-                        |[\*\+\&\'\`\|\-\=\~\%\!\"\$\(\)\,\.\/\:\;]
-                        |_
-                        |\d+)
-                     |\@[-_+]
-                     |\%(?:\!|\^H))/x;
 
 {
     $hostname = 'unknown';
