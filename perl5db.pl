@@ -1342,76 +1342,43 @@ sub evalArgument($$$) {
     }
     return ($returned_long_name, $currVal);
 }
-	
 
-sub getFileInfo($$$$$$$) {
-    my ($optshref,
-	$optionLetter,
-	$filename,
-	$rbFileURI,
+sub getFileInfo($$$$$) {
+    my ($bFileURI,
+        $rbFileURI,
 	$rbFileURINo,
 	$rbFileName,
 	$rperlFileName) = @_;
 
-    my ($bFileURI,
-	$bFileURINo,
+    my ($bFileURINo,
 	$bFileName,
 	$perlFileName);
 
-    # Either the request specified a file uri, or we're
-    # to use the current one.
-
-    if (defined $optshref->{$optionLetter}) {
-	$bFileURI = $optshref->{$optionLetter};
-	# URIs need to be stored in a canonical format,
-	# since they're how we look things up.
-	# Filenames aren't used for lookups directly.
-	$bFileURI = canonicalizeURI($bFileURI);
-	$bFileURINo = internFileURI($bFileURI);
-	if (defined $fileNameTable[$bFileURINo]) {
-	    (undef, $bFileName, $perlFileName) = @{$fileNameTable[$bFileURINo]};
-	} else {
-	    local $@;
-	    eval {
-		$bFileName = canonicalizeFName(uriToFilename($bFileURI));
-		$perlFileName = lookForPerlFileName($bFileName);
-		if (defined $perlFileName) {
-		    $perlNameToFileURINo{$perlFileName} = $bFileURINo;
-		    $fileNameTable[$bFileURINo] = [$bFileURI,
-						   $bFileName,
-						   $perlFileName];
-		}
-	    };
-	    if ($@) {
-		dblog("Called uriToFilename in " .
-		      join("\n", dump_trace(0))) if $ldebug;
-	    }
-	}
+    # URIs need to be stored in a canonical format,
+    # since they're how we look things up.
+    # Filenames aren't used for lookups directly.
+    $bFileURI = canonicalizeURI($bFileURI);
+    $bFileURINo = internFileURI($bFileURI);
+    if (defined $fileNameTable[$bFileURINo]) {
+	(undef, $bFileName, $perlFileName) = @{$fileNameTable[$bFileURINo]};
     } else {
-	$perlFileName = $filename;
-	$bFileURI = canonicalizeURI($fileNameURI);
-	$bFileURINo = $fileNameURINo;
 	local $@;
 	eval {
 	    $bFileName = canonicalizeFName(uriToFilename($bFileURI));
+	    $perlFileName = lookForPerlFileName($bFileName);
+	    if (defined $perlFileName) {
+		$perlNameToFileURINo{$perlFileName} = $bFileURINo;
+		$fileNameTable[$bFileURINo] = [$bFileURI,
+					       $bFileName,
+					       $perlFileName];
+	    }
 	};
 	if ($@) {
 	    dblog("Called uriToFilename in " .
 		  join("\n", dump_trace(0))) if $ldebug;
-	    return;
 	}
-	$perlNameToFileURINo{canonicalizeFName($perlFileName)} = $bFileURINo;
-
-	# Do a sanity check
-	local $tmpName = lookForPerlFileName($bFileName);
-	if (! defined $tmpName) {
-	    dblog("**** breakpoint_set: Error: Can't find a perl name for current name [$perlFileName], fullCanName [$bFileName], URI [$bFileURI]\n") if $ldebug;
-	}
-	$bFileURINo = internFileURI($bFileURI);
-	$fileNameTable[$bFileURINo] = [$bFileURI,
-				       $bFileName,
-				       $perlFileName];
     }
+
     # And set the references
     $$rbFileURI = $bFileURI;
     $$rbFileURINo = $bFileURINo;
@@ -2730,7 +2697,6 @@ sub DB {
 		}
 
 		# For now, set the filename to either $opts{f} or curr filename
-
 		$bHitCount = $opts{h};
 		$bFunctionName = $opts{m};
 		$bLine = $opts{n} || $line;
@@ -2750,7 +2716,7 @@ sub DB {
 			$opts{f} =~ m@^(?:file|dbgp)://@;
 		}
 
-		getFileInfo(\%opts, 'f', $filename,
+		getFileInfo($opts{f} // calcFileURI($filename),
 			    \$bFileURI,
 			    \$bFileURINo,
 			    \$bFileName,
@@ -3459,7 +3425,7 @@ sub DB {
 			$opts{f} =~ m@^(?:file|dbgp)://@;
 		    $endLine = $opts{e};
 
-		    getFileInfo(\%opts, 'f', $filename,
+		    getFileInfo($opts{f},
 				\$bFileURI,
 				\$bFileURINo,
 				\$bFileName,
