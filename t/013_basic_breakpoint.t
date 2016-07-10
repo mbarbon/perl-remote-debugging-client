@@ -6,7 +6,8 @@ use MIME::Base64 qw(encode_base64);
 
 run_debugger('t/scripts/breakpoint.pl');
 
-command_is(['breakpoint_set', '-t', 'line', '-f', 'file://t/scripts/breakpoint.pl', '-n', 4], {
+# file defaults to current file (not in spec)
+command_is(['breakpoint_set', '-t', 'line', '-n', 4], {
     state       => 'enabled',
     id          => 0,
 });
