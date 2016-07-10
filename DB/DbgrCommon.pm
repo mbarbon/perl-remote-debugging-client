@@ -186,21 +186,20 @@ sub setDefaultOutput {
     $OUT = shift;
 }
 
-sub encodeData($;$) {
+sub encodeData($$) {
     my ($str, $encoding) = @_;
     my $finalStr;
-    my $currDataEncoding = defined $encoding ? $encoding : $settings{data_encoding}->[0];
     $finalStr = $str;
     local $@;
     eval {
-	if ($currDataEncoding eq 'none' || $currDataEncoding eq 'binary') {
+	if ($encoding eq 'none' || $encoding eq 'binary') {
 	    $finalStr = $str;
-	} elsif ($currDataEncoding eq 'urlescape') {
+	} elsif ($encoding eq 'urlescape') {
 	    $finalStr = DB::CGI::Util::escape($str);
-	} elsif ($currDataEncoding eq 'base64') {
+	} elsif ($encoding eq 'base64') {
 	    $finalStr = DB::MIME::Base64::encode_base64($str);
 	} else {
-	    dblog("Converting $str with unknown encoding of $currDataEncoding\n") if $ldebug;
+	    dblog("Converting $str with unknown encoding of $encoding\n") if $ldebug;
 	    $finalStr = $str;
 	}
     };
