@@ -4249,6 +4249,10 @@ sub clobber_db_sub {
     *DB::sub = $DISABLED_DB_SUB{$_} for keys %DISABLED_DB_SUB;
 }
 
+BEGIN {
+    $^W = $ini_warn;
+}
+
 =head1 C<DB::fake>
 
 Contains the C<at_exit> routine that the debugger uses to issue the
