@@ -532,7 +532,7 @@ sub disconnect {
   if (ref $OUT and UNIVERSAL::isa($OUT, 'IO::Socket')) {
       $OUT->shutdown(2);
   }
-  $OUT = $IN = $OUT_Selector = undef;
+  $OUT = $IN = $OUT_selector = undef;
   $stopReason = 0;
   $lastContinuationCommand = undef;
   $lastContinuationStatus = 'break';
