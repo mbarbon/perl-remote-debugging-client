@@ -267,7 +267,7 @@ BEGIN {
     $ready = 0;
     $setup_once_after_connection = undef;
     %firstFileInfo = ();
-    $OUT_selector = $_pending_check_enabled = undef;
+    $OUT_selector = $pending_check_enabled = undef;
     $skip_alarm = 1;
     
     # uninitialized warning suppression
@@ -585,13 +585,13 @@ sub connectOrReconnect {
 	  if (!$skip_alarm) {
 	      $supportedFeatures{supports_async} = [1, 1, 1];
 	      $settings{supports_async} = [1];
-	      $_pending_check_enabled = 1;
+	      $pending_check_enabled = 1;
 	  }
-	  $_pending_check_count = 0;
-	  $_pending_check_lim = 100;
-	  $_pending_check_timeout = .000001;
-	  $_pending_check_interval = 1; # Check for a break every 1 second
-	  @_pending_commands = ();
+	  $pending_check_count = 0;
+	  $pending_check_lim = 100;
+	  $pending_check_timeout = .000001;
+	  $pending_check_interval = 1; # Check for a break every 1 second
+	  @pending_commands = ();
       };
 
       # print "# Talking to port $remoteport\n" if $ldebug;
@@ -2043,7 +2043,7 @@ sub DB {
 	$supportedCommands{'context_get'} = 0;
 	$single = 1;
     } elsif ($runnonstop) {
-	db_alarm($_pending_check_interval);
+	db_alarm($pending_check_interval);
 	($@, $!, $,, $/, $\, $^W) = @saved;
 	return;
     } elsif (!$sentInitString) {
@@ -3663,8 +3663,8 @@ sub DB {
 	
     # Put the user's globals back where you found them.
     ($@, $!, $,, $/, $\, $^W) = @saved;
-    db_alarm($_pending_check_interval);
-    $_pending_check_enabled = 1 unless $skip_alarm;
+    db_alarm($pending_check_interval);
+    $pending_check_enabled = 1 unless $skip_alarm;
     return ();
 }
 
@@ -3824,8 +3824,8 @@ sub readline {
 
         # Receive anything there is to receive.
         my $finalBuffer = '';
-	if (@_pending_commands) {
-	    return shift @_pending_commands;
+	if (@pending_commands) {
+	    return shift @pending_commands;
 	}
 	my $amtToRead = 2048;
 	while (1) {
@@ -3845,10 +3845,10 @@ sub readline {
 	$finalBuffer =~ s/\0$//;
 	
 	# And if we read multiple commands in one go, hold on to them.
-	($finalBuffer, @_pending_commands) = split(/[\x00\n]/, $finalBuffer);
-	if ($ldebug && @_pending_commands) {
+	($finalBuffer, @pending_commands) = split(/[\x00\n]/, $finalBuffer);
+	if ($ldebug && @pending_commands) {
 	    dblog("Multiple cmds read in: <$finalBuffer>, <",
-		  join(">, <", @_pending_commands), ">");
+		  join(">, <", @pending_commands), ">");
 	}
         return $finalBuffer;
     } ## end if (ref $OUT and UNIVERSAL::isa...)
@@ -3857,41 +3857,41 @@ sub readline {
 sub _break_check_handler {
     if (!$single) {
 	# We timed out, so move the pending-check counter up
-	$_pending_check_count = $_pending_check_lim;
+	$pending_check_count = $pending_check_lim;
 	if (_checkForBreak()) {
 	    $single = 1;
 	    db_alarm(0);
 	}
     }
     if (!$single) {
-	db_alarm($_pending_check_interval);
+	db_alarm($pending_check_interval);
     }
 }
 
 sub _checkForBreak {
     return if $skip_alarm;
-    return unless $_pending_check_enabled && $OUT_selector;
-    return if ++$_pending_check_count < $_pending_check_lim;
-    $_pending_check_count = 0;
-    # dblog("_checkForBreak: About to select...($_pending_check_timeout)");
-    my $have_something = $OUT_selector->can_read($_pending_check_timeout);
+    return unless $pending_check_enabled && $OUT_selector;
+    return if ++$pending_check_count < $pending_check_lim;
+    $pending_check_count = 0;
+    # dblog("_checkForBreak: About to select...($pending_check_timeout)");
+    my $have_something = $OUT_selector->can_read($pending_check_timeout);
     # dblog("... Done");
     return unless $have_something;
     my $cmd = &readline();
     # dblog("_checkForBreak: Got command [$cmd]\n");
     if ($cmd =~ /\Abreak\b/) {
-	unshift(@_pending_commands, $cmd);
-	$_pending_check_enabled = 0;
+	unshift(@pending_commands, $cmd);
+	$pending_check_enabled = 0;
 	return 1;
     } else {
 	# Put the command back at the front, so we process it in due time.
 	my $directive = $cmd;
-	if (!@_pending_commands
+	if (!@pending_commands
 	    || ($cmd =~ /^(\w+)\b/ && $supportedCommands{$1})) {
-	    unshift(@_pending_commands, $cmd);
+	    unshift(@pending_commands, $cmd);
 	} else {
-	    dblog("_checkForBreak: Appending [$cmd] onto $_pending_commands[0]\n") if $ldebug;
-	    $_pending_commands[0] .= $cmd;
+	    dblog("_checkForBreak: Appending [$cmd] onto $pending_commands[0]\n") if $ldebug;
+	    $pending_commands[0] .= $cmd;
 	}
     }
     return 0;
