@@ -291,15 +291,6 @@ $ldebug = 0;
 
 # more stuff
 require Config;
-require Cwd;
-
-# get current directory
-$cwd = Cwd::cwd();
-
-# cwd bug: returns C: rather than C:/ if we're in the root, so work around it
-if ($cwd =~ /^[A-Z]:$/i) {
-    $cwd .= "/";
-}
 
 # We set these variables to safe values. We don't want to blindly turn
 # off warnings, because other packages may still want them.
@@ -751,7 +742,20 @@ $specialVarRgx = qr/(\$(?:\^\w
     $full_dbgp_prefix = "$partial_dbgp_prefix/$hostname/$$";
 }
 
-DB::DbgrURI::init(ldebug => $ldebug, cwd => $cwd);
+{
+    require Cwd;
+
+    # get current directory
+    my $cwd = Cwd::cwd();
+
+    # cwd bug: returns C: rather than C:/ if we're in the root
+    if ($cwd =~ /^[A-Z]:$/i) {
+        $cwd .= "/";
+    }
+
+    DB::DbgrURI::init(ldebug => $ldebug, cwd => $cwd);
+}
+
 # Handle postponed requests that came in earlier.
 
 finish_postponed();
