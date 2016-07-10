@@ -237,8 +237,7 @@ sub eval {
 use IO::Handle;
 
 # Debugger for Perl 5.00x; perl5db.pl patch level:
-$VERSION = 0.30;
-$header  = "perl5db.pl version $VERSION";
+our $VERSION = 0.30;
 
 # $Log$
 
@@ -254,6 +253,8 @@ to avoid warnings later, setting itself up to not exit when the program
 terminates, and defaulting to printing return values for the C<r> command.
 
 =cut
+
+our ($single, $trace, $signal);
 
 BEGIN {
     # Switch compilation warnings off until another BEGIN.
@@ -1533,9 +1534,10 @@ sub processPossibleBreakpoint($$;$) {
 	# no reason to save the globals.
 	    
 	eval {
+	    # $DB::signal because $usercontext overrides the package
 	    $evalarg = "\$DB::signal |= do {$bExpression;}"; &eval();
 	};
-	if ($@ || !$DB::signal) {
+	if ($@ || !$signal) {
 	    $breakHere = 0;
 	}
     }
@@ -4173,12 +4175,12 @@ sub answerLastContinuationCommand {
 
 END {
     # avoid breakpoints if we call code outside DB
-    $DB::single = 0;
+    $single = 0;
     # Do not stop in at_exit() and destructors on exit:
     $DB::finished = 1;
     if ($DB::fall_off_end) {
 	dblog("END block: single <= 0\n") if $ldebug;
-	$DB::single = 0;
+	$single = 0;
     } else {
 	dblog("END block: single <= 1\n") if $ldebug;
 	if ($OUT) {
@@ -4191,7 +4193,7 @@ END {
 	}
 	# do this after printing the response (since it might indirectly
 	# call code outside the DB package)
-	$DB::single = 1;
+	$single = 1;
         DB::fake::at_exit();
     }
 } ## end END
@@ -4224,7 +4226,7 @@ BEGIN {
 sub enable {
     dblog("(Re-)enabling the debugger via DB::enable()") if $ldebug;
     die "DB::enable() called too early" unless %ORIG_DB_SUB;
-    $DB::single = 1;
+    $single = 1;
     $^P = DEBUG_DEFAULT_FLAGS;
     undef *DB::sub;
     *DB::sub = $ORIG_DB_SUB{$_} for keys %ORIG_DB_SUB;
@@ -4233,7 +4235,7 @@ sub enable {
 sub disable {
     dblog("Disabling the debugger via DB::disable()") if $ldebug;
     die "DB::disable() called too early" unless %ORIG_DB_SUB;
-    $DB::single = 0;
+    $single = 0;
     $^P = DEBUG_PREPARE_FLAGS;
     undef *DB::sub;
     *DB::sub = $DISABLED_DB_SUB{$_} for keys %DISABLED_DB_SUB;
