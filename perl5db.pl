@@ -2716,7 +2716,7 @@ sub DB {
 			$opts{f} =~ m@^(?:file|dbgp)://@;
 		}
 
-		getFileInfo($opts{f} // calcFileURI($filename),
+		getFileInfo(defined $opts{f} ? $opts{f} : calcFileURI($filename),
 			    \$bFileURI,
 			    \$bFileURINo,
 			    \$bFileName,
