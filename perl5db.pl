@@ -456,10 +456,6 @@ eval {
     $| = 1;			# for real STDOUT
 };
 
-# to avoid warnings?
-$sub = '';
-#@ARGS;
-
 my $current_filename = '';
 
 # Variables and subs for doing option processing
@@ -1819,7 +1815,6 @@ sub _fileSource {
 	$sourceString = INC($2);
 	if ($ldebug && defined $sourceString) {
 	    my @lines = split(/\n/, $sourceString);
-	    $lines = \@lines;
 	    dblog("Debugging a $pdkUtilityName module, grab source and get [" . join("\n", @lines[0..2]) . "]") if $ldebug;
 	}
     }
@@ -2021,8 +2016,7 @@ sub DB {
 	    $firstFileInfo{lastLine} = $line; # last line executed
 	}
     }
-    
-    $max = $#dbline;
+
     if (!$single) {
 	$bkptInfoRef = lookupBkptInfo($fileNameURINo, $line);
 	processPossibleBreakpoint($bkptInfoRef, "File $fileNameURINo, line $line", $line);
@@ -2493,7 +2487,6 @@ sub DB {
 		local ($bFileURINo, $bLine, $bType, $bFunction, $bException);
 		local $bptErrorCode = 0;
 		local $bptErrorMsg;
-		local $bFileURI;
 		local $fileNameTableInfo;
 		my $bpCmd;
 		my $bHitInfo;
@@ -2501,7 +2494,7 @@ sub DB {
 		if (!defined $bFileURINo) {
 		    $bptErrorCode = DBP_E_NoSuchBreakpoint;
 		    $bptErrorMsg = "Unknown breakpoint ID $bkptID.";
-		} elsif (!($bFileURI = getURIByNo($bFileURINo))) {
+		} elsif (!getURIByNo($bFileURINo)) {
 		    $bptErrorCode = DBP_E_NoSuchBreakpoint;
 		    $bptErrorMsg = "Unknown fileURI NO $bFileURINo.";
 		} elsif (!($fileNameTableInfo = $fileNameTable[$bFileURINo])) {
@@ -2602,7 +2595,7 @@ sub DB {
 		} elsif (!defined $bFileURINo) {
 		    $bptErrorCode = DBP_E_NoSuchBreakpoint;
 		    $bptErrorMsg = "Unknown breakpoint ID $bkptID.";
-		} elsif (!($bFileURI = getURIByNo($bFileURINo))) {
+		} elsif (!getURIByNo($bFileURINo)) {
 		    $bptErrorCode = DBP_E_NoSuchBreakpoint;
 		    $bptErrorMsg = "Unknown fileURI NO $bFileURINo.";
 		}
@@ -2848,17 +2841,15 @@ sub DB {
 
 		    #todo: add pending, etc. on the dbline thing
 		    if (defined $perlFileName && $bStateVal != BKPT_DISABLE) {
-			local $internalName = $main::{'_<' . $perlFileName};
 			local (*dbline) = $main::{'_<' . $perlFileName};
 			if ($bLine < 1 || $bLine > $#dbline || $dbline[$bLine] == 0) {
 			    my $code = (($bLine < 1 || $bLine > $#dbline)
 					? DBP_E_Unbreakable_InvalidCodeLine
 					: DBP_E_Unbreakable_EmptyCodeLine);
-			    $msg = "Line $bLine isn't breakable";
 			    makeErrorResponse($cmd,
 					      $transactionID,
 					      $code,
-					      $msg);
+					      "Line $bLine isn't breakable");
 			    next CMD;
 			}
 			$dbline{$bLine} = 1;
@@ -3752,7 +3743,6 @@ sub chr_expand {
 sub readline {
     local $.;
     local $frame = 0;
-    local $doret = -2;
     # Nothing on the filehandle stack. Socket?
     if (ref $OUT and UNIVERSAL::isa($OUT, 'IO::Socket')) {
         # Send anything we have to send.
