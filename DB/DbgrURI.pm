@@ -28,9 +28,6 @@ use vars qw($VERSION
 	    @ISA
 	    @EXPORT
 	    @EXPORT_OK
-	    %fileURILookupTable
-	    @fileURI_No_ReverseLookupTable
-	    %perlNameToFileURINo
 	    %mem_uriToFilename
 	    %mem_canonicalizeURI
 	    %filenameToURI
@@ -47,14 +44,7 @@ require Exporter;
 		    canonicalizeURI
 		    filenameToURI
 		    uriToFilename
-
-		    %fileURILookupTable
-		    %perlNameToFileURINo
 		    );
-
-%fileURILookupTable = ();             # Map fileURI => fileURI_No
-@fileURI_No_ReverseLookupTable = ();  # Map fileURI_No => fileURI
-%perlNameToFileURINo = ();            # Map perl-filename => fileURI_No
 
 # Memoize things we look up often
 %mem_uriToFilename = ();
