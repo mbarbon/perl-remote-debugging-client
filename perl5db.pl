@@ -963,7 +963,7 @@ sub remove_FileURI_LineNo_Breakpoint {
     if ($bkptLookupTable[$fileURINo]) {
 	if (exists $bkptLookupTable[$fileURINo]->{$bLine}) {
 	    if (defined $fileNameTable[$fileURINo]) {
-		local (undef, undef, $perlFileName) = @{$fileNameTable[$fileURINo]};
+		(undef, undef, my $perlFileName) = @{$fileNameTable[$fileURINo]};
 		if ($perlFileName) {
 		    our %dbline;
 		    local *dbline = $main::{'_<' . $perlFileName};
@@ -1162,6 +1162,7 @@ sub findAndAddFunctionBreakPoints($$$$$$$$$) {
 	$bHitCount,
 	$bHitConditionOperator) = @_;
     my $isQualified = ($bFunctionName =~ /::/);
+    my $fqSubName;
     if (!$isQualified) {
 	$fqSubName = 'main::' . $bFunctionName;
     } else {
@@ -1460,6 +1461,7 @@ sub processPossibleBreakpoint($$;$$) {
 	return;
     }
     my $bHitInfo = $bkptInfoRef->[BKPTBL_HIT_INFO];
+    my $breakHere;
     if ($bHitInfo && defined $bHitInfo->[HIT_TBL_COUNT]) {
 	$bHitInfo->[HIT_TBL_COUNT] += 1;
 
@@ -1912,7 +1914,7 @@ sub eval_term {
 
 sub DB {
     if ($full_bypass) {
-	($pkg, $filename, $line) = caller;
+	my ($pkg, $filename, $line) = caller;
 	dblog("Bypassing ($pkg, $filename, $line)") if $ldebug;
 	return;
     }
