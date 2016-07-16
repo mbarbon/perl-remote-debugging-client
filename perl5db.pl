@@ -2301,7 +2301,7 @@ sub DB {
 		# dblog("Continuing...\n") if $ldebug;
 
 		# continue
-		for ($i=0; $i <= $#stack; ) {
+		for (my $i=0; $i <= $#stack; ) {
 		    $stack[$i++] &= ~1;
 		}
 		if ($getNextCmd) {
@@ -2456,7 +2456,7 @@ sub DB {
 		$stopReason = STOP_REASON_STOPPED;
 		$runnonstop = 1;
 		# continue
-		for ($i=0; $i <= $#stack; ) {
+		for (my $i=0; $i <= $#stack; ) {
 		    $stack[$i++] &= ~1;
 		}
 		# Disable all the move commands
@@ -3001,6 +3001,7 @@ sub DB {
 				     : 'main'),
 				    );
 
+		    my $i;
 		    for ($i = 1 ; $i <= $#sub ; $i++) {
 			$res .= sprintf(qq(<stack level="%d"
 					   type="%s"
@@ -3848,7 +3849,7 @@ sub dump_trace {
     $count += $skip;
 
     # These variables are used to capture output from caller();
-    my ($p, $file, $line, $sub, $h, $context);
+    my ($p, $file, $line, $sub);
 
     my ($e, $r, @sub);
 
@@ -3864,9 +3865,9 @@ sub dump_trace {
     # quit.
     # Up the stack frame index to go back one more level each time.
     for (
-        $i = $skip ;
+        my $i = $skip ;
         $i < $count
-        and ($p, $file, $line, $sub, $hasArgs, $context, $e, $r) = caller($i) ;
+        and ($p, $file, $line, $sub, undef, undef, $e, $r) = caller($i) ;
         $i++
       )
     {
@@ -3946,7 +3947,7 @@ sub count_trace {
     # quit.
     # Up the stack frame index to go back one more level each time.
     for (
-        $i = $skip ;
+        my $i = $skip ;
         $i < $count
         and ($p) = caller($i) ;
         $i++
