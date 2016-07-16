@@ -318,67 +318,68 @@ Keep track of the various settings in this hash
 use DB::DbgrCommon;
 use DB::DbgrProperties;
 
-%supportedCommands = (
-		      status => 1,
-		      feature_get => 1,
-		      feature_set => 1,
-		      run => 1,
-		      step_into => 1,
-		      step_over => 1,
-		      step_out => 1,
-		      stop => 1, #xxxstop
-		      detach => 1,
-		      breakpoint_set => 1,
-		      breakpoint_get => 1,
-		      breakpoint_update => 1,
-		      breakpoint_remove => 1,
-		      breakpoint_list => 1,
-		      stack_depth => 1,
-		      stack_get => 1,
-		      context_names => 1,
-		      context_get => 1,
-		      typemap_get => 1,
-		      property_get => 1,
-		      property_set => 1,
-		      property_value => 1,
-		      source => 1,
-		      stdout => 1,
-		      stderr => 1,
-		      stdin => 0,
-		      break => 0,
-		      'eval' => 1,
-		      interact => 0,
-		      );
-		      
+my %supportedCommands = (
+    status              => 1,
+    feature_get         => 1,
+    feature_set         => 1,
+    run                 => 1,
+    step_into           => 1,
+    step_over           => 1,
+    step_out            => 1,
+    stop                => 1, #xxxstop
+    detach              => 1,
+    breakpoint_set      => 1,
+    breakpoint_get      => 1,
+    breakpoint_update   => 1,
+    breakpoint_remove   => 1,
+    breakpoint_list     => 1,
+    stack_depth         => 1,
+    stack_get           => 1,
+    context_names       => 1,
+    context_get         => 1,
+    typemap_get         => 1,
+    property_get        => 1,
+    property_set        => 1,
+    property_value      => 1,
+    source              => 1,
+    stdout              => 1,
+    stderr              => 1,
+    stdin               => 0,
+    break               => 0,
+    'eval'              => 1,
+    interact            => 0,
+);
 
 # Feature name => [bool(3): is supported, is settable, has associated value]
-%supportedFeatures = (
-		      encoding => [1, 1, 1],
-		      data_encoding => [1, 1, 1],
-		      max_children => [1, 1, 1],
-		      max_data => [1, 1, 1],
-		      max_depth => [1, 1, 1],
-		      multiple_sessions => [0, 0, 0],
-		      language_supports_threads => [0, 0, 0],
-		      language_name => [1, 0, 1],
-		      language_version => [1, 0, 1],
-		      protocol_version => [1, 0, 1],
-		      supports_async => [0, 0, 0],
-		      multiple_sessions => [0, 0, 0],
-		      );
+my %supportedFeatures = (
+    encoding                    => [1, 1, 1],
+    data_encoding               => [1, 1, 1],
+    max_children                => [1, 1, 1],
+    max_data                    => [1, 1, 1],
+    max_depth                   => [1, 1, 1],
+    multiple_sessions           => [0, 0, 0],
+    language_supports_threads   => [0, 0, 0],
+    language_name               => [1, 0, 1],
+    language_version            => [1, 0, 1],
+    protocol_version            => [1, 0, 1],
+    supports_async              => [0, 0, 0],
+    multiple_sessions           => [0, 0, 0],
+);
 
 # Feature name => [value, allowed settable values, if constrained]
 
 # this is shared with DB::DbgrCommon and DB::DbgrProperties via exporting
-%settings = ( encoding => ['UTF-8', ['UTF-8', 'iso-8859-1']],
-	      data_encoding => ['base64', ['urlescape', 'base64', 'none', 'binary']], # binary	and 'none' are the same
-	      max_children => [10, 1],
-	      max_data => [32767, 1],
-	      max_depth => [1, 1],
-	      language_name => ['Perl'],
-	      language_version => [sprintf("%vd", $^V)],
-	      protocol_version => ['1.0'],
-	      );
+%settings = (
+    encoding            => ['UTF-8', ['UTF-8', 'iso-8859-1']],
+    # binary and 'none' are the same
+    data_encoding       => ['base64', [qw(urlescape base64 none binary)]],
+    max_children        => [10, 1],
+    max_data            => [32767, 1],
+    max_depth           => [1, 1],
+    language_name       => ['Perl'],
+    language_version    => [sprintf("%vd", $^V)],
+    protocol_version    => ['1.0'],
+);
 
 sub xsdNamespace() {
   return q(xmlns:xsd="http://www.w3.org/2001/XMLSchema");
