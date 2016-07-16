@@ -505,7 +505,7 @@ sub emitBanner {
     print STDOUT $str;
 }
 
-# placeholder - tty stuff
+my ($PID, $IN, $OUT, $OUT_selector);
 
 sub disconnect {
   # force-close any copies of the file descriptor in other processes
