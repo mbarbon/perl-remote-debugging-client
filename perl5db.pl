@@ -968,6 +968,7 @@ sub remove_FileURI_LineNo_Breakpoint {
 	    if (defined $fileNameTable[$fileURINo]) {
 		local (undef, undef, $perlFileName) = @{$fileNameTable[$fileURINo]};
 		if ($perlFileName) {
+		    our %dbline;
 		    local *dbline = $main::{'_<' . $perlFileName};
 		    $dbline{$bLine} = 0;
 		} else {
@@ -1065,6 +1066,7 @@ sub internEvalURI($;$) {
 	};
 	$evalTableIdx[$etCount] = $filename;
 	if (!defined $srcLinesARef) {
+	    our @dbline;
 	    local *dbline = $main::{'_<' . $filename};
 	    dblog("internEvalURI -- found src lines for ($filename), using ", join('', (scalar @dbline > 100 ? @dbline[0..99] : @dbline))) if $ldebug;
 	    $evalTable{$filename}{src} = \@dbline;
@@ -1659,6 +1661,7 @@ sub _getProximityVarsViaPadWalker($$$$) {
     my $my_var_hash = PadWalker::peek_my($stackDepth);
     my $our_var_hash = PadWalker::peek_our($stackDepth);
     my %merged_vars = (%$my_var_hash, %$our_var_hash);
+    our @dbline;
     local *dbline = $main::{'_<' . $filename};
     my $sourceText = join("\n", @dbline);
 
@@ -1822,6 +1825,7 @@ sub _fileSource {
 	}
     }
     if (!defined $sourceString && exists $main::{$sourceKey}) {
+	our @dbline;
 	local *dbline = $main::{$sourceKey};
 	if (@dbline > 0) {
 	    $endLine = $#dbline if !$endLine;
@@ -2000,7 +2004,8 @@ sub DB {
 	$fileNameURINo = internFileURI($fileNameURI);
     }
 
-    local(*dbline) = "::_<$currentFilename";
+    our @dbline;
+    local*dbline = "::_<$currentFilename";
     if ($ldebug && $pkg eq 'DB::fake') {
 	dblog($dbline[$currentLine]) if $ldebug;
     }
@@ -2528,7 +2533,8 @@ sub DB {
 		}
 		if ($bptErrorCode == 0) {
 		    local $perlFileName = $fileNameTableInfo->[2];
-		    local (*dbline) = $main::{'_<' . $perlFileName};
+		    our %dbline;
+		    local *dbline = $main::{'_<' . $perlFileName};
 
 		    $dbline{$bLine} = $bpCmd == BKPT_ENABLE ? 1 : 0;
 		    if ($bHitCount) {
@@ -2843,7 +2849,8 @@ sub DB {
 
 		    #todo: add pending, etc. on the dbline thing
 		    if (defined $perlFileName && $bStateVal != BKPT_DISABLE) {
-			local (*dbline) = $main::{'_<' . $perlFileName};
+			our %dbline;
+			local *dbline = $main::{'_<' . $perlFileName};
 			if ($bLine < 1 || $bLine > $#dbline || $dbline[$bLine] == 0) {
 			    my $code = (($bLine < 1 || $bLine > $#dbline)
 					? DBP_E_Unbreakable_InvalidCodeLine
@@ -3374,6 +3381,7 @@ sub DB {
 		    # dblog("source: locn = ", $dynamicLocation) if $ldebug;
 		    if (!$error) {
 			if (!exists $evalTable{$dynamicLocation}) {
+			    our $dbline;
 			    local *dbline = $main::{"_<$dynamicLocation"};
 			    if ($dbline eq $dynamicLocation) {
 				if ($dynamicLocation =~ /\(eval (\d+)\)\[(.*):(\d+)\]$/) {
@@ -3618,6 +3626,7 @@ sub postponed {
 sub finish_postponed {
     local $inPostponed = 1;
     while (@postponedFiles) {
+	our ($dbline, %dbline);
 	local *dbline = shift @postponedFiles;
 	my $filename = $dbline;
 	$filename =~ s/^<_//;
