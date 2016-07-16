@@ -271,11 +271,8 @@ BEGIN {
     # By default it doesn't stop.
     $deep = -1;
     $ready = 0;
-    $setup_once_after_connection = undef;
-    %firstFileInfo = ();
-    $OUT_selector = $pending_check_enabled = undef;
     $skip_alarm = 1;
-    
+
     # uninitialized warning suppression
     $signal = $single = $trace = 0;
     # important stuff
