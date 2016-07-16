@@ -2093,7 +2093,7 @@ sub DB {
 	    $signal = 0;
 
 	    #### print OUT "cmd: $cmd\n";
-	    local @cmdArgs;
+	    my @cmdArgs;
 	    # For now assume commands use urlencoding
 	    eval { @cmdArgs = splitCommandLine($cmd); };
 	    if ($@) {
@@ -2471,9 +2471,9 @@ sub DB {
 
 		# Breakpoint commands...
 	    } elsif ($cmd eq 'breakpoint_update') {
-		local %opts;
+		my %opts;
 		{
-		    local *ARGV = *cmdArgs;
+		    local *ARGV = \@cmdArgs;
 		    shift @ARGV;
 		    getopts('d:h:n:o:r:s:t:', \%opts);
 		}
@@ -2684,9 +2684,9 @@ sub DB {
 		local ($bFileURINo, $bLine, $bState, $bType, $bFunction, $bException, $bCondition);
 		local $bkptID;
 		local ($perlFileName, $bFileURI, $bFileName);
-		local %opts;
+		my %opts;
 		{
-		    local *ARGV = *cmdArgs;
+		    local *ARGV = \@cmdArgs;
 		    shift @ARGV;
 		    getopts('c:f:h:m:n:o:r:s:t:x', \%opts);
 		}
@@ -3145,9 +3145,9 @@ sub DB {
 
 	    } elsif ($cmd eq 'property_get' || $cmd eq 'property_value') {
 		# First get the args, and then sanity check.
-		local %opts = ();
+		my %opts;
 		{
-		    local *ARGV = *cmdArgs;
+		    local *ARGV = \@cmdArgs;
 		    shift @ARGV;
 		    getopts('c:d:k:m:n:p:', \%opts);
 		}
@@ -3254,9 +3254,9 @@ sub DB {
 
 	    } elsif ($cmd eq 'property_set') {
 		# First get the args, and then sanity check.
-		local %opts = ();
+		my %opts;
 		{
-		    local *ARGV = *cmdArgs;
+		    local *ARGV = \@cmdArgs;
 		    shift @ARGV;
 		    getopts('a:c:d:l:n:t:', \%opts);
 		}
@@ -3336,7 +3336,7 @@ sub DB {
 	    } elsif ($cmd eq 'source') {
 		my %opts;
 		{
-		    local *ARGV = *cmdArgs;
+		    local *ARGV = \@cmdArgs;
 		    dblog("source: args={@ARGV}") if $ldebug;
 
 		    shift @ARGV;
@@ -3460,9 +3460,9 @@ sub DB {
 		printWithLength($res);
 
 	    } elsif ($cmd eq 'stdout' || $cmd eq 'stderr') {
-		local %opts = ();
+		my %opts;
 		{
-		    local *ARGV = *cmdArgs;
+		    local *ARGV = \@cmdArgs;
 		    shift @ARGV;
 		    getopts('c:', \%opts);
 		}
@@ -3530,10 +3530,12 @@ sub DB {
 				      "Invalid -c value of $copyType");
 		}
 	    } elsif ($cmd eq 'stdin') {
+
 =head unsupported
-		    local %opts = ();
+
+		    my %opts;
 		{
-		    local *ARGV = *cmdArgs;
+		    local *ARGV = \@cmdArgs;
 		    shift @ARGV;
 		    getopts('c:l:', \%opts);
 		}
@@ -3546,15 +3548,17 @@ sub DB {
 		my $encodedData = join("", @cmdArgs);
 		my $actualData = decodeData($encodedData, 'base64');
 		dblog "stdin: [$actualData]\n" if $ldebug;
+
 =cut
+
 		makeErrorResponse($cmd,
 				  $transactionID,
 				  DBP_E_CommandUnimplemented,
 				  "stdin not supported via protocol");
 	    } elsif ($cmd eq 'eval') {
-		local %opts = ();
+		my %opts;
 		{
-		    local *ARGV = *cmdArgs;
+		    local *ARGV = \@cmdArgs;
 		    shift @ARGV;
 		    getopts('l:', \%opts);
 		}
