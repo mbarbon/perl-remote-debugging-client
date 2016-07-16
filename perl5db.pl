@@ -260,6 +260,7 @@ terminates, and defaulting to printing return values for the C<r> command.
 =cut
 
 our ($single, $trace, $signal);
+my ($currentFilename, $currentLine);
 
 BEGIN {
     # Switch compilation warnings off until another BEGIN.
@@ -1929,7 +1930,7 @@ sub DB {
             return;
         }
     }
-    ($pkg, $filename, $line) = caller;
+    ($pkg, $currentFilename, $currentLine) = caller;
     if (!defined $startedAsInteractiveShell) {
 	# This won't work with code that changes $0 to "-e"
 	# in a BEGIN block.
@@ -1943,23 +1944,22 @@ sub DB {
 	}
     }
     if ($ldebug && $pkg !~ /^DB::/) {
-	dblog("In $pkg, $filename, $line\n") if $ldebug;
+	dblog("In $pkg, $currentFilename, $currentLine\n") if $ldebug;
     }
     
     $usercontext = '($@, $!, $,, $/, $\, $^W) = @saved;' .
 	"package $pkg;";	# this won't let them modify, alas
 
-    if ($filename =~ s/ \(autosplit .*$//) {
+    if ($currentFilename =~ s/ \(autosplit .*$//) {
 	my $substr = $Config::Config{prefix};
-	$filename =~ s/^\.\./$substr/;
+	$currentFilename =~ s/^\.\./$substr/;
     }
 
     if ($pkg eq 'DB::fake') {
 	# Fallen off the end, so allow debugging
 	# Set the DB::eval context appropriately.
 	if (exists $firstFileInfo{file}) {
-	    ($pkg, $filename, $line) = @firstFileInfo{qw/pkg file lastLine/};
-	    $line = $firstFileInfo{lastLineNumber};
+	    ($pkg, $currentFilename, $currentLine) = @firstFileInfo{qw/pkg file lastLineNumber/};
 	} else {
 	    $pkg     = 'main';
 	}
@@ -1989,37 +1989,37 @@ sub DB {
     local $fileNameURI;
     local $fileNameURINo;
 
-    my $canPerlFileName = canonicalizeFName($filename);
+    my $canPerlFileName = canonicalizeFName($currentFilename);
     if (exists $perlNameToFileURINo{$canPerlFileName}) {
 	$fileNameURINo = $perlNameToFileURINo{$canPerlFileName};
 	($fileNameURI, undef, undef) = @{$fileNameTable[$fileNameURINo]};
     } else {
-	$fileNameURI = filenameToURI($filename, 1);
+	$fileNameURI = filenameToURI($currentFilename, 1);
 	$fileNameURINo = internFileURI($fileNameURI);
     }
 
-    local(*dbline) = "::_<$filename";
+    local(*dbline) = "::_<$currentFilename";
     if ($ldebug && $pkg eq 'DB::fake') {
-	dblog($dbline[$line]) if $ldebug;
+	dblog($dbline[$currentLine]) if $ldebug;
     }
-    if ($filename =~ /\(eval (\d+)\)\[(.*):(\d+)\]$/) {
-	internEvalURI($filename, \@dbline);
+    if ($currentFilename =~ /\(eval (\d+)\)\[(.*):(\d+)\]$/) {
+	internEvalURI($currentFilename, \@dbline);
     }
     if ($pkg !~ /^DB::/) {
 	if (! exists $firstFileInfo{file}) {
-	    $firstFileInfo{file} = $filename; # Perl file name
+	    $firstFileInfo{file} = $currentFilename; # Perl file name
 	    $firstFileInfo{pkg} = $pkg;
-	    $firstFileInfo{lastLine} = $line; # last line executed
+	    $firstFileInfo{lastLine} = $currentLine; # last line executed
 	    $firstFileInfo{lineInfo} = \@dbline;
 	    $firstFileInfo{lastLineNumber} = $#dbline;
-	} elsif ($firstFileInfo{file} eq $filename) {
-	    $firstFileInfo{lastLine} = $line; # last line executed
+	} elsif ($firstFileInfo{file} eq $currentFilename) {
+	    $firstFileInfo{lastLine} = $currentLine; # last line executed
 	}
     }
 
     if (!$single) {
-	$bkptInfoRef = lookupBkptInfo($fileNameURINo, $line);
-	processPossibleBreakpoint($bkptInfoRef, "File $fileNameURINo, line $line", $line);
+	$bkptInfoRef = lookupBkptInfo($fileNameURINo, $currentLine);
+	processPossibleBreakpoint($bkptInfoRef, "File $fileNameURINo, line $currentLine", $currentLine);
     }
 
     # If we have any watch expressions ...
@@ -2049,7 +2049,7 @@ sub DB {
         # Yes, go down a level.
         local $level = $level + 1;
 	if ($ldebug) {
-	    dblog("file:$filename, line:$line, package:$pkg\n");
+	    dblog("file:$currentFilename, line:$currentLine, package:$pkg\n");
 	    dblog($#stack . " levels deep in subroutine calls!\n") if $single & 4;
 	}
 	# Send a status thing back
@@ -2283,7 +2283,7 @@ sub DB {
 
 		# debug message
 		if ($fakeFirstStepInto) {
-		    $bkptInfoRef = lookupBkptInfo($fileNameURINo, $line);
+		    $bkptInfoRef = lookupBkptInfo($fileNameURINo, $currentLine);
 		    if ($bkptInfoRef) {
 			dblog("hit a breakpoint at first breakable line") if $ldebug;
 			$getNextCmd = 1;
@@ -2400,7 +2400,7 @@ sub DB {
 		# This is more like starting with a run than a step
 		# So always check $fakeFirstStepInto to 0.
 		if ($fakeFirstStepInto) {
-		    $bkptInfoRef = lookupBkptInfo($fileNameURINo, $line);
+		    $bkptInfoRef = lookupBkptInfo($fileNameURINo, $currentLine);
 		    if ($bkptInfoRef) {
 			dblog("hit a breakpoint at first breakable line") if $ldebug;
 			$getNextCmd = 1;
@@ -2692,7 +2692,7 @@ sub DB {
 		# For now, set the filename to either $opts{f} or curr filename
 		$bHitCount = $opts{h};
 		$bFunctionName = $opts{m};
-		$bLine = $opts{n} || $line;
+		$bLine = $opts{n} || $currentLine;
 		$bHitConditionOperator = $opts{o};
 		$bIsTemporary = $opts{r} ? 1 : 0;
 		$bState = $opts{s} || BKPT_REQ_ENABLED;
@@ -2709,7 +2709,7 @@ sub DB {
 			$opts{f} =~ m@^(?:file|dbgp)://@;
 		}
 
-		getFileInfo(defined $opts{f} ? $opts{f} : calcFileURI($filename),
+		getFileInfo(defined $opts{f} ? $opts{f} : calcFileURI($currentFilename),
 			    \$bFileURI,
 			    \$bFileURINo,
 			    \$bFileName,
@@ -2859,7 +2859,7 @@ sub DB {
 			}
 		    } else {
 			if ($ldebug) {
-			    my $str = "Curr file = |$filename|, bpt set for file |$bFileName|, bStateVal = |$bStateVal|, \$bFileURI = |$bFileURI|";
+			    my $str = "Curr file = |$currentFilename|, bpt set for file |$bFileName|, bStateVal = |$bStateVal|, \$bFileURI = |$bFileURI|";
 			    $str .= ", \$perlFileName=$perlFileName" if $perlFileName;
 			    $str .= "\n";
 			    dblog($str);
@@ -2946,8 +2946,8 @@ sub DB {
 					       where="%s"/>),
 					    $stackDepth,
 					    checkForEvalStackType($sub[0]->{sub}),
-					    calcFileURI $filename,
-					    $line,
+					    calcFileURI $currentFilename,
+					    $currentLine,
 					    (($#sub >= 0 && $sub[0]{sub})
 					     ? trimEvalSubNames ($sub[0]{sub})
 					     : 'main'),
@@ -2977,8 +2977,8 @@ sub DB {
 					   where="%s"/>),
 					0,
 					checkForEvalStackType($sub[0]->{sub}),
-					calcFileURI $filename,
-					$line,
+					calcFileURI $currentFilename,
+					$currentLine,
 					(($#sub >= 0 && $sub[0]{sub})
 					 ? trimEvalSubNames ($sub[0]{sub})
 					 : 'main'),
@@ -2994,8 +2994,8 @@ sub DB {
 				       where="%s"/>),
 				    0,
 				    checkForEvalStackType($sub[0]->{sub}), # where we are
-				    calcFileURI $filename, # and where we were called
-				    $line,
+				    calcFileURI $currentFilename, # and where we were called
+				    $currentLine,
 				    (($#sub >= 0 && $sub[0]{sub})
 				     ? trimEvalSubNames($sub[0]{sub})
 				     : 'main'),
@@ -3073,7 +3073,7 @@ sub DB {
 			}
 		    }
 		} elsif ($context_id == LocalVars) {
-		    $namesAndValues = eval { _getProximityVars($pkg, $filename, $line, $stackDepth); };
+		    $namesAndValues = eval { _getProximityVars($pkg, $currentFilename, $currentLine, $stackDepth); };
 		} else {
 		    $stackDepth = 0;
 		    $namesAndValues = eval { getContextProperties($context_id, $pkg); };
@@ -3345,7 +3345,7 @@ sub DB {
 		my $endLine;
 		my $sourceString;
 		my $error;
-		$opts{f} = calcFileURI $filename unless exists $opts{f};
+		$opts{f} = calcFileURI $currentFilename unless exists $opts{f};
 		if (defined &INC && $opts{f} =~ m@^dbgp:///perl//(PerlApp/|<.*?>)(.*)@) {
 		    # Definitely three slashes between 'perl' and 'PerlApp'
 		    my $pdkUtilityName = $1;
@@ -3384,7 +3384,7 @@ sub DB {
 					src => \@dbline,
 					idx => $etCount,
 				    };
-				    $evalTableIdx[$etCount] = \$evalTable{$filename};
+				    $evalTableIdx[$etCount] = \$evalTable{$currentFilename};
 				} else {
 				    dblog "get source error: Can't parse [$dynamicLocation]\n" if $ldebug;
 				}
@@ -3421,7 +3421,7 @@ sub DB {
 				\$bFileURINo,
 				\$bFileName,
 				\$perlFileName);
-		    dblog("** source -- file $filename, perl name $perlFileName") if $ldebug;
+		    dblog("** source -- file $currentFilename, perl name $perlFileName") if $ldebug;
 		    ($sourceString, $error) =
 			_fileSource($perlFileName,
 				    $beginLine,
@@ -3587,7 +3587,7 @@ sub DB {
     } elsif ($pkg =~ /^DB::/) {
 	dblog("Skipping package [$pkg]\n") if $ldebug;
     } elsif ($inPostponed) {
-	dblog("Still postponed: [$pkg/$filename/$line]\n") if $ldebug;
+	dblog("Still postponed: [$pkg/$currentFilename/$currentLine]\n") if $ldebug;
     }
 	
     # Put the user's globals back where you found them.
@@ -3828,7 +3828,7 @@ sub _checkForBreak {
 sub fileAndLineIfXdebug {
     return '/' unless $xdebug_file_line_in_step;
     return sprintf '><xdebug:message filename="%s" lineno="%s" /></response',
-        calcFileURI($filename), $line;
+        calcFileURI($currentFilename), $currentLine;
 }
 
 sub dump_trace {
