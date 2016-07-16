@@ -2542,12 +2542,12 @@ sub DB {
 			dblog("breakpoint_update -- doing nothing") if $ldebug;
 		    }
 		    dblog("doing op $cmd\n") if $ldebug;
-		    local $res = sprintf(qq(%s\n<response %s command="%s" 
-					    transaction_id="%s" >),
-					 xmlHeader(),
-					 namespaceAttr(),
-					 $cmd,
-					 $transactionID);
+		    my $res = sprintf(qq(%s\n<response %s command="%s"
+					 transaction_id="%s" >),
+				      xmlHeader(),
+				      namespaceAttr(),
+				      $cmd,
+				      $transactionID);
 		    my $bpInfo = getBreakpointInfoString($bkptID);
 		    if (! defined $bpInfo || length $bpInfo == 0) {
 			makeErrorResponse($cmd,
@@ -2611,7 +2611,7 @@ sub DB {
 		    remove_FileURI_LineNo_Breakpoint($bFileURINo, $bLine);
 		}
 		if ($bptErrorCode == 0) {
-		    my $res = sprintf(qq(%s\n<response %s command="%s" 
+		    my $res = sprintf(qq(%s\n<response %s command="%s"
 					 transaction_id="%s" />\n),
 				      xmlHeader(),
 				      namespaceAttr(),
@@ -2628,12 +2628,12 @@ sub DB {
 
 	    } elsif ($cmd eq 'breakpoint_get') {
 		local $bkptID = getArg(\@cmdArgs, '-d');
-		local $res = sprintf(qq(%s\n<response %s command="%s" 
-					transaction_id="%s" >),
-				     xmlHeader(),
-				     namespaceAttr(),
-				     $cmd,
-				     $transactionID);
+		my $res = sprintf(qq(%s\n<response %s command="%s"
+				     transaction_id="%s" >),
+				  xmlHeader(),
+				  namespaceAttr(),
+				  $cmd,
+				  $transactionID);
 		my $bpInfo = getBreakpointInfoString($bkptID);
 		if (! defined $res || length $res == 0) {
 		    makeErrorResponse($cmd,
@@ -2648,12 +2648,12 @@ sub DB {
 		printWithLength($res);
 
 	    } elsif ($cmd eq 'breakpoint_list') {
-		local $res = sprintf(qq(%s\n<response %s command="%s" 
-					transaction_id="%s" >),
-				     xmlHeader(),
-				     namespaceAttr(),
-				     $cmd,
-				     $transactionID);
+		my $res = sprintf(qq(%s\n<response %s command="%s"
+				     transaction_id="%s" >),
+				  xmlHeader(),
+				  namespaceAttr(),
+				  $cmd,
+				  $transactionID);
 
 		my %displayed; # horrible hack, need to review
 		while (my ($fileURI, $fileURINo) = each %fileURILookupTable) {
@@ -2914,12 +2914,12 @@ sub DB {
 		} else {
 		    $numLevelsToShow = $stackDepth;
 		}
-		local $res = sprintf(qq(%s\n<response %s command="%s" 
-					transaction_id="%s" >),
-				     xmlHeader(),
-				     namespaceAttr(),
-				     $cmd,
-				     $transactionID);
+		my $res = sprintf(qq(%s\n<response %s command="%s"
+				     transaction_id="%s" >),
+				  xmlHeader(),
+				  namespaceAttr(),
+				  $cmd,
+				  $transactionID);
 		my @sub = dump_trace(0); # , $numLevelsToShow);
 		# dblog("raw stack trace = ", DB::Data::Dump::dump(@sub), "\n") if $ldebug;
 		if (@sub && $sub[0]->{line} == 0) {
@@ -3323,15 +3323,13 @@ sub DB {
 					  207, #XXX: Invalid expression
 					  $error);
 		    } else {
-			local $res = sprintf(qq(%s\n<response %s command="%s" 
-						transaction_id="%s" success="1" />),
-					     xmlHeader(),
-					     namespaceAttr(),
-					     $cmd,
-					     $transactionID);
-			{
-			    printWithLength($res);
-			}
+			my $res = sprintf(qq(%s\n<response %s command="%s"
+					     transaction_id="%s" success="1" />),
+					  xmlHeader(),
+					  namespaceAttr(),
+					  $cmd,
+					  $transactionID);
+			printWithLength($res);
 		    }
 		}
 
@@ -3448,7 +3446,7 @@ sub DB {
 		    next CMD;
 		};
 		($encoding, $encVal) = figureEncoding($sourceString);
-		my $res = sprintf(qq(%s\n<response %s command="%s" 
+		my $res = sprintf(qq(%s\n<response %s command="%s"
 				     transaction_id="%s"
 				     success="1"
 				     encoding="%s"
@@ -3514,12 +3512,12 @@ sub DB {
 			    setLogFH(\*ActualSTDERR);
 			}
 		    }
-		    local $res = sprintf(qq(%s\n<response %s command="%s" 
-					    transaction_id="%s" success="1" />),
-					 xmlHeader(),
-					 namespaceAttr(),
-					 $cmd,
-					 $transactionID);
+		    my $res = sprintf(qq(%s\n<response %s command="%s"
+					 transaction_id="%s" success="1" />),
+				      xmlHeader(),
+				      namespaceAttr(),
+				      $cmd,
+				      $transactionID);
 		    {
 			local $ldebug = $cmd ne 'stderr' && $ldebug;
 			printWithLength($res);
