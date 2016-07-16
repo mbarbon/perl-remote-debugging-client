@@ -3251,8 +3251,8 @@ sub DB {
 			dblog("Error in emitEvaluatedPropertyGetInfo: [$@]") if $ldebug;
 			makeErrorResponse($cmd,
 					  $transactionID,
-					  $code,
-					  $error);
+					  DBP_E_InternalException,
+					  "Internal error while formatting result");
 		    }
 		} else {
 		    # We already emitted an error message, and returned undef
