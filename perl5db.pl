@@ -705,6 +705,8 @@ my $numWatchPoints = 0;
 
 $startedAsInteractiveShell = undef;
 
+my ($tiedStdout, $tiedStderr);
+
 # End of initialization code.
 
 {
@@ -3478,7 +3480,7 @@ sub DB {
 			next CMD;
 		    }
 		    if ($cmd eq 'stdout') {
-			if (exists $tiedFileHandles{'stdout'}) {
+			if ($tiedStdout) {
 				# Update the copy-type
 			    untie(*STDOUT);
 			}
@@ -3490,12 +3492,12 @@ sub DB {
 			    next CMD;
 			}
 			tie(*STDOUT, 'DB::RedirectStdOutput', *ActualSTDOUT, $OUT, $cmd, $copyType);
-			$tiedFileHandles{'stdout'} = 1;
+			$tiedStdout = 1;
 			if ($DB::outLogName && $DB::outLogName == \*STDOUT) {
 			    setLogFH(\*ActualSTDOUT);
 			}
 		    } elsif ($cmd eq 'stderr' && !$ldebug) {
-			if (exists $tiedFileHandles{'stderr'}) {
+			if ($tiedStderr) {
 				# Update the copy-type
 			    untie(*STDERR);
 			}
@@ -3507,7 +3509,7 @@ sub DB {
 			    next CMD;
 			}
 			tie(*STDERR, 'DB::RedirectStdOutput', *ActualSTDERR, $OUT, $cmd, $copyType);
-			$tiedFileHandles{'stderr'} = 1;
+			$tiedStderr = 1;
 			if ($DB::outLogName && $DB::outLogName == \*STDERR) {
 			    setLogFH(\*ActualSTDERR);
 			}
