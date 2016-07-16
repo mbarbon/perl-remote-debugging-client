@@ -699,7 +699,8 @@ BEGIN {
 
 $nextBkPtIndex = 0;
 
-$numWatchPoints = 0;
+my (@watchPoints, @watchPointValues);
+my $numWatchPoints = 0;
 
 $startedAsInteractiveShell = undef;
 
@@ -2024,8 +2025,8 @@ sub DB {
 
     # If we have any watch expressions ...
     if (!$single && ($trace & 2) && $pkg !~ /^DB::/) {
-        for (my $i = 0 ; $i <= $#to_watch ; $i++) {
-            $evalarg = $to_watch[$i];
+        for (my $i = 0 ; $i <= $#watchPoints ; $i++) {
+            $evalarg = $watchPoints[$i];
 
             # Fix context DB::eval() wants to return an array, but
             # we need a scalar here.
@@ -2033,11 +2034,11 @@ sub DB {
             $val = ((defined $val) ? "'$val'" : 'undef');
 
             # Did it change?
-            if ($val ne $old_watch[$i]) {
-		dblog("checking watches, {$to_watch[$i]} was [$old_watch[$i]], not [$val]") if $ldebug;
+            if ($val ne $watchPointValues[$i]) {
+		dblog("checking watches, {$watchPoints[$i]} was [$watchPointValues[$i]], not [$val]") if $ldebug;
                 # Yep! Show the difference, and fake an interrupt.
                 $signal = 1;
-                $old_watch[$i] = $val;
+                $watchPointValues[$i] = $val;
 		last;
             }
         }
@@ -2573,18 +2574,18 @@ sub DB {
 		if ($bType eq 'watch') {
 		    dblog("Deleting watchpoint [$bExpression]") if $ldebug;
 		    my $i_cnt = 0;
-		    foreach (@to_watch) {
-			my $val = $to_watch[$i_cnt];
+		    foreach (@watchPoints) {
+			my $val = $watchPoints[$i_cnt];
 
 			# Does this one match the command argument?
 			if ($val eq $bExpression) { # =~ m/^\Q$i$/) {
 				# Yes. Turn it off, and its value too.
-			    splice(@to_watch, $i_cnt, 1);
-			    splice(@old_watch, $i_cnt, 1);
+			    splice(@watchPoints, $i_cnt, 1);
+			    splice(@watchPointValues, $i_cnt, 1);
 			    last;
 			}
 			$i_cnt++;
-		    }		## end foreach (@to_watch)
+		    }		## end foreach (@watchPoints)
 		    if (--$numWatchPoints <= 0) {
 			dblog("No more watching anything [\$numWatchPoints = $numWatchPoints]") if $ldebug;
 			$numWatchPoints = 0;
@@ -2756,8 +2757,8 @@ sub DB {
 			    $evalarg = $bCondition;
 			    my ($val) = join(' ', &eval);
 			    $val = (defined $val) ? "'$val'" : 'undef';
-			    push @to_watch, $bCondition;
-			    push @old_watch, $val;
+			    push @watchPoints, $bCondition;
+			    push @watchPointValues, $val;
 				# We are now watching expressions.
 			    $trace |= 2;
 			    ++$numWatchPoints;
