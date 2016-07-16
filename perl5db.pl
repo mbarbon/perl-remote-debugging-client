@@ -1258,8 +1258,8 @@ sub emitTypeMapInfo($$) {
     printWithLength($res);
 }
 
-sub decodeCmdLineData($$) {
-    my ($dataLength, $argsARef) = @_;
+sub decodeCmdLineData($$$$) {
+    my ($cmd, $transactionID, $dataLength, $argsARef) = @_;
     my @args = @$argsARef;
     my $currDataEncoding = $settings{data_encoding}->[0];
     my $decodedData;
@@ -2078,7 +2078,7 @@ sub DB {
       CMD:
 	while (1) {
 	    # dblog("About to get the command...\n") if $ldebug;
-	    $cmd = &readline();
+	    my $cmd = &readline();
 	    if ($cmd eq '') {
 		if ($keep_running) {
 		    disconnect();
@@ -3280,7 +3280,7 @@ sub DB {
 		my ($actualDataLength, $currDataEncoding, $decodedData);
 		if (scalar @cmdArgs) {
 		    ($actualDataLength, $currDataEncoding, $decodedData) =
-			decodeCmdLineData($advertisedDataLength, \@cmdArgs);
+			decodeCmdLineData($cmd, $transactionID, $advertisedDataLength, \@cmdArgs);
 		}
 		if (!defined $decodedData) {
 		    dblog("property_set: \$decodedData not defined\n") if $ldebug;
@@ -3568,7 +3568,7 @@ sub DB {
 		my ($actualDataLength, $currDataEncoding, $decodedData);
 		if (scalar @cmdArgs) {
 		    ($actualDataLength, $currDataEncoding, $decodedData) =
-			decodeCmdLineData($dataLength, \@cmdArgs);
+			decodeCmdLineData($cmd, $transactionID, $dataLength, \@cmdArgs);
 		}
 		if (!defined $decodedData) {
 		    next CMD;
