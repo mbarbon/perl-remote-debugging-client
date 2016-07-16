@@ -969,7 +969,7 @@ sub remove_FileURI_LineNo_Breakpoint {
 		local (undef, undef, $perlFileName) = @{$fileNameTable[$fileURINo]};
 		if ($perlFileName) {
 		    local *dbline = $main::{'_<' . $perlFileName};
-		    delete $dbline{$bLine};
+		    $dbline{$bLine} = 0;
 		} else {
 		    dblog("remove_FileURI_LineNo_Breakpoint: No perlFileName entry in info \$fileNameTable[$fileURINo]\n") if $ldebug;
 		}
@@ -1446,8 +1446,8 @@ sub getBreakpointInfoString($%) {
     }
 }
 
-sub processPossibleBreakpoint($$;$) {
-    my ($bkptInfoRef, $locationString, $line) = @_;
+sub processPossibleBreakpoint($$;$$) {
+    my ($bkptInfoRef, $locationString, $dbline, $line) = @_;
     # ($bFileURINo, $bLine, $bState, $bType, $bFunction, $bExpression, $bException, $bHitInfo) = @$bkptInfoRef;
     if (!defined $bkptInfoRef) {
 	return;
@@ -1498,9 +1498,7 @@ sub processPossibleBreakpoint($$;$) {
 	$signal |= 1;
 	if ($bState == BKPT_TEMPORARY) {
 	    $bkptInfoRef->[BKPTBL_STATE] = BKPT_DISABLE;
-	    if ($line) {
-		delete $dbline{$line};
-	    }
+	    $dbline->{$line} = 0 if $line && $dbline;
 	}
     } else {
 	# Don't break here, but there are no
@@ -2023,7 +2021,7 @@ sub DB {
 
     if (!$single) {
 	$bkptInfoRef = lookupBkptInfo($fileNameURINo, $currentLine);
-	processPossibleBreakpoint($bkptInfoRef, "File $fileNameURINo, line $currentLine", $currentLine);
+	processPossibleBreakpoint($bkptInfoRef, "File $fileNameURINo, line $currentLine", \%dbline, $currentLine);
     }
 
     # If we have any watch expressions ...
