@@ -3572,7 +3572,7 @@ sub DB {
 					 $transactionID,
 					 $decodedData,
 					 $res,
-					 $maxDataSize);
+					 $settings{max_data}[0]);
 	    } else {
 		# Fallback
 		printWithLength(sprintf
