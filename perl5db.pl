@@ -709,8 +709,9 @@ my ($tiedStdout, $tiedStderr);
 
 # End of initialization code.
 
+my $full_dbgp_prefix;
 {
-    $hostname = 'unknown';
+    my $hostname = 'unknown';
     local $@;
     eval {
 	require 'Sys/Hostname.pm';
@@ -722,8 +723,7 @@ my ($tiedStdout, $tiedStderr);
     if ($@) {
 	dblog("Error -- [$@]\n") if $ldebug;
     }
-    $partial_dbgp_prefix = "dbgp://perl";
-    $full_dbgp_prefix = "$partial_dbgp_prefix/$hostname/$$";
+    $full_dbgp_prefix = "dbgp://perl/$hostname/$$";
 }
 
 {
