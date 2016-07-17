@@ -3670,13 +3670,12 @@ sub finish_postponed {
 # breakpoints are not conditional.  We only need to localize
 # $@ because the eval() destroys it.
 
-sub tryBreaking($$) {
+sub tryBreaking($$$) {
     return if ($signal || $single); # we're about to break anyway.
-    my ($fqsubname, $callDirection) = @_;
+    my ($bkptEntry, $fqsubname, $callDirection) = @_;
     local $@;
     eval {
-	my $bkptEntry = exists $FQFnNameLookupTable{$fqsubname} && $FQFnNameLookupTable{$fqsubname};
-	if ($bkptEntry && exists $bkptEntry->{$callDirection}) {
+	if (exists $bkptEntry->{$callDirection}) {
 	    my $breakHere = 0;
 	    my $bkptInfoRef = getBkPtInfo($bkptEntry->{$callDirection});
 	    processPossibleBreakpoint($bkptInfoRef, "sub $fqsubname");
@@ -3693,34 +3692,37 @@ sub tryBreaking($$) {
 
 sub sub
 {
-    my ($i, @i); ## dcb -- Bug Fix from John Mongan (john@rescomp.stanford.edu ) 3/20/98
     local $stack_depth = $stack_depth + 1;    # Protect from non-local exits
     $#stack = $stack_depth;
     $stack[-1] = $single;
     $single &= 1;
     $single |= 4 if $#stack == $deep;
-    my ($pkg, $filename, $line) = caller;
-    my $inDB = ($pkg && index($pkg, "DB::") == 0);
-    tryBreaking($sub, 'call') unless $inDB;
-	    
+    my $pkg = caller;
+    my $inDB = ($pkg && rindex($pkg, "DB::", 0) == 0);
+    my $bkptEntry = $FQFnNameLookupTable{$sub};
+    tryBreaking($bkptEntry, $sub, 'call') if $bkptEntry && !$inDB;
+
     if (wantarray)
     {
-	@i = &$sub;
-        $single |= $stack[$stack_depth--];
-        # it would be nicer to break on return statement inside the function
-	tryBreaking($sub, 'return') unless $inDB;
+	my @i = &$sub;
+	$single |= $stack[$stack_depth--];
+	# it would be nicer to break on return statement inside the function
+	$bkptEntry = $FQFnNameLookupTable{$sub};
+	tryBreaking($bkptEntry, $sub, 'return') if $bkptEntry && !$inDB;
 	@i;
     }
     else
     {
-        if (defined wantarray) {
+	my $i;
+	if (defined wantarray) {
 	    $i = &$sub;
-        } else {
-            &$sub; undef $i;
-        };
-        $single |= $stack[$stack_depth--];
-        # it would be nicer to break on return statement inside the function
-	tryBreaking($sub, 'return') unless $inDB;
+	} else {
+	    &$sub;
+	};
+	$single |= $stack[$stack_depth--];
+	# it would be nicer to break on return statement inside the function
+	$bkptEntry = $FQFnNameLookupTable{$sub};
+	tryBreaking($bkptEntry, $sub, 'return') if $bkptEntry && !$inDB;
 	$i;
     }
 }
