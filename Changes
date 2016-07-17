@@ -1,5 +1,9 @@
 Revision history for Devel-Debug-DBGp
 
+0.12      2016-07-17 17:09:17 CEST
+
+    - Reduce slowdown caused by enabling the debugger
+
 0.11      2016-06-20 19:38:41 CEST
 
     - Another Xdebug compatibility option (for temporary breakpoints)
