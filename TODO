@@ -1,5 +1,3 @@
-- use strict, at least 'vars' and 'subs'
-  - perl5db.pl
 - remove shared variables (our ())
 - use strict 'refs' in DB/DbgrProperties.pm and perl5db.pl
 - breakpoint on error

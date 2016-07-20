@@ -239,6 +239,7 @@ sub simple_eval {
     eval $_[0];
 }
 
+use strict qw(vars subs);
 use IO::Handle;
 
 # Debugger for Perl 5.00x; perl5db.pl patch level:
