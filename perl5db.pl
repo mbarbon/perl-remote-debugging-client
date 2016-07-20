@@ -299,13 +299,6 @@ $fall_off_end = 0;
 # Uninitialized warning suppression
 # (local $^W cannot help - other packages!).
 
-# Variables for the eval things
-
-# Hash on <<(eval \d+)[parentLocn:lineNum]>> to (filename, startLine, @src)
-
-%evalTable = ();
-@evalTableIdx = ();
-
 =head1 DEBUGGER SETTINGS
 
 Keep track of the various settings in this hash
@@ -683,19 +676,19 @@ BEGIN {
     dblog("dev-null => $junk");
 }
 
-@bkptLookupTable = (); # Map fileURI_No -> hash of (lineNo => breakPtID)
-%bkptInfoTable = ();   # Map breakPtID -> [fileURINo, lineNo, state, type, function, expression, exception, hitInfo]
-%FQFnNameLookupTable = (); # Map fully qualified fn names =>
-		           # { call => breakPtID, return => breakPtID }
+my @bkptLookupTable = (); # Map fileURI_No -> hash of (lineNo => breakPtID)
+my %bkptInfoTable = ();	  # Map breakPtID -> [fileURINo, lineNo, state, type, function, expression, exception, hitInfo]
+my %FQFnNameLookupTable = (); # Map fully qualified fn names =>
+			      # { call => breakPtID, return => breakPtID }
 
-@fileNameTable = ();                  # Map fileURI_No => [
-				      #  $bFileURI,
-				      #  $bFileName, (fwd slashes)
-				      #  $perlFileName (backwd slashes)
-				      # ]
-%watchedExpressionLookupTable = ();   # Map watchedExpn => breakPtID
+my @fileNameTable = ();			 # Map fileURI_No => [
+					 #  $bFileURI,
+					 #  $bFileName, (fwd slashes)
+					 #  $perlFileName (backwd slashes)
+					 # ]
+my %watchedExpressionLookupTable = ();	 # Map watchedExpn => breakPtID
 
-$nextBkPtIndex = 0;
+my $nextBkPtIndex = 0;
 
 my (@watchPoints, @watchPointValues);
 my $numWatchPoints = 0;
@@ -802,6 +795,7 @@ sub getArg {
 }
 
 # Never delete entries here.
+my (%fileURILookupTable, %perlNameToFileURINo, @fileURI_No_ReverseLookupTable);
 
 sub internFileURI {
     my ($bFileURI) = @_;
@@ -1047,8 +1041,12 @@ sub lookForPerlFileName {
     }
     return $result;
 }
-    
-    
+
+# Variables for the eval things
+# Hash on <<(eval \d+)[parentLocn:lineNum]>> to (filename, startLine, @src)
+my %evalTable = ();
+my @evalTableIdx = ();
+
 sub internEvalURI($;$) {
     my ($filename, $srcLinesARef) = @_;
     if (!exists $evalTable{$filename}) {
