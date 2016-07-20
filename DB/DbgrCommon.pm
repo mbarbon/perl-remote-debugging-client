@@ -64,6 +64,7 @@ our @EXPORT = qw(
 	     NV_UNSET_FLAG
 
 	     %settings
+	     logName
 	     setLogFH
 	     dblog
 	     );
@@ -111,6 +112,7 @@ use constant NV_UNSET_FLAG => 3;
 # Real simple logging
 
 my $doLogging = 0;
+my $outLogName;
 my $logFH = undef;
 my $OUT = undef;
 our $ldebug;
@@ -128,8 +130,7 @@ sub enableLogger {
 	}
 	return;
     }
-    my $outLogName;
-    $DB::outLogName = $outLogName = shift;
+    $outLogName = shift;
     return unless $outLogName;
     if (ref $outLogName eq 'GLOB') {
 	# Make sure we can write to it -- we die if we can't
@@ -180,6 +181,10 @@ sub dblog {
 
 sub setLogFH {
     $logFH = $_[0];
+}
+
+sub logName {
+    $outLogName;
 }
 
 sub setDefaultOutput {

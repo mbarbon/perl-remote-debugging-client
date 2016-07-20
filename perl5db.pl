@@ -170,7 +170,7 @@ sub eval {
 	}
 	if ($unused[4]) {
 	    # hasargs field is set -- an instance of @_ was set up.
-	    eval { @_ = @DB::args; };
+	    eval { @_ = @args; };
 	    @_ = () if $@;
 	}
 	my $usercontext2 = (($evalarg =~ /[\$\@\%]\w*[^\x00-\x7f]/)
@@ -202,7 +202,7 @@ sub eval {
 		}
 	    } else {
 		dblog("eval($evalarg) => no value\n");
-		$DB::no_value = 1;
+		$no_value = 1;
 		@res = ("");
 	    }
 	} elsif (scalar @res == 1 && ! defined $res[0]) {
@@ -224,7 +224,7 @@ sub eval {
     # Since we're only saving $@, we only have to localize the array element
     # that it will be stored in.
     local $saved[0];                          # Preserve the old value of $@
-    eval { &DB::save };
+    eval { &save };
 
     # Now see whether we need to report an error back to the user.
     if ($at) {
@@ -1701,8 +1701,8 @@ sub _getProximityVarsViaB {
     }
     simple_eval("use strict; \@DB::lex_vars_list = ($evaltext)");
     my @results;
-    for my $i (0 .. $#lex_vars_list) {
-        next unless my $value = $lex_vars_list[$i];
+    for my $i (0 .. $#DB::lex_vars_list) {
+        next unless my $value = $DB::lex_vars_list[$i];
         next if _hasActiveIterator(substr($vars[$i], 0, 1), $value);
         push @results, [$vars[$i], undef, 1] ;
     }
@@ -1886,24 +1886,24 @@ sub eval_term {
     my ($term) = @_;
     my $valRef;
     my $firstChar = substr($term, 0, 1);
-    $DB::no_value = undef;
+    $no_value = undef;
     $evalarg = $term;
     if ($firstChar eq '@') {
 	my @tmp = &eval();
-	if ($DB::no_value) {
+	if ($no_value) {
 	    @tmp = ();
 	}
 	$valRef = \@tmp;
     } elsif ($firstChar eq '%') {
 	my %tmp = &eval();
-	if ($DB::no_value) {
+	if ($no_value) {
 	    %tmp = ();
 	}
 	$valRef = \%tmp;
     } else {
 	# eval always fires in array context
 	my @tmp = &eval();
-	if ($DB::no_value) {
+	if ($no_value) {
 	    $valRef = \undef;
 	} else {
 	    $valRef = _guessScalarOrArray(\@tmp);
@@ -2187,7 +2187,7 @@ sub DB {
 				 $supported,
 				 $transactionID,
 				 $innerText));
-		if ($transactionID == 1 && $DB::finished) {
+		if ($transactionID == 1 && $finished) {
 		    # Observed behavior: we've hit the END block,
 		    # and called DB::fake::at_exit(),
 		    # but the debugger is still calling us.  Let's
@@ -3063,18 +3063,18 @@ sub DB {
 				# dblog("context_get: moving up to level $actualStackDepth");
 			} else {
 				# dblog("context_get: settle on caller => [@unused]");
-				# dblog("stack depth [$actualStackDepth]: curr args are [", join(", ", @DB::args), "]") if $ldebug;
-			    @savedArgs = @DB::args;
+				# dblog("stack depth [$actualStackDepth]: curr args are [", join(", ", @args), "]") if $ldebug;
+			    @savedArgs = @args;
 			    last;
 			}
 		    }
 		    if (@savedArgs) {
 			# Are there args?  This gets around Perl's
 			# behavior where if caller fails it doesn't
-			# change the value of @DB::args
+			# change the value of @args
 
 			# dblog("caller => [@unused]");
-			# dblog("stack depth [$stackDepth]: curr args are [", join(", ", @DB::args), "]") if $ldebug;
+			# dblog("stack depth [$stackDepth]: curr args are [", join(", ", @args), "]") if $ldebug;
 			$namesAndValues = [];
 			for (my $j = 0; $j < @savedArgs; $j++) {
 			    push @$namesAndValues, [sprintf('$_[%d]', $j), $savedArgs[$j], 0];
@@ -3180,8 +3180,8 @@ sub DB {
 				# dblog("property_get: moving up to level $actualStackDepth");
 			} else {
 				# dblog("property_get: settle on caller => [@unused]");
-				# dblog("stack depth [$actualStackDepth]: curr args are [", join(", ", @DB::args), "]") if $ldebug;
-			    @savedArgs = @DB::args;
+				# dblog("stack depth [$actualStackDepth]: curr args are [", join(", ", @args), "]") if $ldebug;
+			    @savedArgs = @args;
 			    last;
 			}
 		    }
@@ -3495,7 +3495,7 @@ sub DB {
 			}
 			tie(*STDOUT, 'DB::RedirectStdOutput', *ActualSTDOUT, $OUT, $cmd, $copyType);
 			$tiedStdout = 1;
-			if ($DB::outLogName && $DB::outLogName == \*STDOUT) {
+			if (logName && logName == \*STDOUT) {
 			    setLogFH(\*ActualSTDOUT);
 			}
 		    } elsif ($cmd eq 'stderr' && !$ldebug) {
@@ -3512,7 +3512,7 @@ sub DB {
 			}
 			tie(*STDERR, 'DB::RedirectStdOutput', *ActualSTDERR, $OUT, $cmd, $copyType);
 			$tiedStderr = 1;
-			if ($DB::outLogName && $DB::outLogName == \*STDERR) {
+			if (logName && logName == \*STDERR) {
 			    setLogFH(\*ActualSTDERR);
 			}
 		    }
@@ -4119,9 +4119,9 @@ END {
     # avoid breakpoints if we call code outside DB
     $single = 0;
     # Do not stop in at_exit() and destructors on exit:
-    $DB::finished = 1;
+    $finished = 1;
     $stopReason = STOP_REASON_STOPPING;
-    if ($DB::fall_off_end) {
+    if ($fall_off_end) {
 	dblog("END block: single <= 0\n") if $ldebug;
 	$single = 0;
     } else {
