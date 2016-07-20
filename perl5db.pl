@@ -1934,7 +1934,7 @@ sub DB {
             return;
         }
     }
-    ($pkg, $currentFilename, $currentLine) = caller;
+    (my $pkg, $currentFilename, $currentLine) = caller;
     if (!defined $startedAsInteractiveShell) {
 	# This won't work with code that changes $0 to "-e"
 	# in a BEGIN block.
@@ -1989,9 +1989,8 @@ sub DB {
 	$sentInitString = 1;
     }
 
-
-    local $fileNameURI;
-    local $fileNameURINo;
+    my $fileNameURI;
+    my $fileNameURINo;
 
     my $canPerlFileName = canonicalizeFName($currentFilename);
     if (exists $perlNameToFileURINo{$canPerlFileName}) {
@@ -2002,7 +2001,7 @@ sub DB {
 	$fileNameURINo = internFileURI($fileNameURI);
     }
 
-    our @dbline;
+    our (@dbline, %dbline);
     local*dbline = "::_<$currentFilename";
     if ($ldebug && $pkg eq 'DB::fake') {
 	dblog($dbline[$currentLine]) if $ldebug;
@@ -2023,7 +2022,7 @@ sub DB {
     }
 
     if (!$single) {
-	$bkptInfoRef = lookupBkptInfo($fileNameURINo, $currentLine);
+	my $bkptInfoRef = lookupBkptInfo($fileNameURINo, $currentLine);
 	processPossibleBreakpoint($bkptInfoRef, "File $fileNameURINo, line $currentLine", \%dbline, $currentLine);
     }
 
@@ -2106,8 +2105,7 @@ sub DB {
 				  "Failed to parse command-line [$cmd]");
 		next CMD;
 	    }
-	    local $transactionID;
-	    $transactionID = getArg(\@cmdArgs, '-i');
+	    my $transactionID = getArg(\@cmdArgs, '-i');
 
 	    # Enter the big pseudo-switch stmt.
 
@@ -2154,8 +2152,8 @@ sub DB {
 				 $transactionID));
 
 	    } elsif ($cmd eq 'feature_get') {
-		local $featureName = getArg(\@cmdArgs, '-n');
-		local ($supported, $innerText);
+		my $featureName = getArg(\@cmdArgs, '-n');
+		my ($supported, $innerText);
 
 		if (! defined $featureName) {
 		    $featureName = "unspecified";
@@ -2201,9 +2199,9 @@ sub DB {
 		}
 
 	    } elsif ($cmd eq 'feature_set') {
-		local $featureName = getArg(\@cmdArgs, '-n');
-		local $featureValue = getArg(\@cmdArgs, '-v');
-		local ($status, $success, $reason);
+		my $featureName = getArg(\@cmdArgs, '-n');
+		my $featureValue = getArg(\@cmdArgs, '-v');
+		my ($status, $success, $reason);
 
 		# $success not used
 		$reason = undef;
@@ -2288,7 +2286,7 @@ sub DB {
 
 		# debug message
 		if ($fakeFirstStepInto) {
-		    $bkptInfoRef = lookupBkptInfo($fileNameURINo, $currentLine);
+		    my $bkptInfoRef = lookupBkptInfo($fileNameURINo, $currentLine);
 		    if ($bkptInfoRef) {
 			dblog("hit a breakpoint at first breakable line") if $ldebug;
 			$getNextCmd = 1;
@@ -2405,7 +2403,7 @@ sub DB {
 		# This is more like starting with a run than a step
 		# So always check $fakeFirstStepInto to 0.
 		if ($fakeFirstStepInto) {
-		    $bkptInfoRef = lookupBkptInfo($fileNameURINo, $currentLine);
+		    my $bkptInfoRef = lookupBkptInfo($fileNameURINo, $currentLine);
 		    if ($bkptInfoRef) {
 			dblog("hit a breakpoint at first breakable line") if $ldebug;
 			$getNextCmd = 1;
@@ -2489,13 +2487,11 @@ sub DB {
 		# Currently ignored:
 		# -n <line no>
 
-		local ($bFileURINo, $bLine, $bType, $bFunction, $bException);
-		local $bptErrorCode = 0;
-		local $bptErrorMsg;
-		local $fileNameTableInfo;
+		my $bptErrorCode = 0;
+		my $bptErrorMsg;
+		my $fileNameTableInfo;
 		my $bpCmd;
-		my $bHitInfo;
-		($bFileURINo, $bLine, $bState, $bType, $bFunction, $bExpression, $bException, $bHitInfo) = getBkPtInfo($bkptID);
+		my ($bFileURINo, $bLine, $bState, $bType, $bFunction, $bExpression, $bException, $bHitInfo) = getBkPtInfo($bkptID);
 		if (!defined $bFileURINo) {
 		    $bptErrorCode = DBP_E_NoSuchBreakpoint;
 		    $bptErrorMsg = "Unknown breakpoint ID $bkptID.";
@@ -2530,7 +2526,7 @@ sub DB {
 		    }
 		}
 		if ($bptErrorCode == 0) {
-		    local $perlFileName = $fileNameTableInfo->[2];
+		    my $perlFileName = $fileNameTableInfo->[2];
 		    our %dbline;
 		    local *dbline = $main::{'_<' . $perlFileName};
 
@@ -2570,12 +2566,10 @@ sub DB {
 				      $bptErrorMsg);
 		}
 	    } elsif ($cmd eq 'breakpoint_remove') {
-		local $bkptID = getArg(\@cmdArgs, '-d');
-		local ($bFileURINo, $bLine, $bState, $bType, $bFunction, $bException);
-		local $bptErrorCode = 0;
-		local $bptErrorMsg;
-		local $bFileURI;
-		($bFileURINo, $bLine, $bState, $bType, $bFunction, $bExpression, $bException) = getBkPtInfo($bkptID);
+		my $bkptID = getArg(\@cmdArgs, '-d');
+		my $bptErrorCode = 0;
+		my $bptErrorMsg;
+		my ($bFileURINo, $bLine, $bState, $bType, $bFunction, $bExpression, $bException) = getBkPtInfo($bkptID);
 		if ($bType eq 'watch') {
 		    dblog("Deleting watchpoint [$bExpression]") if $ldebug;
 		    my $i_cnt = 0;
@@ -2629,7 +2623,7 @@ sub DB {
 		}
 
 	    } elsif ($cmd eq 'breakpoint_get') {
-		local $bkptID = getArg(\@cmdArgs, '-d');
+		my $bkptID = getArg(\@cmdArgs, '-d');
 		my $res = sprintf(qq(%s\n<response %s command="%s"
 				     transaction_id="%s" >),
 				  xmlHeader(),
@@ -2684,10 +2678,6 @@ sub DB {
 		printWithLength($res);
 
 	    } elsif ($cmd eq 'breakpoint_set') {
-
-		local ($bFileURINo, $bLine, $bState, $bType, $bFunction, $bException, $bCondition);
-		local $bkptID;
-		local ($perlFileName, $bFileURI, $bFileName);
 		my %opts;
 		{
 		    local *ARGV = \@cmdArgs;
@@ -2696,16 +2686,15 @@ sub DB {
 		}
 
 		# For now, set the filename to either $opts{f} or curr filename
-		$bHitCount = $opts{h};
-		$bFunctionName = $opts{m};
-		$bLine = $opts{n} || $currentLine;
-		$bHitConditionOperator = $opts{o};
-		$bIsTemporary = $opts{r} ? 1 : 0;
-		$bState = $opts{s} || BKPT_REQ_ENABLED;
-		$bType = $opts{t};
-		$bException = $opts{x};
-		local $perlFileName = undef;
-		$bCondition = "";
+		my $bHitCount = $opts{h};
+		my $bFunctionName = $opts{m};
+		my $bLine = $opts{n} || $currentLine;
+		my $bHitConditionOperator = $opts{o};
+		my $bIsTemporary = $opts{r} ? 1 : 0;
+		my $bState = $opts{s} || BKPT_REQ_ENABLED;
+		my $bType = $opts{t};
+		my $bException = $opts{x};
+		my $bCondition = "";
 		if (exists $opts{f}) {
 		    $opts{f} =~ s@^dbgp:///file:/@file:/@;
 		    $opts{f} =~ s@^file:/([^/])@file://$1@;
@@ -2714,14 +2703,16 @@ sub DB {
 		    $opts{f} = 'file://' . $opts{f} unless
 			$opts{f} =~ m@^(?:file|dbgp)://@;
 		}
+		my ($bFileURINo, $bkptID, $bStateVal);
+		my ($perlFileName, $bFileURI, $bFileName);
+		my $bptErrorCode = 0;
+		my $bptErrorMsg = undef;
 
 		getFileInfo(defined $opts{f} ? $opts{f} : calcFileURI($currentFilename),
 			    \$bFileURI,
 			    \$bFileURINo,
 			    \$bFileName,
 			    \$perlFileName);
-		$bptErrorCode = 0;
-		$bptErrorMsg = undef;
 
 		if ($opts{f} =~ m@^dbgp:///perl//(?:PerlApp/|<.*>)@) {
 		    $bptErrorCode = DBP_E_BreakpointTypeNotSupported;
@@ -2753,6 +2744,8 @@ sub DB {
 			}
 		    }
 		} elsif ($bType eq 'watch') {
+		    my $bptErrorCode = 0;
+		    my $bptErrorMsg;
 		    if ($cmdArgs[0] && length $cmdArgs[0]) {
 			$bCondition = $cmdArgs[0];
 			dblog("Got raw condition [$bCondition]") if $ldebug;
@@ -2897,8 +2890,8 @@ sub DB {
 				 ));
 
 	    } elsif ($cmd eq 'stack_get') {
-		local $stackDepth = getArg(\@cmdArgs, '-d');
-		local $numLevelsToShow;
+		my $stackDepth = getArg(\@cmdArgs, '-d');
+		my $numLevelsToShow;
 		if (!defined $stackDepth) {
 		    $numLevelsToShow = 1e9; # Get them all
 		} elsif ($stackDepth !~ /^\d+$/ || $stackDepth < 0) {
@@ -3043,8 +3036,8 @@ sub DB {
 				 $transactionID);
 
 	    } elsif ($cmd eq 'context_get') {
-		local $stackDepth = getArg(\@cmdArgs, '-d');
-		local $context_id = getArg(\@cmdArgs, '-c');
+		my $stackDepth = getArg(\@cmdArgs, '-d');
+		my $context_id = getArg(\@cmdArgs, '-c');
 		$stackDepth = 0 unless defined $stackDepth;
 		local $settings{max_depth}[0] = 0
                     unless $xdebug_full_values_in_context;
@@ -3055,7 +3048,7 @@ sub DB {
 		    my @savedArgs;
 		    my $actualStackDepth = $stackDepth + 1;
 		    while (1) {
-			@unused = caller($actualStackDepth);
+			my @unused = caller($actualStackDepth);
 			if (!@unused) {
 			    last;
 			} elsif ($unused[3] eq '(eval)' && !$unused[4]) {
@@ -3156,12 +3149,12 @@ sub DB {
 		    shift @ARGV;
 		    getopts('c:d:k:m:n:p:', \%opts);
 		}
-		local $context_id = $opts{c};
-		local $stackDepth = $opts{d} || 0;
-		local $propertyKey = $opts{k};
-		local $maxDataSize = $opts{m} || $settings{max_data}[0];
-		local $property_long_name = $opts{n};
-		local $pageIndex = $opts{p} || 0;
+		my $context_id = $opts{c};
+		my $stackDepth = $opts{d} || 0;
+		my $propertyKey = $opts{k};
+		my $maxDataSize = $opts{m} || $settings{max_data}[0];
+		my $property_long_name = $opts{n};
+		my $pageIndex = $opts{p} || 0;
 		my $nameAndValue;
 		$property_long_name = nonXmlChar_Decode($property_long_name);
 		if ($context_id != FunctionArguments) {
@@ -3172,7 +3165,7 @@ sub DB {
 		    my @savedArgs;
 		    my $actualStackDepth = $stackDepth + 1;
 		    while (1) {
-			@unused = caller($actualStackDepth);
+			my @unused = caller($actualStackDepth);
 			if (!@unused) {
 			    last;
 			} elsif ($unused[3] eq '(eval)' && !$unused[4]) {
@@ -3185,8 +3178,7 @@ sub DB {
 			    last;
 			}
 		    }
-		    my $finalValue;
-		    ($property_long_name, $finalValue, $code, $error) =
+		    ($property_long_name, my $finalValue, my $code, my $error) =
 			evalArgument($property_long_name, $propertyKey,
 				     \@savedArgs);
 		    if ($code) {
@@ -3449,7 +3441,7 @@ sub DB {
 				      $error);
 		    next CMD;
 		};
-		($encoding, $encVal) = figureEncoding($sourceString);
+		my ($encoding, $encVal) = figureEncoding($sourceString);
 		my $res = sprintf(qq(%s\n<response %s command="%s"
 				     transaction_id="%s"
 				     success="1"
