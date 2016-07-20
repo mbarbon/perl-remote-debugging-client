@@ -259,7 +259,8 @@ terminates, and defaulting to printing return values for the C<r> command.
 
 =cut
 
-our ($single, $trace, $signal);
+our ($single, $trace, $signal, $sub, %sub, @args);
+our ($ldebug); # it should be my (), as all other $ldebug around the code
 my ($currentFilename, $currentLine);
 
 BEGIN {
@@ -272,6 +273,8 @@ BEGIN {
     $deep = -1;
     $ready = 0;
     $skip_alarm = 1;
+    # True if we're logging
+    $ldebug = 0;
 
     # uninitialized warning suppression
     $signal = $single = $trace = 0;
@@ -283,9 +286,6 @@ BEGIN {
 }
 
 local ($^W) = 0;    # Switch run-time warnings off during init.
-
-# True if we're logging
-$ldebug = 0;
 
 # more stuff
 require Config;
@@ -406,10 +406,13 @@ sub decodeData($;$) {
     return $finalStr;
 }
 
-$lastContinuationCommand = undef;
-# $lastContinuationCommand = 'step_into';
-$lastContinuationStatus = 'break';
-$lastTranID = 0;  # The transactionID that started
+my $fakeFirstStepInto = 0;
+my $sentInitString = 0;
+my $startedAsInteractiveShell = undef;
+
+my $lastContinuationCommand = undef;
+my $lastContinuationStatus = 'break';
+my $lastTranID = 0;  # The transactionID that started
 
 my $stopReason = STOP_REASON_STARTING();
 my @stopReasons = (qw(starting stopping stopped running break interactive));
@@ -453,14 +456,14 @@ my $current_filename = '';
 # Variables and subs for doing option processing
 # (Copied from standard perl5db.pl to support PDK products)
 
-$remoteport = undef;
-$remotepath = undef;
-$connect_at_start = 1;
-$keep_running = 0;
-$xdebug_file_line_in_step = undef;
-$xdebug_no_value_tag = undef;
-$xdebug_full_values_in_context = undef;
-$xdebug_temporary_breakpoint_state = undef;
+my $remoteport;
+my $remotepath;
+my $connect_at_start = 1;
+my $keep_running = 0;
+my $xdebug_file_line_in_step = undef;
+my $xdebug_no_value_tag = undef;
+my $xdebug_full_values_in_context = undef;
+my $xdebug_temporary_breakpoint_state = undef;
 # If the PERLDB_OPTS variable has options in it, parse those out next.
 if (defined $ENV{PERLDB_OPTS}) {
     parse_options($ENV{PERLDB_OPTS});
@@ -692,8 +695,6 @@ my $nextBkPtIndex = 0;
 
 my (@watchPoints, @watchPointValues);
 my $numWatchPoints = 0;
-
-$startedAsInteractiveShell = undef;
 
 my ($tiedStdout, $tiedStderr);
 
