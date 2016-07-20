@@ -259,9 +259,19 @@ terminates, and defaulting to printing return values for the C<r> command.
 
 =cut
 
+our ($no_value, $evalarg, $usercontext, $stackDepth, @saved); # used by sub eval above
+
 our ($single, $trace, $signal, $sub, %sub, @args);
 our ($ldebug); # it should be my (), as all other $ldebug around the code
 my ($currentFilename, $currentLine);
+
+my ($pending_check_enabled, $pending_check_count, $pending_check_lim, $pending_check_timeout, $pending_check_interval, $skip_alarm, @pending_commands);
+
+my ($setup_once_after_connection, $ready, $ini_warn);
+my %firstFileInfo;
+
+my (@stack, $deep);
+our ($stack_depth, $level, $frame); # for local()
 
 BEGIN {
     # Switch compilation warnings off until another BEGIN.
@@ -271,7 +281,6 @@ BEGIN {
     #init $deep to avoid warning
     # By default it doesn't stop.
     $deep = -1;
-    $ready = 0;
     $skip_alarm = 1;
     # True if we're logging
     $ldebug = 0;
@@ -292,12 +301,10 @@ require Config;
 
 # We set these variables to safe values. We don't want to blindly turn
 # off warnings, because other packages may still want them.
-$signal = $single = $finished = $runnonstop = 0;
-$inPostponed = 0;
-@postponedFiles = ();
-$fall_off_end = 0;
-# Uninitialized warning suppression
-# (local $^W cannot help - other packages!).
+my ($finished, $runnonstop, $fall_off_end) = (0, 0, 0);
+
+our ($inPostponed) = (0); # because of local()
+my @postponedFiles;
 
 =head1 DEBUGGER SETTINGS
 
@@ -450,8 +457,6 @@ eval {
     select(STDOUT);
     $| = 1;			# for real STDOUT
 };
-
-my $current_filename = '';
 
 # Variables and subs for doing option processing
 # (Copied from standard perl5db.pl to support PDK products)
@@ -736,7 +741,6 @@ my $full_dbgp_prefix;
 finish_postponed();
 $ready = 1;
 $single = 0;
-$full_bypass = 0;
 
 sub sendInitString {
     # Send the init command at this point
@@ -1910,6 +1914,9 @@ sub eval_term {
 	}
     }
 }
+
+my %firstFileInfo;
+our ($full_bypass); # used in DB::RedirectStdOutput
 
 sub DB {
     if ($full_bypass) {
