@@ -272,7 +272,7 @@ my ($setup_once_after_connection, $ready, $ini_warn);
 my %firstFileInfo;
 
 my (@stack, $deep);
-our ($stack_depth, $level, $frame); # for local()
+our ($stack_depth, $level); # for local()
 
 BEGIN {
     # Switch compilation warnings off until another BEGIN.
@@ -292,7 +292,6 @@ BEGIN {
     @stack = (0);
     $stack_depth = 0;    # Localized repeatedly; simple way to track $#stack
     $level = 0;
-    $frame = 0;
 }
 
 local ($^W) = 0;    # Switch run-time warnings off during init.
@@ -3756,7 +3755,6 @@ sub chr_expand {
 
 sub readline {
     local $.;
-    local $frame = 0;
     # Nothing on the filehandle stack. Socket?
     if (ref $OUT and UNIVERSAL::isa($OUT, 'IO::Socket')) {
         # Send anything we have to send.
@@ -3865,8 +3863,6 @@ sub dump_trace {
     my ($p, $file, $line, $sub);
 
     my ($e, $r, @sub);
-
-    local $frame = 0;
 
     # Do not want to trace this.
     local $trace = 0;
