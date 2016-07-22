@@ -69,7 +69,10 @@ sub run_program {
     local $ENV{PERLDB_OPTS} = $port ?
         "RemotePort=localhost:$port $opts" :
         "RemotePath=$path $opts";
-    local $ENV{PERL5LIB} = $ENV{PERL5LIB} ? ".:$ENV{PERL5LIB}" : ".";
+    # the harness/blib don't add dbgp-helper to the path
+    local $ENV{PERL5LIB} = join ':', qw(blib/lib/dbgp-helper blib/arch),
+                                     ($ENV{PERL5LIB}) x !!$ENV{PERL5LIB}
+        if grep /blib/, @INC;
     $PID = IPC::Open3::open3(
         $CHILD_IN, $CHILD_OUT, $CHILD_ERR,
         $^X, '-d', $script,

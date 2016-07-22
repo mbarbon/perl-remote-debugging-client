@@ -309,6 +309,7 @@ Keep track of the various settings in this hash
 
 use DB::DbgrCommon;
 use DB::DbgrProperties;
+use DB::DbgrXS;
 
 my %supportedCommands = (
     status              => 1,
@@ -477,6 +478,31 @@ if (!defined $remoteport && !defined $remotepath) {
 }
 if ($remoteport =~ /^\d+$/) {
     die "Env variable RemotePort not numeric (set to $remoteport).";
+}
+
+my $has_xs = 0;
+if (DB::DbgrXS::HAS_XS() && !$ENV{DBGP_PURE_PERL}) {
+    eval {
+	require XSLoader;
+
+	XSLoader::load('dbgp-helper::perl5db');
+	$has_xs = 1;
+
+	1;
+    } or do {
+	my $error = $@ || "Unknown error";
+
+	dblog("Error loading XS code: $error") if $ldebug;
+	if ($ENV{DBGP_XS_ONLY}) {
+	    dblog("Not falling back to pure-Perl, as per DBGP_XS_ONLY");
+	    die "Aborting after error loading XS code: $error";
+	}
+    };
+} else {
+    if ($ENV{DBGP_XS_ONLY}) {
+	dblog("DBGP_XS_ONLY but XS not compiled: aborting");
+	die "DBGP_XS_ONLY but XS not compiled: aborting";
+    }
 }
 
 sub emitBanner {
