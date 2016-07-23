@@ -226,9 +226,9 @@ sub getContextProperties($$) {
 	    my $array = *{$glob}{ARRAY};
 	    my $hash = *{$glob}{HASH};
 	    next unless $has_scalar || $array || $hash;
-	    push @results, ["\$${key}", undef, 1] if $has_scalar;
-	    push @results, ["\@${key}", undef, 1] if $array;
-	    push @results, ["\%${key}", undef, 1] if $hash;
+	    push @results, ["\$${key}", ${*{$glob}{SCALAR}}, 0] if $has_scalar;
+	    push @results, ["\@${key}", $array, 0] if $array;
+	    push @results, ["\%${key}", $hash, 0] if $hash;
 	}
 	return \@results;
     } elsif ($context_id == PunctuationVariables) {

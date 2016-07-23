@@ -136,8 +136,14 @@ sub eval_value_is {
 
     my ($expr, $value) = @_;
     my $res = send_command('eval', encode_base64($expr));
+    my $eval_type = $res->result->type;
+    my $eval_value = $res->result->value;
 
-    is($res->result->value, $value);
+    # workaround for current client behaviour
+    is($eval_type eq 'undef' ? undef :
+       defined $eval_value   ? $eval_value :
+                          '',
+       $value);
 }
 
 sub breakpoint_list_is {

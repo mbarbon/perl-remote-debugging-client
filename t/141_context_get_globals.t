@@ -37,7 +37,7 @@ command_is(['context_get', '-c', 1], {
             {
                 name        => '$fundef',
                 fullname    => '$fundef',
-                type        => 'string',
+                type        => 'undef',
                 constant    => '0',
                 children    => '0',
                 value       => undef,

@@ -177,9 +177,6 @@ sub eval {
                             ? "$usercontext use utf8; "
                             : $usercontext);
 	@res = eval "$usercontext2 $evalarg;\n"; # '\n' for nice recursive debug
-	if (!$@ && scalar @res == 1 && !defined $res[0]) {
-	    $res[0] = '';
-	}
 
 	if ($ldebug) {
 	    if ($@) {
@@ -189,6 +186,7 @@ sub eval {
 		    dblog("eval($evalarg) => [hash val]\n");
 		} elsif (scalar @res == 1 && ! defined $res[0]) {
 		    dblog("eval($evalarg) => (undef)\n");
+		    $no_value = 1;
 		    @res = ("");
 		} else {
 		    my $str_out = join('', @res);
@@ -205,7 +203,8 @@ sub eval {
 		$no_value = 1;
 		@res = ("");
 	    }
-	} elsif (scalar @res == 1 && ! defined $res[0]) {
+	} elsif (!$@ && scalar @res == 1 && ! defined $res[0]) {
+	    $no_value = 1;
 	    @res = ("");
 	}
 
@@ -1908,7 +1907,7 @@ sub eval_term {
 	# eval always fires in array context
 	my @tmp = &eval();
 	if ($no_value) {
-	    $valRef = \undef;
+	    $valRef = undef;
 	} else {
 	    $valRef = _guessScalarOrArray(\@tmp);
 	}

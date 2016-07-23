@@ -11,10 +11,22 @@ command_is(['eval', encode_base64('$i')], {
     result  => {
         name        => '$i',
         fullname    => '$i',
-        type        => 'string',
+        type        => 'undef',
         constant    => '0',
         children    => '0',
         value       => undef,
+    },
+});
+
+command_is(['eval', encode_base64('""')], {
+    command => 'eval',
+    result  => {
+        name        => '""',
+        fullname    => '""',
+        type        => 'string',
+        constant    => '0',
+        children    => '0',
+        value       => undef, # needs to be fixed in the client
     },
 });
 

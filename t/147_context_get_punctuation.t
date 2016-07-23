@@ -25,19 +25,11 @@ command_is(['context_get', '-c', 3], {
             value       => undef,
         },
         {
-            name        => '$+',
-            value       => undef,
-        },
-        {
             name        => '@+',
             value       => undef,
         },
         {
             name        => '@-',
-            value       => undef,
-        },
-        {
-            name        => '$.',
             value       => undef,
         },
         {
@@ -54,7 +46,7 @@ command_is(['context_get', '-c', 3], {
         },
         {
             name        => '$_',
-            value       => undef,
+            value       => 'abc',
         },
         {
             name        => '$`',
@@ -84,19 +76,11 @@ command_is(['context_get', '-c', 3], {
             value       => undef,
         },
         {
-            name        => '$+',
-            value       => undef,
-        },
-        {
             name        => '@+',
             value       => undef,
         },
         {
             name        => '@-',
-            value       => undef,
-        },
-        {
-            name        => '$.',
             value       => undef,
         },
         {
@@ -113,7 +97,7 @@ command_is(['context_get', '-c', 3], {
         },
         {
             name        => '$_',
-            value       => undef,
+            value       => 'abc',
         },
         {
             name        => '$`',
@@ -143,19 +127,11 @@ command_is(['context_get', '-c', 3], {
             value       => 'c',
         },
         {
-            name        => '$+',
-            value       => undef,
-        },
-        {
             name        => '@+',
             value       => undef,
         },
         {
             name        => '@-',
-            value       => undef,
-        },
-        {
-            name        => '$.',
             value       => undef,
         },
         {
@@ -172,7 +148,7 @@ command_is(['context_get', '-c', 3], {
         },
         {
             name        => '$_',
-            value       => undef,
+            value       => 'abc',
         },
         {
             name        => '$`',
