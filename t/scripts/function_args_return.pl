@@ -6,6 +6,16 @@ sub pass_add {
     &add;
 }
 
+sub mutate {
+    shift;
+}
+
+sub add_mutated {
+    &mutate;
+
+    $_[0] + $_[1];
+}
+
 sub context {
     $context = wantarray;
 }
@@ -29,6 +39,7 @@ sub ret_void {
 
 $add_1_2 = add(1, 2);
 $pass_add_2_3 = pass_add(2, 3);
+$pass_mutate = add_mutated(7, 1, 3);
 
 $dummy = context();
 $scalar_context = $context;

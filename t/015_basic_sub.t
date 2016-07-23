@@ -10,6 +10,7 @@ send_command('run');
 
 eval_value_is('$add_1_2', 3);
 eval_value_is('$pass_add_2_3', 5);
+eval_value_is('$pass_mutate', 4);
 eval_value_is('$scalar_context', '');
 eval_value_is('$list_context', 1);
 eval_value_is('$void_context', undef);
