@@ -3719,8 +3719,7 @@ sub tryBreaking($$$) {
 }
 
 
-sub sub
-{
+sub sub {
     local $stack_depth = $stack_depth + 1;    # Protect from non-local exits
     $#stack = $stack_depth;
     $stack[-1] = $single;
@@ -4223,7 +4222,7 @@ sub clobber_db_sub {
 
 # called from XS
 sub setup_lexicals {
-    DB::XS::setup_lexicals(\$ldebug);
+    DB::XS::setup_lexicals(\$ldebug, \@stack, \$deep, \%FQFnNameLookupTable);
 }
 
 BEGIN {
