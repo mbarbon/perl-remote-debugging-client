@@ -20,6 +20,7 @@ t/010_basic_step.t
 t/011_basic_stack.t
 t/012_basic_eval.t
 t/013_basic_breakpoint.t
+t/015_basic_sub.t
 t/030_detach_reconnect.t
 t/031_keep_running.t
 t/035_connect_after.t
@@ -61,6 +62,7 @@ t/scripts/break.pm
 t/scripts/breakpoint.pl
 t/scripts/connect_after.pl
 t/scripts/eval_breakpoint.pl
+t/scripts/function_args_return.pl
 t/scripts/function_breakpoint.pl
 t/scripts/globals.pl
 t/scripts/hitcount_breakpoint.pl
