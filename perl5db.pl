@@ -163,10 +163,10 @@ sub eval {
 	# Do this in case there are user args in the expression --
 	# pull them from the user's context.
 	local @_;  # Clear each time.
-	local @unused = caller($stackDepth + 2);
+	local @unused = caller($evalSkipFrames + 2);
 	if ($unused[3] eq 'DB::DB') {
-	    # dblog("DB::eval -- caller($stackDepth + 2) => something in DB:DB, moving up one level");
-	    @unused = caller($stackDepth + 3);
+	    # dblog("DB::eval -- caller($evalSkipFrames + 2) => something in DB:DB, moving up one level");
+	    @unused = caller($evalSkipFrames + 3);
 	}
 	if ($unused[4]) {
 	    # hasargs field is set -- an instance of @_ was set up.
@@ -259,7 +259,7 @@ terminates, and defaulting to printing return values for the C<r> command.
 
 =cut
 
-our ($no_value, $evalarg, $usercontext, $stackDepth, @saved); # used by sub eval above
+our ($no_value, $evalarg, $usercontext, $evalSkipFrames, @saved); # used by sub eval above
 
 our ($single, $trace, $signal, $sub, %sub, @args);
 our ($ldebug); # it should be my (), as all other $ldebug around the code
@@ -3037,7 +3037,6 @@ sub DB {
 		printWithLength($res);
 
 	    } elsif ($cmd eq 'context_names') {
-		local $stackDepth = getArg(\@cmdArgs, '-d');
 		emitContextNames($cmd,
 				 $transactionID);
 
@@ -3082,7 +3081,6 @@ sub DB {
 		} elsif ($context_id == LocalVars) {
 		    $namesAndValues = eval { _getProximityVars($pkg, $currentFilename, $currentLine, $stackDepth); };
 		} else {
-		    $stackDepth = 0;
 		    $namesAndValues = eval { getContextProperties($context_id, $pkg); };
 		}
 		if ($@) {
