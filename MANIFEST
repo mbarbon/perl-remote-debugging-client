@@ -21,6 +21,7 @@ t/011_basic_stack.t
 t/012_basic_eval.t
 t/013_basic_breakpoint.t
 t/015_basic_sub.t
+t/018_eval_function_args.t
 t/030_detach_reconnect.t
 t/031_keep_running.t
 t/035_connect_after.t

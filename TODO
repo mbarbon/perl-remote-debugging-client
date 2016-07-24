@@ -39,6 +39,9 @@
   string operations on types, also, analyzeVal re-does some of the
   checks already performed by _getFullPropertyInfoByValue
 - test
+  - test using function arguments in conditional breakpoints
+  - more thorough tests for function arguments in eval:
+    they don't work (at least) in the case of recursion depth check
   - interactive mode (prints banner when used with -e, maybe it does
     other stuff as well)
   - that eval can see function arguments

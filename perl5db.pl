@@ -163,11 +163,7 @@ sub eval {
 	# Do this in case there are user args in the expression --
 	# pull them from the user's context.
 	local @_;  # Clear each time.
-	local @unused = caller($evalSkipFrames + 2);
-	if ($unused[3] eq 'DB::DB') {
-	    # dblog("DB::eval -- caller($evalSkipFrames + 2) => something in DB:DB, moving up one level");
-	    @unused = caller($evalSkipFrames + 3);
-	}
+	local @unused = caller($evalSkipFrames);
 	if ($unused[4]) {
 	    # hasargs field is set -- an instance of @_ was set up.
 	    eval { @_ = @args; };
@@ -1488,7 +1484,7 @@ sub processPossibleBreakpoint($$;$$) {
 	
 	# As long as we're only called from DB::DB, there's
 	# no reason to save the globals.
-	    
+	local $evalSkipFrames = $evalSkipFrames + 2;
 	eval {
 	    # $DB::signal because $usercontext overrides the package
 	    $evalarg = "\$DB::signal |= do {$bExpression;}"; &eval();
@@ -1891,6 +1887,7 @@ sub eval_term {
     my $firstChar = substr($term, 0, 1);
     $no_value = undef;
     $evalarg = $term;
+    local $evalSkipFrames = $evalSkipFrames + 1;
     if ($firstChar eq '@') {
 	my @tmp = &eval();
 	if ($no_value) {
@@ -1941,6 +1938,9 @@ sub DB {
         }
     }
     (my $pkg, $currentFilename, $currentLine) = caller;
+    # stack is: call-site -> DB::sub -> actual sub -> DB::DB
+    # so we need 3 levels for DB::eval to get to the actual call
+    local $evalSkipFrames = 3;
     if (!defined $startedAsInteractiveShell) {
 	# This won't work with code that changes $0 to "-e"
 	# in a BEGIN block.
@@ -3211,6 +3211,8 @@ sub DB {
 		    next CMD;
 		} elsif ($nameAndValue) {
 		    if ($nameAndValue->[NV_NEED_MAIN_LEVEL_EVAL]) {
+			# here we don't adjust $evalSkipFrames because
+			# this branch is never entered for function arguments
 			eval {
 			    my $valRef;
 			    $evalarg = $nameAndValue->[NV_NAME];
@@ -3306,6 +3308,8 @@ sub DB {
 
 		if ($nameAndValue->[NV_NEED_MAIN_LEVEL_EVAL]) {
 		    $evalarg = $nameAndValue->[NV_NAME] . '=' . $decodedData;
+		    # here we don't adjust $evalSkipFrames because
+		    # modifying function arguments is not supported
 		    eval {
 			&eval();
 		    };
@@ -3671,6 +3675,8 @@ sub tryBreaking($$$) {
     local $@;
     eval {
 	if (exists $bkptEntry->{$callDirection}) {
+	    # 3 because of DB::sub + tryBreaking + the eval BLOCK
+	    local $evalSkipFrames = $evalSkipFrames + 3;
 	    my $breakHere = 0;
 	    my $bkptInfoRef = getBkPtInfo($bkptEntry->{$callDirection});
 	    processPossibleBreakpoint($bkptInfoRef, "sub $fqsubname");
