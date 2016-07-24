@@ -52,6 +52,7 @@ t/230_source.t
 t/250_redirection.t
 t/400_features.t
 t/402_max_children.t
+t/470_recursion_check.t
 t/610_xdebug_step.t
 t/612_xdebug_eval.t
 t/614_xdebug_context_get.t
@@ -70,6 +71,7 @@ t/scripts/hitcount_breakpoint.pl
 t/scripts/output.pl
 t/scripts/punctuation.pl
 t/scripts/reconnect.pl
+t/scripts/recursion_check.pl
 t/scripts/source.pl
 t/scripts/stack.pl
 t/scripts/step.pl
