@@ -402,7 +402,7 @@ sub decodeData($;$) {
 	if ($@) {
 	    # Log the string that caused problems.
 	    $str = (substr($str, 0, 100) . '...') if length($str) > 100;
-	    dblog("decodeData($str) => [$@]\n") if $ldebug;
+	    dblog("decodeData($str) => [$@]\n");
 	}
     }
     return $finalStr;
@@ -1438,7 +1438,7 @@ sub getBreakpointInfoString($%) {
 	if ($ldebug) {
 	    dblog("bkptInfo($bkptID, ",
 	          join(", ", map{$_ => "($_, $extraInfo{$_})"} keys %extraInfo),
-	          "), not defined\n") if $ldebug;
+	          "), not defined\n");
 	}
 	return undef;
     }
@@ -1818,7 +1818,7 @@ sub _fileSource {
 	$sourceString = INC($2);
 	if ($ldebug && defined $sourceString) {
 	    my @lines = split(/\n/, $sourceString);
-	    dblog("Debugging a $pdkUtilityName module, grab source and get [" . join("\n", @lines[0..2]) . "]") if $ldebug;
+	    dblog("Debugging a $pdkUtilityName module, grab source and get [" . join("\n", @lines[0..2]) . "]");
 	}
     }
     if (!defined $sourceString && exists $main::{$sourceKey}) {
@@ -1954,7 +1954,7 @@ sub DB {
 	}
     }
     if ($ldebug && $pkg !~ /^DB::/) {
-	dblog("In $pkg, $currentFilename, $currentLine\n") if $ldebug;
+	dblog("In $pkg, $currentFilename, $currentLine\n");
     }
     
     $usercontext = '($@, $!, $,, $/, $\, $^W) = @saved;' .
@@ -2010,7 +2010,7 @@ sub DB {
     our (@dbline, %dbline);
     local*dbline = "::_<$currentFilename";
     if ($ldebug && $pkg eq 'DB::fake') {
-	dblog($dbline[$currentLine]) if $ldebug;
+	dblog($dbline[$currentLine]);
     }
     if ($currentFilename =~ /\(eval (\d+)\)\[(.*):(\d+)\]$/) {
 	internEvalURI($currentFilename, \@dbline);
