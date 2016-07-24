@@ -4221,6 +4221,11 @@ sub clobber_db_sub {
     *DB::sub = $DISABLED_DB_SUB{$_} for keys %DISABLED_DB_SUB;
 }
 
+# called from XS
+sub setup_lexicals {
+    DB::XS::setup_lexicals(\$ldebug);
+}
+
 BEGIN {
     $^W = $ini_warn;
 }
