@@ -3706,7 +3706,7 @@ sub sub
     if (wantarray)
     {
 	my @i = &$sub;
-	$single |= $stack[$stack_depth--];
+	$single |= $stack[$stack_depth];
 	# it would be nicer to break on return statement inside the function
 	$bkptEntry = $FQFnNameLookupTable{$sub};
 	tryBreaking($bkptEntry, $sub, 'return') if $bkptEntry && !$inDB;
@@ -3720,7 +3720,7 @@ sub sub
 	} else {
 	    &$sub;
 	};
-	$single |= $stack[$stack_depth--];
+	$single |= $stack[$stack_depth];
 	# it would be nicer to break on return statement inside the function
 	$bkptEntry = $FQFnNameLookupTable{$sub};
 	tryBreaking($bkptEntry, $sub, 'return') if $bkptEntry && !$inDB;
