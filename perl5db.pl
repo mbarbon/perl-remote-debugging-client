@@ -465,7 +465,7 @@ my $remotepath;
 my $connect_at_start = 1;
 my $keep_running = 0;
 my $xdebug_file_line_in_step = undef;
-my $xdebug_no_value_tag = undef;
+our $xdebug_no_value_tag = undef; # used by DB::DbgrProperties
 my $xdebug_full_values_in_context = undef;
 my $xdebug_temporary_breakpoint_state = undef;
 # If the PERLDB_OPTS variable has options in it, parse those out next.
