@@ -173,6 +173,7 @@ sub closeLogger {
 
 sub dblog {
     if (@_ && $doLogging && $logFH) {
+	local *DB::sub; # allows using dblog() inside DB::sub
 	print $logFH map { wide_char_safe_encode($_)} @_;
 	# End with a newline
 	print $logFH "\n" unless substr($_[-1], -1, 1) eq "\n";
