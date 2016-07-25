@@ -1,5 +1,14 @@
 Revision history for Devel-Debug-DBGp
 
+0.13      2016-07-25 22:41:44 CEST
+
+    - Add optional XS implementation for DB::sub, for speed
+    - Return 'undef' type for undefined values (the value is still
+      an empty string because DBGp does not have a special "null"
+      value)
+    - Blind fix for 32-bit Perls when not using PadWalker
+    - use strict 'vars' and 'subs' in the debugger
+
 0.12      2016-07-17 17:09:17 CEST
 
     - Reduce slowdown caused by enabling the debugger
