@@ -14,8 +14,11 @@ MANIFEST			This list of files
 META.yml
 META.json
 perl5db.pl
+perl5db.xs
+ppport.h
 README
 t/001_load.t
+t/003_xs_sub.t
 t/010_basic_step.t
 t/011_basic_stack.t
 t/012_basic_eval.t
@@ -57,6 +60,7 @@ t/610_xdebug_step.t
 t/612_xdebug_eval.t
 t/614_xdebug_context_get.t
 t/616_xdebug_temporary_breakpoint.t
+t/lib/Harness.pm
 t/lib/Test.pm
 t/scripts/args.pl
 t/scripts/base.pl
