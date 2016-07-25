@@ -26,7 +26,7 @@ START_MY_CXT
         }                               \
     } STMT_END
 
-void do_dblog(const char *string) {
+static void do_dblog(const char *string) {
     dSP;
 
     EXTEND(SP, 1);
@@ -38,14 +38,14 @@ void do_dblog(const char *string) {
     call_pv("DB::dblog", G_VOID | G_DISCARD | G_NODEBUG);
 }
 
-void reinit_my_cxt(pMY_CXT) {
+static void reinit_my_cxt(pMY_CXT) {
     MY_CXT.ldebug = get_sv("DB::ldebug", 0);
     MY_CXT.stack_depth = gv_fetchpv("DB::stack_depth", 0, 0);
 
     call_pv("DB::setup_lexicals", G_VOID | G_DISCARD | G_NODEBUG);
 }
 
-void try_breaking(pMY_CXT_ SV *sub, const char *type) {
+static void try_breaking(pMY_CXT_ SV *sub, const char *type) {
     dSP;
 
     HE *entry = hv_fetch_ent(MY_CXT.fq_function_names, sub, 0, 0);
