@@ -21,12 +21,12 @@ START_MY_CXT
         if (SvIV(MY_CXT.ldebug)) {      \
             const char *arg = (string); \
             PUTBACK;                    \
-            do_dblog(arg);              \
+            do_dblog(aTHX_ arg);        \
             SPAGAIN;                    \
         }                               \
     } STMT_END
 
-static void do_dblog(const char *string) {
+static void do_dblog(pTHX_ const char *string) {
     dSP;
 
     EXTEND(SP, 1);
@@ -38,14 +38,14 @@ static void do_dblog(const char *string) {
     call_pv("DB::dblog", G_VOID | G_DISCARD | G_NODEBUG);
 }
 
-static void reinit_my_cxt(pMY_CXT) {
+static void reinit_my_cxt(pTHX_ pMY_CXT) {
     MY_CXT.ldebug = get_sv("DB::ldebug", 0);
     MY_CXT.stack_depth = gv_fetchpv("DB::stack_depth", 0, 0);
 
     call_pv("DB::setup_lexicals", G_VOID | G_DISCARD | G_NODEBUG);
 }
 
-static void try_breaking(pMY_CXT_ SV *sub, const char *type) {
+static void try_breaking(pTHX_ pMY_CXT_ SV *sub, const char *type) {
     dSP;
 
     HE *entry = hv_fetch_ent(MY_CXT.fq_function_names, sub, 0, 0);
@@ -128,7 +128,7 @@ sub(...)
     /* check function call breakpoint */
     if (!in_debugger) {
         PUTBACK;
-        try_breaking(aMY_CXT_ sub, "call");
+        try_breaking(aTHX_ aMY_CXT_ sub, "call");
         SPAGAIN;
     }
 
@@ -151,7 +151,7 @@ sub(...)
     /* check function return breakpoint */
     if (!in_debugger) {
         PUTBACK;
-        try_breaking(aMY_CXT_ sub, "return");
+        try_breaking(aTHX_ aMY_CXT_ sub, "return");
         SPAGAIN;
     }
 
@@ -169,8 +169,8 @@ void
 CLONE(...)
   CODE:
     MY_CXT_CLONE;
-    reinit_my_cxt();
+    reinit_my_cxt(aTHX_ aMY_CXT);
 
 BOOT:
     MY_CXT_INIT;
-    reinit_my_cxt();
+    reinit_my_cxt(aTHX_ aMY_CXT);
