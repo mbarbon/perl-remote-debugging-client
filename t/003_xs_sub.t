@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use DB::DbgrXS;
+use if $ENV{DBGP_PURE_PERL},  'Test::More' => 'skip_all' => 'Skipping XS-specific test in pure-Perl mode';
 use if !DB::DbgrXS::HAS_XS(), 'Test::More' => 'skip_all' => 'XS version not compiled';
 use t::lib::Test;
 
