@@ -63,37 +63,8 @@ static void try_breaking(pTHX_ pMY_CXT_ SV *sub, const char *type) {
     call_pv("DB::tryBreaking", G_VOID | G_DISCARD | G_NODEBUG);
 }
 
-MODULE=dbgp_helper::perl5db PACKAGE=DB::XS
-
-void
-sub(...)
-  PREINIT:
-    dMY_CXT;
-  INIT:
-    SV *sub = GvSV(PL_DBsub);
-    IV current_depth = SvIV(GvSVn(MY_CXT.stack_depth)) + 1;
-    I32 context = GIMME_V;
-    /*
-       If the original sub was called with the &foo syntax,
-       add G_NOARGS to the call_sv() call, so @_ is not copied,
-       and the callee can modify it.
-
-       DB::sub (Perl) does this for all calls, because it's written in
-       Perl, so @_ is always there, but when DB::XS::sub is called,
-       @_ is not set up, because the sub is an XS.
-     */
-    I32 noargs = (PL_op->op_flags & OPf_STACKED) ? 0 : G_NOARGS;
+static bool before_call(pTHX_ pMY_CXT_ int current_depth) {
     bool in_debugger = FALSE;
-    int retcount;
-  PPCODE:
-    /*
-        We're passing through our arguments unmodified, so we can
-        re-push them in place, or just restore the MARK declared by
-        the implicit dXSARGS, and get the non-adjusted stack pointer
-        from the interpreter global.
-     */
-    PUSHMARK(MARK);
-    SPAGAIN;
 
     /* local $stach_depth = $stack_depth + 1 */
     SAVEGENERICSV(GvSVn(MY_CXT.stack_depth));
@@ -126,20 +97,13 @@ sub(...)
     }
 
     /* check function call breakpoint */
-    if (!in_debugger) {
-        PUTBACK;
-        try_breaking(aTHX_ aMY_CXT_ sub, "call");
-        SPAGAIN;
-    }
+    if (!in_debugger)
+        try_breaking(aTHX_ aMY_CXT_ GvSV(PL_DBsub), "call");
 
-    retcount = call_sv(sub, context | noargs | G_NODEBUG);
-    /*
-       The global stack pointer is already at the right place, so we
-       refresh our local copy so the implict PUTBACK at the end is a
-       no-op. We could also do XSRETURN(retcount)
-     */
-    SPAGAIN;
+    return in_debugger;
+}
 
+static void after_call(pTHX_ pMY_CXT_ bool in_debugger, int current_depth) {
     /* $single |= $stack[$stack_depth] */
     {
         SV **top = av_fetch(MY_CXT.stack, current_depth, 0);
@@ -149,11 +113,53 @@ sub(...)
     }
 
     /* check function return breakpoint */
-    if (!in_debugger) {
-        PUTBACK;
-        try_breaking(aTHX_ aMY_CXT_ sub, "return");
-        SPAGAIN;
-    }
+    if (!in_debugger)
+        try_breaking(aTHX_ aMY_CXT_ GvSV(PL_DBsub), "return");
+}
+
+MODULE=dbgp_helper::perl5db PACKAGE=DB::XS
+
+void
+sub(...)
+  PREINIT:
+    dMY_CXT;
+  INIT:
+    SV *sub = GvSV(PL_DBsub);
+    IV current_depth = SvIV(GvSVn(MY_CXT.stack_depth)) + 1;
+    I32 context = GIMME_V;
+    /*
+       If the original sub was called with the &foo syntax,
+       add G_NOARGS to the call_sv() call, so @_ is not copied,
+       and the callee can modify it.
+
+       DB::sub (Perl) does this for all calls, because it's written in
+       Perl, so @_ is always there, but when DB::XS::sub is called,
+       @_ is not set up, because the sub is an XS.
+     */
+    I32 noargs = (PL_op->op_flags & OPf_STACKED) ? 0 : G_NOARGS;
+    bool in_debugger;
+    int retcount;
+  PPCODE:
+    /*
+        We're passing through our arguments unmodified, so we can
+        re-push them in place, or just restore the MARK declared by
+        the implicit dXSARGS, and get the non-adjusted stack pointer
+        from the interpreter global.
+     */
+    PUSHMARK(MARK);
+    /* not needed right now, added just in case */
+    SPAGAIN;
+
+    in_debugger = before_call(aTHX_ aMY_CXT_ current_depth);
+    retcount = call_sv(sub, context | noargs | G_NODEBUG);
+    after_call(aTHX_ aMY_CXT_ in_debugger, current_depth);
+
+    /*
+       The global stack pointer is already at the right place, so we
+       refresh our local copy so the implict PUTBACK at the end is a
+       no-op. We could also do XSRETURN(retcount)
+     */
+    SPAGAIN;
 
 void
 setup_lexicals(SV *ldebug, SV *stack, SV *deep, SV *fq_function_names)
