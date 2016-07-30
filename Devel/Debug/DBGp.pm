@@ -157,6 +157,13 @@ If set, overrides the value of the C<hostname> attribute in the C<init> message.
 If set to a true value, does not use L<PadWalker> to get the list of
 local variables, but uses a combination of L<B> and C<eval STRING>.
 
+=head2 DBGP_PURE_PERL, DBGP_XS_ONLY
+
+The default is to try to load an XS helper for the debugger, and fall
+back to the pure-Perl implementation if loading the XS helper fails
+(or the helper has not been built). Setting C<DBGP_PURE_PERL> or
+C<DBGP_XS_ONLY> allows to explicitly choose one or the other.
+
 =head1 FUNCTIONS
 
 There is no need to use any of the functions below unless you are
