@@ -1966,9 +1966,11 @@ sub DB {
         }
     }
     (my $pkg, $currentFilename, $currentLine) = caller;
-    # stack is: call-site -> DB::sub -> actual sub -> DB::DB
-    # so we need 3 levels for DB::eval to get to the actual call
-    local $evalSkipFrames = 3;
+    # stack layout
+    # Perl DB::sub: call-site -> DB::sub -> actual sub -> DB::DB
+    # XS   DB::sub: call-site ->         -> actual sub -> DB::DB
+    # so we need 2 or 3 levels for DB::eval to get to the actual call
+    local $evalSkipFrames = $has_xs ? 2 : 3;
     if (!defined $startedAsInteractiveShell) {
 	# This won't work with code that changes $0 to "-e"
 	# in a BEGIN block.
@@ -4223,6 +4225,11 @@ sub clobber_db_sub {
 # called from XS
 sub setup_lexicals {
     DB::XS::setup_lexicals(\$ldebug, \@stack, \$deep, \%FQFnNameLookupTable);
+}
+
+if ($has_xs) {
+    $ORIG_DB_SUB{CODE} = \&DB::XS::sub;
+    *DB::sub = \&DB::XS::sub if defined &DB::sub;
 }
 
 BEGIN {
