@@ -16,6 +16,11 @@ typedef struct {
 
 START_MY_CXT
 
+typedef void (* Perl_dbg_callback_t)(pTHX);
+
+static Perl_ppaddr_t orig_entersub;
+static Perl_dbg_callback_t dbg_callback;
+
 #define dblog(string)                   \
     STMT_START {                        \
         if (SvIV(MY_CXT.ldebug)) {      \
@@ -130,6 +135,35 @@ static void after_call(pTHX_ pMY_CXT_ bool in_debugger, int current_depth) {
         try_breaking(aTHX_ aMY_CXT_ GvSV(PL_DBsub), "return");
 }
 
+static void exit_break(pTHX_ void *cxt) {
+    dMY_CXT;
+    after_call(aTHX_ aMY_CXT_ FALSE, *(IV *) cxt);
+    Safefree(cxt);
+}
+
+static void dbgp_cv_callback(pTHX) {
+    dMY_CXT;
+    IV current_depth = SvIV(GvSVn(MY_CXT.stack_depth)) + 1;
+    bool in_debugger = before_call(aTHX_ aMY_CXT_ current_depth);
+
+    if (!in_debugger) {
+        IV *cxt;
+        Newx(cxt, 1, IV);
+        *cxt = current_depth;
+        SAVEDESTRUCTOR_X(exit_break, cxt);
+    }
+}
+
+#include "core/patched_pp_hot.c"
+
+static void setup_pp_entersub(pTHX) {
+#ifndef NO_PATCHED_ENTERSUB
+    orig_entersub = PL_ppaddr[OP_ENTERSUB];
+    PL_ppaddr[OP_ENTERSUB] = Perl_pp_entersub_copy;
+    dbg_callback = dbgp_cv_callback;
+#endif
+}
+
 MODULE=dbgp_helper::perl5db PACKAGE=DB::XS
 
 void
@@ -198,3 +232,5 @@ BOOT:
     reinit_my_cxt(aTHX_ aMY_CXT);
 
     CvLVALUE_on(get_cv("DB::XS::lsub_xs", 0));
+
+    setup_pp_entersub(aTHX);
