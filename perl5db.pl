@@ -486,6 +486,7 @@ if (DB::DbgrXS::HAS_XS() && !$ENV{DBGP_PURE_PERL}) {
 	require XSLoader;
 
 	XSLoader::load('dbgp-helper::perl5db');
+	use_xs_sub();
 	$has_xs = 1;
 
 	1;
@@ -3721,7 +3722,7 @@ sub tryBreaking($$$) {
 }
 
 
-sub sub {
+sub sub_pp {
     local $stack_depth = $stack_depth + 1;    # Protect from non-local exits
     $#stack = $stack_depth;
     $stack[-1] = $single;
@@ -4190,8 +4191,8 @@ BEGIN {
     %ORIG_DB_SUB = %DISABLED_DB_SUB = map {
         ($_ => *DB::sub{$_}) x !!*DB::sub{$_}
     } qw(CODE SCALAR ARRAY HASH);
-    delete $DISABLED_DB_SUB{CODE};
-    die "Failed to save DB::sub" unless $ORIG_DB_SUB{CODE};
+    $ORIG_DB_SUB{CODE} = \&DB::sub_pp;
+    *DB::sub = \&DB::sub_pp;
 }
 
 sub enable {
@@ -4227,9 +4228,9 @@ sub setup_lexicals {
     DB::XS::setup_lexicals(\$ldebug, \@stack, \$deep, \%FQFnNameLookupTable);
 }
 
-if ($has_xs) {
-    $ORIG_DB_SUB{CODE} = \&DB::XS::sub;
-    *DB::sub = \&DB::XS::sub if defined &DB::sub;
+sub use_xs_sub {
+    $ORIG_DB_SUB{CODE} = \&DB::XS::sub_xs;
+    *DB::sub = \&DB::XS::sub_xs if defined &DB::sub;
 }
 
 BEGIN {

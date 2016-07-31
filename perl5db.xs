@@ -120,7 +120,7 @@ static void after_call(pTHX_ pMY_CXT_ bool in_debugger, int current_depth) {
 MODULE=dbgp_helper::perl5db PACKAGE=DB::XS
 
 void
-sub(...)
+sub_xs(...)
   PREINIT:
     dMY_CXT;
   INIT:

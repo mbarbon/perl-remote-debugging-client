@@ -54,7 +54,7 @@ sub call {
     our $sub;
     local $sub = 'main::' . shift;
 
-    &DB::XS::sub;
+    &DB::XS::sub_xs;
 }
 
 sub can_call {
@@ -74,7 +74,7 @@ sub mutate {
 
 sub add_mutated {
     local $DB::sub = 'main::mutate';
-    &DB::XS::sub;
+    &DB::XS::sub_xs;
     $result = $_[0] + $_[1];
 }
 
