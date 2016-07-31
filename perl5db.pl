@@ -3758,6 +3758,21 @@ sub sub_pp {
     }
 }
 
+sub lsub_pp : lvalue {
+    local $stack_depth = $stack_depth + 1;    # Protect from non-local exits
+    $#stack = $stack_depth;
+    $stack[-1] = $single;
+    $single &= 1;
+    $single |= 4 if $#stack == $deep;
+    my $pkg = caller;
+    my $inDB = ($pkg && rindex($pkg, "DB::", 0) == 0);
+    my $bkptEntry = $FQFnNameLookupTable{$sub};
+    tryBreaking($bkptEntry, $sub, 'call') if $bkptEntry && !$inDB;
+
+    # breakpoint on return not supported for lvalue subs
+    &$sub;
+}
+
 # exception handling?
 $SIG{'INT'} = "DB::catch";
 
@@ -4185,14 +4200,16 @@ sub end_report {
 		     ));
 }
 
-my (%ORIG_DB_SUB, %DISABLED_DB_SUB);
+my (%ORIG_DB_SUB, %DISABLED_DB_SUB, $ORIG_DB_LSUB);
 
 BEGIN {
     %ORIG_DB_SUB = %DISABLED_DB_SUB = map {
         ($_ => *DB::sub{$_}) x !!*DB::sub{$_}
     } qw(CODE SCALAR ARRAY HASH);
     $ORIG_DB_SUB{CODE} = \&DB::sub_pp;
+    $ORIG_DB_LSUB = \&DB::lsub_pp;
     *DB::sub = \&DB::sub_pp;
+    *DB::lsub = \&DB::lsub_pp;
 }
 
 sub enable {
@@ -4202,6 +4219,7 @@ sub enable {
     $^P = DEBUG_DEFAULT_FLAGS;
     undef *DB::sub;
     *DB::sub = $ORIG_DB_SUB{$_} for keys %ORIG_DB_SUB;
+    *DB::lsub = $ORIG_DB_LSUB;
 }
 
 sub disable {
@@ -4210,16 +4228,19 @@ sub disable {
     $single = 0;
     $^P = DEBUG_PREPARE_FLAGS;
     undef *DB::sub;
+    undef *DB::lsub;
     *DB::sub = $DISABLED_DB_SUB{$_} for keys %DISABLED_DB_SUB;
 }
 
 sub restore_db_sub {
     undef *DB::sub;
     *DB::sub = $ORIG_DB_SUB{$_} for keys %ORIG_DB_SUB;
+    *DB::lsub = $ORIG_DB_LSUB;
 }
 
 sub clobber_db_sub {
     undef *DB::sub;
+    undef *DB::lsub;
     *DB::sub = $DISABLED_DB_SUB{$_} for keys %DISABLED_DB_SUB;
 }
 
@@ -4230,7 +4251,9 @@ sub setup_lexicals {
 
 sub use_xs_sub {
     $ORIG_DB_SUB{CODE} = \&DB::XS::sub_xs;
+    $ORIG_DB_LSUB = \&DB::XS::lsub_xs;
     *DB::sub = \&DB::XS::sub_xs if defined &DB::sub;
+    *DB::lsub = \&DB::XS::lsub_xs if defined &DB::lsub;
 }
 
 BEGIN {

@@ -123,6 +123,9 @@ void
 sub_xs(...)
   PREINIT:
     dMY_CXT;
+  /* needs a separate CV so we can set the LVALUE flag */
+  ALIAS:
+    lsub_xs = 1
   INIT:
     SV *sub = GvSV(PL_DBsub);
     IV current_depth = SvIV(GvSVn(MY_CXT.stack_depth)) + 1;
@@ -180,3 +183,5 @@ CLONE(...)
 BOOT:
     MY_CXT_INIT;
     reinit_my_cxt(aTHX_ aMY_CXT);
+
+    CvLVALUE_on(get_cv("DB::XS::lsub_xs", 0));

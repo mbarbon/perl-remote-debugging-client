@@ -37,6 +37,14 @@ sub ret_void {
     return;
 }
 
+{
+    my $v;
+
+    sub test_lvalue : lvalue {
+        $v
+    }
+}
+
 $add_1_2 = add(1, 2);
 $pass_add_2_3 = pass_add(2, 3);
 $pass_mutate = add_mutated(7, 1, 3);
@@ -61,6 +69,8 @@ $list_scalar = ret_list();
 
 $void_scalar = ret_void();
 @void_list = ret_void();
+
+test_lvalue = 77;
 
 $DB::single = 1;
 

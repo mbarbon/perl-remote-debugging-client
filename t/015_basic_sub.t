@@ -120,4 +120,6 @@ command_is(['eval', encode_base64('@void_list')], {
     },
 });
 
+eval_value_is('test_lvalue()', 77);
+
 done_testing();

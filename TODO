@@ -3,6 +3,8 @@
 - breakpoint on error
 - breakpoint on return should break before the function
   returns, otherwise they're not that useful
+- breakpoint on return don't work for lvalue subroutines when using
+  the pure-Perl debugger
   (probably not possible with pure Perl)
 - review breakpoint_list logic for file breakpoints,
   it can probably be simplified
