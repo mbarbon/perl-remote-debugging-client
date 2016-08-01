@@ -38,6 +38,17 @@ static void do_dblog(pTHX_ const char *string) {
     call_pv("DB::dblog", G_VOID | G_DISCARD | G_NODEBUG);
 }
 
+#if PERL_VERSION >= 22
+#define PL_DBsingle_iv_set(thx, x) STMT_START { PL_DBsingle_iv = (x); } STMT_END
+#else
+#define PL_DBsingle_iv SvIV(PL_DBsingle)
+
+static void PL_DBsingle_iv_set(pTHX_ IV x) {
+    SvIV_set(PL_DBsingle, x);
+    SvIOK_only(PL_DBsingle);
+}
+#endif
+
 static void reinit_my_cxt(pTHX_ pMY_CXT) {
     MY_CXT.ldebug = get_sv("DB::ldebug", 0);
     MY_CXT.stack_depth = gv_fetchpv("DB::stack_depth", 0, 0);
@@ -74,18 +85,19 @@ static bool before_call(pTHX_ pMY_CXT_ int current_depth) {
     av_fill(MY_CXT.stack, current_depth);
 
     /* $stack[-1] = $single */
+    IV single = PL_DBsingle_iv;
     {
         SV **top = av_fetch(MY_CXT.stack, current_depth, 1);
 
-        sv_setiv(*top, SvIV(PL_DBsingle));
+        sv_setiv(*top, single);
     }
     /* $single &= 1 */
-    SvIV_set(PL_DBsingle, SvIV(PL_DBsingle) & 1);
+    single = single & 1;
 
     /* $single |= 4 if $#stack == $deep */
     if (current_depth == SvIV(MY_CXT.deep))
-        SvIV_set(PL_DBsingle, SvIV(PL_DBsingle) | 4);
-    SvIOK_only(PL_DBsingle);
+        single = single | 4;
+    PL_DBsingle_iv_set(aTHX_ single);
 
     {
         HV *stash = CopSTASH(PL_curcop);
@@ -108,8 +120,7 @@ static void after_call(pTHX_ pMY_CXT_ bool in_debugger, int current_depth) {
     {
         SV **top = av_fetch(MY_CXT.stack, current_depth, 0);
 
-        SvIV_set(PL_DBsingle, SvIV(PL_DBsingle) | SvIV(*top));
-        SvIOK_only(PL_DBsingle);
+        PL_DBsingle_iv_set(aTHX_ PL_DBsingle_iv | SvIV(*top));
     }
 
     /* check function return breakpoint */
