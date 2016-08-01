@@ -120,6 +120,8 @@ command_is(['eval', encode_base64('@void_list')], {
     },
 });
 
-eval_value_is('test_lvalue()', 77);
+if ($] >= 5.010001) {
+    eval_value_is('test_lvalue()', 77);
+}
 
 done_testing();
