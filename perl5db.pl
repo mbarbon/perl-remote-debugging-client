@@ -4251,9 +4251,9 @@ sub setup_lexicals {
 
 sub use_xs_sub {
     $ORIG_DB_SUB{CODE} = \&DB::XS::sub_xs;
-    $ORIG_DB_LSUB = \&DB::XS::lsub_xs;
+    $ORIG_DB_LSUB = \&DB::XS::lsub_xs if $] >= 5.016;
     *DB::sub = \&DB::XS::sub_xs if defined &DB::sub;
-    *DB::lsub = \&DB::XS::lsub_xs if defined &DB::lsub;
+    *DB::lsub = \&DB::XS::lsub_xs if defined &DB::lsub && $] >= 5.016;
 }
 
 BEGIN {
