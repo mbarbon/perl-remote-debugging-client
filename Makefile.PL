@@ -68,10 +68,10 @@ WriteMakefile(
     clean             => { FILES => 'DB/DbgrXS.pm' },
     $do_xs ? (
         XS                => { 'perl5db.xs' => undef },
-        OBJECT            => [ 'perl5db.o' ],
+        OBJECT            => 'perl5db.o',
     ) : (
         XS                => { },
-        OBJECT            => "",
+        OBJECT            => '',
         C                 => [ ],
     ),
     ( $mm_ver >= 6.48 ?     ( MIN_PERL_VERSION  => 5.008 ) :
