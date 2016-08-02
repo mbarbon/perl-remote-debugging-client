@@ -39,7 +39,9 @@ static void do_dblog(pTHX_ const char *string) {
 }
 
 #if PERL_VERSION >= 22
-#define PL_DBsingle_iv_set(thx, x) STMT_START { PL_DBsingle_iv = (x); } STMT_END
+static void PL_DBsingle_iv_set(pTHX_ IV x) {
+    PL_DBsingle_iv = x;
+}
 #else
 #define PL_DBsingle_iv SvIV(PL_DBsingle)
 
