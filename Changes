@@ -1,5 +1,9 @@
 Revision history for Devel-Debug-DBGp
 
+0.16      2016-08-02 11:29:06 CEST
+
+    - Compilation fixes for threaded Perl
+
 0.15      2016-08-01 21:58:38 CEST
 
     - Fixed step_over/step_out when using the XS version on Perl 5.22
