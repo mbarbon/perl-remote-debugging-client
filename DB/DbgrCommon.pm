@@ -147,7 +147,7 @@ sub enableLogger {
 	    $outLogName .= "/perl5db.log";
 	}
 	my $ofh;
-	open $ofh, ">$outLogName" or die "Failed to open $outLogName for writing: $!";
+	open $ofh, '>>', $outLogName or die "Failed to open $outLogName for writing: $!";
 	my $oh = select $ofh;
 	$| = 1;
 	select $oh;
