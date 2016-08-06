@@ -220,11 +220,17 @@ sub getContextProperties($$) {
 	    next if $key =~ /^(?:_<|[^0a-zA-Z_])/;
 	    next if $key =~ /::$/;
 	    my $glob = \($stash->{$key});
-	    my $has_scalar = $] >= 5.010 ?
-		!B::svref_2object($glob)->SV->isa('B::SPECIAL') :
-		defined ${*{$glob}{SCALAR}};
-	    my $array = *{$glob}{ARRAY};
-	    my $hash = *{$glob}{HASH};
+	    my ($has_scalar, $is_glob);
+	    if ($] >= 5.010) {
+		my $gv = B::svref_2object($glob);
+		$is_glob = $gv->isa("B::GV");
+		$has_scalar = $is_glob && !$gv->SV->isa('B::SPECIAL');
+	    } else {
+		$is_glob = 1;
+		$has_scalar = defined ${*{$glob}{SCALAR}};
+	    }
+	    my $array = $is_glob && *{$glob}{ARRAY};
+	    my $hash = $is_glob && *{$glob}{HASH};
 	    next unless $has_scalar || $array || $hash;
 	    push @results, ["\$${key}", ${*{$glob}{SCALAR}}, 0] if $has_scalar;
 	    push @results, ["\@${key}", $array, 0] if $array;

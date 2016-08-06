@@ -2,6 +2,8 @@ package foo;
 
 use vars qw($ffoo @fbar %fbaz $fundef);
 
+use constant moo => 1; # this creates a special symbol table entry
+
 $ffoo = 123;
 @fbar = (1, 2);
 %fbaz = (a => 1);
