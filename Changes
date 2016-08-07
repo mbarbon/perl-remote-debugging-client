@@ -1,5 +1,9 @@
 Revision history for Devel-Debug-DBGp
 
+0.17      2016-08-07 16:54:06 CEST
+
+    - Fix crash in code enumerating package variables
+
 0.16      2016-08-02 11:29:06 CEST
 
     - Compilation fixes for threaded Perl
