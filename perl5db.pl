@@ -112,6 +112,12 @@ where it has to go.
 package DB;
 
 sub DB {}
+BEGIN {
+    # kill the empty sub installed by Enbugger
+    my ($scalar, $array, $hash) = (*DB::sub{SCALAR}, *DB::sub{ARRAY}, *DB::sub{HASH});
+    undef *DB::sub;
+    *DB::sub = $scalar; *DB::sub = $array; *DB::sub = $hash;
+}
 
 sub DEBUG_ALL()             { 0x7ff }
 sub DEBUG_SINGLE_STEP_ON()  {  0x20 }
