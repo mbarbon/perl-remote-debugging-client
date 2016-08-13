@@ -124,6 +124,14 @@ command_is(['context_get'], {
                 },
             ],
         },
+        {
+            name        => '$undef',
+            fullname    => '$undef',
+            type        => 'undef',
+            constant    => '0',
+            children    => '0',
+            value       => undef,
+        },
     ],
 });
 

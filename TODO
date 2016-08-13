@@ -9,6 +9,8 @@
 - review breakpoint_list logic for file breakpoints,
   it can probably be simplified
 - make stop not exit
+- check if it is possible to remove the eval() from context_get,
+  also move all context-related code to an helper module
 - fix stack depth/context id handling in properrty_get
   - stack depth > 0 for anything but function arguments
   - if there is both a lexical $foo and a package $foo, there is no

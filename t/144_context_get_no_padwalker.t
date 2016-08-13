@@ -16,6 +16,7 @@ command_is(['context_get'], {
         { name  => '@foo', numchildren => 2 },
         { name  => '%roo', numchildren => 1 },
         { name  => '@roo', numchildren => 1 },
+        { name  => '$undef', value => undef },
     ],
 });
 
@@ -35,6 +36,7 @@ command_is(['context_get'], {
             childs      => [],
         },
         { name  => '$foo', value => 1 },
+        { name  => '$undef', value => undef },
     ],
 });
 

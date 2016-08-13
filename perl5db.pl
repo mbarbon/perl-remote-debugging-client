@@ -1699,14 +1699,15 @@ sub _getProximityVarsViaPadWalker($$$$) {
 
     my @results = ();
     while(my($k, $v) = each %merged_vars) {
-        if (!_hasActiveIterator(substr($k, 0, 1), $v)) {
-            push(@results, [$k, $v, 1]);
+        my $sigil = substr($k, 0, 1);
+        if (!_hasActiveIterator($sigil, $v)) {
+            push(@results, [$k, $sigil eq '$' ? $$v : $v, 0]);
         }
     }
     if (! exists $merged_vars{'$_'}) {
 	my $dollar_under_val = eval('$_');
 	if (defined $dollar_under_val) {
-	    push(@results, ['$_', $dollar_under_val, 1]);
+	    push(@results, ['$_', $dollar_under_val, 0]);
 	}
     }
     return \@results;
@@ -1737,8 +1738,9 @@ sub _getProximityVarsViaB {
     my @results;
     for my $i (0 .. $#DB::lex_vars_list) {
         next unless my $value = $DB::lex_vars_list[$i];
-        next if _hasActiveIterator(substr($vars[$i], 0, 1), $value);
-        push @results, [$vars[$i], undef, 1] ;
+        my $sigil = substr($vars[$i], 0, 1);
+        next if _hasActiveIterator($sigil, $value);
+        push @results, [$vars[$i], $sigil eq '$' ? $$value : $value, 0] ;
     }
     return \@results;
 }
