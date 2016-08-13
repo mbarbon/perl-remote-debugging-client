@@ -11,6 +11,7 @@ send_command('run');
 command_is(['context_get'], {
     command => 'context_get',
     values  => [
+        { name  => '$aref', value => undef },
         { name  => '$foo', value => 1 },
         { name  => '@foo', numchildren => 2 },
         { name  => '%roo', numchildren => 1 },
@@ -23,6 +24,16 @@ send_command('run');
 command_is(['context_get'], {
     command => 'context_get',
     values  => [
+        {
+            name        => '$aref',
+            type        => 'ARRAY',
+            value       => 1,
+            children    => '1',
+            numchildren => '2',
+            pagesize    => 10,
+            value       => undef,
+            childs      => [],
+        },
         { name  => '$foo', value => 1 },
     ],
 });

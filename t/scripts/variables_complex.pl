@@ -1,4 +1,5 @@
 my $foo = 1;
+my $aref = [1, 2];
 
 sub foo {
     my @foo = (1, 2);

@@ -12,6 +12,17 @@ command_is(['context_get'], {
     command => 'context_get',
     values  => [
         {
+            name        => '$aref',
+            fullname    => '$aref',
+            type        => 'ARRAY',
+            constant    => '0',
+            children    => '1',
+            numchildren => '3',
+            pagesize    => 10,
+            value       => undef,
+            childs      => [],
+        },
+        {
             name        => '$foo',
             fullname    => '$foo',
             type        => 'int',
