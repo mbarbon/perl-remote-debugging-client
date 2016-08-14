@@ -1678,7 +1678,7 @@ sub _hasActiveIterator {
         if ($kind eq 'ARRAY') {
             return _hasActiveArrayIterator(B::svref_2object($$vref));
         } elsif ($kind eq 'HASH') {
-            return B::svref_2object($$vref)->RITER == -1;
+            return B::svref_2object($$vref)->RITER != -1;
         }
     } elsif ($sigil eq '@') {
         return _hasActiveArrayIterator(B::svref_2object($vref));
