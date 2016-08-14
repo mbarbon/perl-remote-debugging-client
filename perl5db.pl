@@ -1702,6 +1702,8 @@ sub _getProximityVarsViaPadWalker($$$$) {
 	my $sigil = substr($k, 0, 1);
 	if (!_hasActiveIterator($sigil, $v)) {
 	    push(@results, [$k, $sigil eq '$' ? $$v : $v, 0]);
+	} elsif ($ldebug) {
+	    dblog("Skipping $k because it has an active iterator");
 	}
     }
     if (! exists $merged_vars{'$_'}) {
@@ -1741,6 +1743,8 @@ sub _getProximityVarsViaB {
 	my $sigil = substr($vars[$i], 0, 1);
 	if (!_hasActiveIterator($sigil, $value)) {
 	    push @results, [$vars[$i], $sigil eq '$' ? $$value : $value, 0];
+	} elsif ($ldebug) {
+	    dblog("Skipping $vars[$i] because it has an active iterator");
 	}
     }
     return \@results;
@@ -3147,6 +3151,10 @@ sub DB {
 		    } @$namesAndValues;
 		} else {
 		    @sortedNames = @$namesAndValues;
+		}
+		if ($ldebug) {
+		    my @names = map $_->[NV_NAME], @sortedNames;
+		    dblog("Found variables: @names");
 		}
 		# dblog("sorted vars:", DB::Data::Dump::dump(@sortedNames), "\n") if $ldebug;
 		foreach my $entry (@sortedNames) {

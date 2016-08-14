@@ -214,8 +214,6 @@ sub encodeData($$) {
 	if ($@) {
 	    $str = (substr($str, 0, 100) . '...') if length($str) > 100;
 	    dblog("encodeData('$str') => [$@]\n");
-	} else {
-	    dblog("encodeData('$str') => ['$finalStr']\n");
 	}
     }
     return $finalStr;
