@@ -1699,10 +1699,10 @@ sub _getProximityVarsViaPadWalker($$$$) {
 
     my @results = ();
     while(my($k, $v) = each %merged_vars) {
-        my $sigil = substr($k, 0, 1);
-        if (!_hasActiveIterator($sigil, $v)) {
-            push(@results, [$k, $sigil eq '$' ? $$v : $v, 0]);
-        }
+	my $sigil = substr($k, 0, 1);
+	if (!_hasActiveIterator($sigil, $v)) {
+	    push(@results, [$k, $sigil eq '$' ? $$v : $v, 0]);
+	}
     }
     if (! exists $merged_vars{'$_'}) {
 	my $dollar_under_val = eval('$_');
@@ -1719,28 +1719,29 @@ sub _getProximityVarsViaB {
     require B;
     undef *lex_var_hook;
     my $b_cv = eval "sub DB::lex_var_hook {};
-                     B::svref_2object(\\&DB::lex_var_hook)->OUTSIDE->OUTSIDE";
+		     B::svref_2object(\\&DB::lex_var_hook)->OUTSIDE->OUTSIDE";
     my ($evaltext, %vars, @vars) = ('');
     for ( ; $b_cv && !$b_cv->isa('B::SPECIAL'); $b_cv = $b_cv->OUTSIDE) {
-        my $pad = $b_cv->PADLIST->ARRAYelt(0);
-        for my $i (1 .. ($] < 5.022 ? $pad->FILL : $pad->MAX)) {
-            my $v = $pad->ARRAYelt($i);
-            next if $v->isa('B::SPECIAL') || !$v->LEN;
-            my $name = $] < 5.022 ? ${$v->object_2svref} : $v->PV;
-            next if $vars{$name};
-            $vars{$name} = 1;
-            push @vars, $name;
-            # take a reference to avoid resetting hash iterators
-            $evaltext .= "scalar eval '\\$name',\n";
-        }
+	my $pad = $b_cv->PADLIST->ARRAYelt(0);
+	for my $i (1 .. ($] < 5.022 ? $pad->FILL : $pad->MAX)) {
+	    my $v = $pad->ARRAYelt($i);
+	    next if $v->isa('B::SPECIAL') || !$v->LEN;
+	    my $name = $] < 5.022 ? ${$v->object_2svref} : $v->PV;
+	    next if $vars{$name};
+	    $vars{$name} = 1;
+	    push @vars, $name;
+	    # take a reference to avoid resetting hash iterators
+	    $evaltext .= "scalar eval '\\$name',\n";
+	}
     }
     simple_eval("use strict; \@DB::lex_vars_list = ($evaltext)");
     my @results;
     for my $i (0 .. $#DB::lex_vars_list) {
-        next unless my $value = $DB::lex_vars_list[$i];
-        my $sigil = substr($vars[$i], 0, 1);
-        next if _hasActiveIterator($sigil, $value);
-        push @results, [$vars[$i], $sigil eq '$' ? $$value : $value, 0] ;
+	next unless my $value = $DB::lex_vars_list[$i];
+	my $sigil = substr($vars[$i], 0, 1);
+	if (!_hasActiveIterator($sigil, $value)) {
+	    push @results, [$vars[$i], $sigil eq '$' ? $$value : $value, 0];
+	}
     }
     return \@results;
 }
