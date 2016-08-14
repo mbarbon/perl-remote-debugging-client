@@ -1,5 +1,12 @@
 Revision history for Devel-Debug-DBGp
 
+0.19      2016-08-14 15:23:26 CEST
+
+    - Don't ignore undef scalar lexicals in context_get
+    - Fix inverted condition that was skipping hash references without
+      an active iterator instead of skipping the ones with an active
+      iterator
+
 0.18      2016-08-09 22:32:16 CEST
 
     - Fix for when the debugger is loaded after Enbugger
