@@ -61,6 +61,5 @@
     - stck depth/context combination
     - max size
     - long names
-    - paging for arrays/hashes
   - break
 - (maybe) replace DB::Data::Dump with a trampoline that loads data dumper
