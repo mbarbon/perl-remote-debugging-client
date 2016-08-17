@@ -3612,9 +3612,10 @@ sub DB {
 		{
 		    local *ARGV = \@cmdArgs;
 		    shift @ARGV;
-		    getopts('l:', \%opts);
+		    getopts('l:p:', \%opts);
 		}
 		my $dataLength = $opts{l};
+		my $pageIndex = $opts{p} || 0;
 		my ($actualDataLength, $currDataEncoding, $decodedData);
 		if (scalar @cmdArgs) {
 		    ($actualDataLength, $currDataEncoding, $decodedData) =
@@ -3628,7 +3629,8 @@ sub DB {
 					 $transactionID,
 					 $decodedData,
 					 $res,
-					 $settings{max_data}[0]);
+					 $settings{max_data}[0],
+					 $pageIndex);
 	    } else {
 		# Fallback
 		printWithLength(sprintf

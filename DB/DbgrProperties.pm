@@ -281,12 +281,13 @@ sub _truncateIfNecessary {
     return $res;
 }
 
-sub emitEvalResultAsProperty($$$$$) {
+sub emitEvalResultAsProperty($$$$$$) {
     my ($cmd,
 	$transactionID,
 	$property_long_name,
 	$valRefs,
-	$maxDataSize) = @_;
+	$maxDataSize,
+	$pageIndex) = @_;
     my $res = sprintf(qq(%s\n<response %s command="%s" 
 			 transaction_id="%s" >),
 		      xmlHeader(),
@@ -297,7 +298,7 @@ sub emitEvalResultAsProperty($$$$$) {
 				       $property_long_name,
 				       $valRefs,
 				       $maxDataSize,
-				       0, # page
+				       $pageIndex,
 				       0, # current depth
 				       );
     $res .= "\n</response>";

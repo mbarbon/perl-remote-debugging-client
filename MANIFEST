@@ -52,6 +52,7 @@ t/152_property_set.t
 t/154_property_get_paging.t
 t/160_stack_depth.t
 t/162_stack_get.t
+t/172_eval_paging.t
 t/230_source.t
 t/250_redirection.t
 t/400_features.t
