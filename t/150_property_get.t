@@ -39,6 +39,7 @@ command_is(['property_get', '-n', '%foo'], {
         constant    => '0',
         children    => '1',
         numchildren => '3',
+        page        => 0,
         pagesize    => 10,
         value       => undef,
         childs      => [
@@ -81,6 +82,7 @@ command_is(['property_value', '-n', '%foo'], {
     constant    => '0',
     children    => '1',
     numchildren => '3',
+    page        => 0,
     pagesize    => 10,
     value       => undef,
     childs      => [
@@ -123,6 +125,7 @@ command_is(['property_get', '-n', '@foo'], {
         constant    => '0',
         children    => '1',
         numchildren => '3',
+        page        => 0,
         pagesize    => 10,
         value       => undef,
         childs      => [
@@ -165,6 +168,7 @@ command_is(['property_value', '-n', '@foo'], {
     constant    => '0',
     children    => '1',
     numchildren => '3',
+    page        => 0,
     pagesize    => 10,
     value       => undef,
     childs      => [

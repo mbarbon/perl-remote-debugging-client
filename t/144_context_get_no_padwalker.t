@@ -31,6 +31,7 @@ command_is(['context_get'], {
             value       => 1,
             children    => '1',
             numchildren => '2',
+            page        => 0,
             pagesize    => 10,
             value       => undef,
             childs      => [],
