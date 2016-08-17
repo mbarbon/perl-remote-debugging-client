@@ -405,50 +405,57 @@ sub _getFullPropertyInfoByValue {
 	# arrays and hashes
 	if ($refstr = ref $val) {
 	    my $stringifiedVal = "" . $val;
-	    if ($refstr =~ /^ARRAY/) {
+	    if ($refstr eq 'ARRAY') {
 		$typeString = $refstr;
 		$variableGroup = VARIABLE_GROUP_ARRAY;
 		$numChildren = scalar @$val;
-		$hasChildren = $numChildren >= 1;
 		($address) = ($stringifiedVal =~ m/^ARRAY\(0x(.*)\)$/i);
-	    } elsif ($refstr =~ /^HASH/) {
+	    } elsif ($refstr eq 'HASH') {
 		$typeString = $refstr;
 		$variableGroup = VARIABLE_GROUP_HASH;
 		$numChildren = scalar keys %$val;
-		$hasChildren = $numChildren >= 1;
 		($address) = ($stringifiedVal =~ m/^HASH\(0x(.*)\)$/i);
 	    } elsif ($refstr =~ /^Regexp/) {
 		# Special-case -- only one in Perl?
 		$typeString = 'Regexp';
 		$numChildren = 0;
-		$hasChildren = 0;
 		$val = substr("$val", 0, $maxDataSize);
 		($encoding, $encVal) = figureEncoding($val);
 		$res .= sprintf(qq( encoding="%s"), $encoding);
 		$encValLength = length($encVal);
 		$refstr = undef;
-	    } else {
-		my $overloadedRefStr;
-		($typeString, $numChildren, $className, $overloadedRefStr) = analyzeVal($val);
-		if ($overloadedRefStr) {
-		    $refstr = $overloadedRefStr;
-		}
-		$hasChildren = $numChildren && 1;
-		if ($className) {
-		    $typeString = $className;
-		    if ($maxDataSize >= 0 && length($val) > $maxDataSize) {
-			# dblog("getFullPropertyInfoByValue: truncating data down to $maxDataSize bytes:\n[$val]\n");
-			$val = substr($val, 0, $maxDataSize);
-		    }
-		    ($encoding, $encVal) = figureEncoding($val);
-		    $res .= sprintf(qq( encoding="%s"), $encoding);
-		    $encValLength = length($encVal);
+	    } elsif ($refstr eq 'CODE') {
+		$typeString = 'CODE';
+		$numChildren = 0;
+	    } elsif ($refstr eq 'SCALAR' || $refstr eq 'REF') {
+		$typeString = 'SCALAR';
+		$numChildren = 1;
+	    } elsif ("$val" =~ /$refstr=/) {
+		my $strVal = "$val";
+		$typeString = $className = $refstr;
+		if ($strVal =~ /=HASH\(0x\w+\)/) {
+		    $numChildren = keys %$val;
+		} elsif ($strVal =~ /=ARRAY\(0x\w+\)/) {
+		    $numChildren = @$val;
 		} else {
-		    ($address) = ($stringifiedVal =~ m/^.+\(0x(.*)\)$/i);
+		    $numChildren = 1;
 		}
+	    } elsif (overload::Overloaded($val)) {
+		my $strVal = overload::StrVal($val);
+		($typeString) = ($className) = $strVal =~ /^([^=]+)=/;
+		$refstr = $strVal;
+		if ($strVal =~ /=HASH\(0x\w+\)/) {
+		    $numChildren = keys %$val;
+		} elsif ($strVal =~ /=ARRAY\(0x\w+\)/) {
+		    $numChildren = @$val;
+		} else {
+		    $numChildren = 1;
+		}
+	    } else {
+		# Return whatever it is.
+		$typeString = $refstr;
 	    }
 	} else {
-	    $hasChildren = 0;
 	    # It's a scalar -- get the underlying value and classify.
 	    # First convert wide chars to utf-8
 	    my $val2 = nonXmlChar_Encode($val);
@@ -458,6 +465,7 @@ sub _getFullPropertyInfoByValue {
 	    $encValLength = length($encVal);
 	    $typeString = getCommonType($val2);
 	}
+	$hasChildren = !!$numChildren;
     }
     $res .= sprintf(qq( type="%s"), xmlAttrEncode($typeString));
     $res .= qq( constant="0");
@@ -587,66 +595,6 @@ sub _getFullPropertyInfoByValue_emitNames {
 		 . "</$k>\n");
     }
     return $ret;
-}
-
-# Called only by wrapVars, so it does no expansion
-# It's only used to provide info on the variables for 
-# a given context
-
-sub analyzeVal($) {
-    my ($val) = @_;
-    if (!defined $val) {
-	return ('null', 0, undef);
-    } elsif (!(ref $val)) {
-	return ('null', 0, undef);
-    }
-    my $refstr = ref $val;
-    if ($refstr =~ /^ARRAY/) {
-	return ($refstr, scalar @$val, undef);
-    } elsif ($refstr =~ /^HASH/) {
-	return ($refstr, scalar keys %$val, undef);
-    } elsif ($refstr =~ /^REF/ || $refstr =~ /^SCALAR/) {
-	return ($refstr, 1, undef);
-    } elsif ($refstr =~ /^CODE/) {
-	return ('CODE', 0, undef);
-    } elsif ("$val" =~ /$refstr=/) {
-	my $strVal = "$val";
-        my $typeString = $refstr;
-        $typeString =~ s/\(0x\w+\)//;
-	if ($strVal =~ /=HASH\(0x\w+\)/) {
-	    return ($typeString, scalar keys %$val, $refstr);
-	} elsif ($strVal =~ /=ARRAY\(0x\w+\)/) {
-	    return ($typeString, scalar @$val, $refstr);
-	} else {
-	    return ($typeString, 0, $refstr);
-	}
-    } elsif (overload::Overloaded($val)) {
-	my $overloadedRefStr;
-	if ($overloadedRefStr = overload::StrVal($val)) {
-	    dblog('qqq:analyzeVal ' . __LINE__) if $ldebug;
-	    dblog("analyzeVal -- overloaded [$val] => $overloadedRefStr") if $ldebug;
-	    my $className;
-	    if ($overloadedRefStr =~ /^(.*)=/) {
-		$className = $1;
-		dblog("  \$className = $className, \$overloadedRefStr = $overloadedRefStr") if $ldebug;
-		if ($overloadedRefStr =~ /=HASH\(0x\w+\)/) {
-		    return ('HASH', scalar keys %$val, $className, $overloadedRefStr);
-		} elsif ($overloadedRefStr =~ /=ARRAY\(0x\w+\)/) {
-		    return ('ARRAY', scalar @$val, $className, $overloadedRefStr);
-		} else {
-		    return ('SCALAR', 0, $className, $overloadedRefStr);
-		}
-	    }
-	    dblog("Could pull className out of refstr [$overloadedRefStr]") if $ldebug;
-	}
-	# It's some other kind of bizarre overloaded operator.
-	dblog('qqq:analyzeVal ' . __LINE__) if $ldebug;
-	return ('SCALAR', 0, $overloadedRefStr);
-    } else {
-	# Return whatever it is.
-	$refstr =~ s/=.*//;
-	return ($refstr, 1, undef);
-    }
 }
 
 #############################################################################

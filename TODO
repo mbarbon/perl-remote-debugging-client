@@ -38,10 +38,9 @@
 - property_set
   - implement data page, context id, stack depth
   - get rid of the special case that tries to manually quote strings
-- cleanup _getFullPropertyInfoByValue and kill analyzeVal
-  they can use Scalar::Util::reftype()/blessed() instead of performing
-  string operations on types, also, analyzeVal re-does some of the
-  checks already performed by _getFullPropertyInfoByValue
+- cleanup _getFullPropertyInfoByValue
+  it can use Scalar::Util::reftype()/blessed() instead of performing
+  string operations on types
 - test
   - test using function arguments in conditional breakpoints
   - more thorough tests for function arguments in eval:
@@ -61,5 +60,8 @@
     - stck depth/context combination
     - max size
     - long names
+    - address (returned for all references, and its value)
+    - treatment of tied/overloaded values
+      (not sure whether is should bypass tie/overload or not)
   - break
 - (maybe) replace DB::Data::Dump with a trampoline that loads data dumper
