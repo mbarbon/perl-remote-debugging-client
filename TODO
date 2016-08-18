@@ -1,5 +1,5 @@
 - remove shared variables (our ())
-- use strict 'refs' in DB/DbgrProperties.pm and perl5db.pl
+- use strict 'refs' in DB/DbgrProperties.pm, DB/DbgrContext.pm and perl5db.pl
 - breakpoint on error
 - breakpoint on return should break before the function
   returns, otherwise they're not that useful
@@ -9,8 +9,7 @@
 - review breakpoint_list logic for file breakpoints,
   it can probably be simplified
 - make stop not exit
-- check if it is possible to remove the eval() from context_get,
-  also move all context-related code to an helper module
+- check if it is possible to remove the eval() from context_get
 - fix stack depth/context id handling in properrty_get
   - stack depth > 0 for anything but function arguments
   - if there is both a lexical $foo and a package $foo, there is no

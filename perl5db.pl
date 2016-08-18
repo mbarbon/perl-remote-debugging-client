@@ -315,6 +315,7 @@ Keep track of the various settings in this hash
 
 use DB::DbgrCommon;
 use DB::DbgrProperties;
+use DB::DbgrContext;
 use DB::DbgrXS;
 
 my %supportedCommands = (
@@ -1657,125 +1658,6 @@ sub _extractVars {
     my $res = {};
     _extractVarsInner($line, 0, $res);
     return $res;
-}
-
-sub _hasActiveArrayIterator {
-    my ($b) = @_;
-    for (my $magic = $b->MAGIC ; $magic; $magic = $magic->MOREMAGIC) {
-        next if $magic->TYPE ne '@';
-        # undocumented internals? which undocumented internals?
-        return $Config::Config{ivsize} == 4 ?
-            $magic->LENGTH :
-            unpack('j', $magic->PTR) != 0;
-    }
-    return 0;
-}
-
-sub _hasActiveIterator {
-    my ($sigil, $vref) = @_;
-    require B;
-    if ($sigil eq '$' && (my $kind = ref $$vref)) {
-        if ($kind eq 'ARRAY') {
-            return _hasActiveArrayIterator(B::svref_2object($$vref));
-        } elsif ($kind eq 'HASH') {
-            return B::svref_2object($$vref)->RITER != -1;
-        }
-    } elsif ($sigil eq '@') {
-        return _hasActiveArrayIterator(B::svref_2object($vref));
-    } elsif ($sigil eq '%') {
-        return B::svref_2object($vref)->RITER != -1;
-    }
-}
-
-sub _getProximityVarsViaPadWalker($$$$) {
-    my ($pkg, $filename, $line, $stackDepth) = @_;
-    $stackDepth += 3; # Because we're three levels above the user code here.
-    my $my_var_hash = PadWalker::peek_my($stackDepth);
-    my $our_var_hash = PadWalker::peek_our($stackDepth);
-    my %merged_vars = (%$my_var_hash, %$our_var_hash);
-    our @dbline;
-    local *dbline = $main::{'_<' . $filename};
-    my $sourceText = join("\n", @dbline);
-
-    my @results = ();
-    while(my($k, $v) = each %merged_vars) {
-	my $sigil = substr($k, 0, 1);
-	if (!_hasActiveIterator($sigil, $v)) {
-	    push(@results, [$k, $sigil eq '$' ? $$v : $v, 0]);
-	} elsif ($ldebug) {
-	    dblog("Skipping $k because it has an active iterator");
-	}
-    }
-    if (! exists $merged_vars{'$_'}) {
-	my $dollar_under_val = eval('$_');
-	if (defined $dollar_under_val) {
-	    push(@results, ['$_', $dollar_under_val, 0]);
-	}
-    }
-    return \@results;
-}
-
-sub _getProximityVarsViaB {
-    my ($pkg, $filename, $line, $stackDepth) = @_;
-    $stackDepth += 3; # Because we're three levels above the user code here.
-    require B;
-    undef *lex_var_hook;
-    my $b_cv = eval "sub DB::lex_var_hook {};
-		     B::svref_2object(\\&DB::lex_var_hook)->OUTSIDE->OUTSIDE";
-    my ($evaltext, %vars, @vars) = ('');
-    for ( ; $b_cv && !$b_cv->isa('B::SPECIAL'); $b_cv = $b_cv->OUTSIDE) {
-	my $pad = $b_cv->PADLIST->ARRAYelt(0);
-	for my $i (1 .. ($] < 5.022 ? $pad->FILL : $pad->MAX)) {
-	    my $v = $pad->ARRAYelt($i);
-	    next if $v->isa('B::SPECIAL') || !$v->LEN;
-	    my $name = $] < 5.022 ? ${$v->object_2svref} : $v->PV;
-	    next if $vars{$name};
-	    $vars{$name} = 1;
-	    push @vars, $name;
-	    # take a reference to avoid resetting hash iterators
-	    $evaltext .= "scalar eval '\\$name',\n";
-	}
-    }
-    simple_eval("use strict; \@DB::lex_vars_list = ($evaltext)");
-    my @results;
-    for my $i (0 .. $#DB::lex_vars_list) {
-	next unless my $value = $DB::lex_vars_list[$i];
-	my $sigil = substr($vars[$i], 0, 1);
-	if (!_hasActiveIterator($sigil, $value)) {
-	    push @results, [$vars[$i], $sigil eq '$' ? $$value : $value, 0];
-	} elsif ($ldebug) {
-	    dblog("Skipping $vars[$i] because it has an active iterator");
-	}
-    }
-    return \@results;
-}
-
-# -1: unknown, 0: no, 1:yes  #### Do not init as 1, only -1 or 0.
-# bug 93570 - allow padwalker detection/use to be disabled
-my $havePadWalker = $ENV{DBGP_PERL_IGNORE_PADWALKER} ? 0 : -1;
-
-sub _getProximityVars($$$$) {
-    my ($pkg, $filename, $line, $stackDepth) = @_;
-    if ($havePadWalker == -1) {
-        local $@;
-        eval {
-            require PadWalker;
-            PadWalker->VERSION(0.08);
-            $havePadWalker = 1;
-        };
-        if ($@) {
-            $havePadWalker = 0;
-        }
-    }
-    if ($havePadWalker) {
-        return &_getProximityVarsViaPadWalker;
-    } elsif ($stackDepth == 0) {
-        return &_getProximityVarsViaB;
-    } else {
-        # there is no accurate way of getting these without PadWalker, and
-        # there is not way to get the values without PadWalker anyway
-        return [];
-    }
 }
 
 sub _guessScalarOrArray($) {
@@ -3123,7 +3005,11 @@ sub DB {
 			}
 		    }
 		} elsif ($context_id == LocalVars) {
-		    $namesAndValues = eval { _getProximityVars($pkg, $currentFilename, $currentLine, $stackDepth); };
+		    $namesAndValues = eval {
+                        hasPadWalker() ?
+                            getProximityVarsViaPadWalker($pkg, $currentFilename, $currentLine, $stackDepth) :
+                            getProximityVarsViaB($pkg, $currentFilename, $currentLine, $stackDepth);
+                    };
 		} else {
 		    $namesAndValues = eval { getContextProperties($context_id, $pkg); };
 		}

@@ -19,18 +19,11 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(
 	     doPropertySetInfo
-	     emitContextNames
-	     emitContextProperties
 	     emitEvalResultAsProperty
 	     emitEvaluatedPropertyGetInfo
 	     figureEncoding
-	     getContextProperties
 	     getFullPropertyInfoByValue
 	     getPropertyInfo
-	     GlobalVars
-	     LocalVars
-	     FunctionArguments
-	     PunctuationVariables
 	     );
 our @EXPORT_OK = ();
 
@@ -49,28 +42,7 @@ sub makeFullName($$);
 sub figureEncoding($);
 sub getFullPropertyInfoByValue($$$$$$);
 
-# Constants
-
-use constant LocalVars => 0;
-use constant GlobalVars => 1;
-use constant FunctionArguments => 2;
-use constant PunctuationVariables => 3;
-
 our $ldebug = 0;
-
-# Private Data
-
-my %contextProperties = (
-    Globals => GlobalVars,
-    Locals => LocalVars,
-    Arguments => FunctionArguments,
-    Special => PunctuationVariables,
-);
-my @contextProperties = sort { $contextProperties{$a} <=> $contextProperties{$b} } keys %contextProperties;
-
-my @_punctuationVariables = ('$_', '$?', '$@', '$.', '@+', '@-', '$+', '$!', '$$', '$0');
-# $`, $& and $' are special-cased to avoid the performance penalty
-my @_rxPunctuationVariables = ('`', '&', '\'');
 
 # Exported subs
 
@@ -107,65 +79,6 @@ sub doPropertySetInfo($$$) {
     }
 }
 
-sub emitContextNames($$) {
-    my ($cmd, $transactionID) = @_;
-    my $res = sprintf(qq(%s\n<response %s command="%s" 
-			 transaction_id="%s" >),
-		      xmlHeader(),
-		      namespaceAttr(),
-		      $cmd,
-		      $transactionID);
-    # todo: the spec suggests that locals be the default,
-    # but globals (package globals) make more sense for Perl.
-    for (my $i = 0; $i <= $#contextProperties; $i++) {
-	$res .= sprintf(qq(<context name="%s" id="%d" />\n),
-			$contextProperties[$i],
-			$i);
-    }
-    $res .= "\n</response>\n";
-    printWithLength($res);
-}
-
-sub emitContextProperties($$$$;$) {
-    my ($cmd,
-	$transactionID,
-	$context_id,
-	$nameValuesARef,
-	$maxDataSize) = @_;
-    
-    my $res = sprintf(qq(%s\n<response %s command="%s"
-			 context_id="%d"
-			 transaction_id="%s" >),
-		      xmlHeader(),
-		      namespaceAttr(),
-		      $cmd,
-		      $context_id,
-		      $transactionID);
-    my @results = @$nameValuesARef;
-    my $numVars = scalar @results;
-    for (my $i = 0; $i < $numVars; $i++) {
-	my $result = $results[$i];
-	my $name = $result->[0];
-	my $val = $result->[1];
-	eval {
-	    my $property = getFullPropertyInfoByValue($name,
-						      $name,
-						      $val,
-						      $maxDataSize,
-						      0,
-						      0);
-	    # dblog("emitContextProperties: getFullPropertyInfoByValue => $property") if $ldebug;
-	    $res .= $property;
-	};
-	if ($@) {
-	    dblog("emitContextProperties: error [$@]") if $ldebug;
-	}
-    }
-    $res .= "\n</response>";
-    printWithLength($res);
-}
-
-
 sub emitEvaluatedPropertyGetInfo($$$$$$$) {
     my ($cmd,
 	$transactionID,
@@ -197,63 +110,6 @@ sub emitEvaluatedPropertyGetInfo($$$$$$$) {
 					);
     $res .= "\n</response>";
     printWithLength($res);
-}
-
-# Return a ref to an array of [name, value, needValue] triples
-#
-# Some values can be evaluated in this scope, but non-package values
-# and locals at the top-level will need to be evaluated in the
-# debugger's main loop.
-
-sub getContextProperties($$) {
-    my ($context_id, $packageName) = @_;
-
-    # Here just show the top-level.
-    local $settings{max_depth}[0] = 0;
-    if ($context_id == GlobalVars) {
-	require B if $] >= 5.010;
-	# Globals
-	# Variables on the calling frame
-	my $stash = \%{"${packageName}::"};
-	my @results;
-	for my $key (keys %$stash) {
-	    next if $key =~ /^(?:_<|[^0a-zA-Z_])/;
-	    next if $key =~ /::$/;
-	    my $glob = \($stash->{$key});
-	    my ($has_scalar, $is_glob);
-	    if ($] >= 5.010) {
-		my $gv = B::svref_2object($glob);
-		$is_glob = $gv->isa("B::GV");
-		$has_scalar = $is_glob && !$gv->SV->isa('B::SPECIAL');
-	    } else {
-		$is_glob = 1;
-		$has_scalar = defined ${*{$glob}{SCALAR}};
-	    }
-	    my $array = $is_glob && *{$glob}{ARRAY};
-	    my $hash = $is_glob && *{$glob}{HASH};
-	    next unless $has_scalar || $array || $hash;
-	    push @results, ["\$${key}", ${*{$glob}{SCALAR}}, 0] if $has_scalar;
-	    push @results, ["\@${key}", $array, 0] if $array;
-	    push @results, ["\%${key}", $hash, 0] if $hash;
-	}
-	return \@results;
-    } elsif ($context_id == PunctuationVariables) {
-	my @results;
-	foreach my $pv (@_punctuationVariables) {
-	    push (@results, [$pv, undef, 1]);
-	}
-	foreach my $pv (@_rxPunctuationVariables) {
-	    # somebody might use @' and trigger the condition, I'm willing to risk it
-	    push (@results, ["\$$pv", undef, exists $main::{$pv} ? 1 : 0]);
-	}
-	return \@results;
-    } else {
-	die sprintf("code:%d:error:%s",
-		    302,
-		    ("Not ready to evaluate "
-		     . $contextProperties[$context_id]
-		     . ' variables'));
-    }
 }
 
 sub _truncateIfNecessary {
