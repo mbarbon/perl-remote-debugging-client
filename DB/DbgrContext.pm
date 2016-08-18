@@ -265,6 +265,7 @@ sub getProximityVarsViaPadWalker($$$$) {
 	return \@results;
     }
 }
+
 # -1: unknown, 0: no, 1:yes  #### Do not init as 1, only -1 or 0.
 # bug 93570 - allow padwalker detection/use to be disabled
 my $havePadWalker = $ENV{DBGP_PERL_IGNORE_PADWALKER} ? 0 : -1;
