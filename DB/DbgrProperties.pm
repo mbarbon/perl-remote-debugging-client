@@ -238,8 +238,6 @@ sub getContextProperties($$) {
 	}
 	return \@results;
     } elsif ($context_id == PunctuationVariables) {
-	my ($packageName, $filename, $line) = caller(1);
-	my %vals;
 	my @results;
 	foreach my $pv (@_punctuationVariables) {
 	    push (@results, [$pv, undef, 1]);
@@ -249,7 +247,6 @@ sub getContextProperties($$) {
 	    push (@results, ["\$$pv", undef, exists $main::{$pv} ? 1 : 0]);
 	}
 	return \@results;
-	
     } else {
 	die sprintf("code:%d:error:%s",
 		    302,
@@ -258,7 +255,7 @@ sub getContextProperties($$) {
 		     . ' variables'));
     }
 }
- 
+
 sub _truncateIfNecessary {
     my($res, $maxDataSize, $stripOuterBrackets) = @_;
     if ($stripOuterBrackets && $res =~ /^([\[\{\(\<]).*([\]\}\)\>])$/) {
