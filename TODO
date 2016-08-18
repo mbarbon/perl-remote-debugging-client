@@ -60,7 +60,6 @@
     - stck depth/context combination
     - max size
     - long names
-    - address (returned for all references, and its value)
     - treatment of tied/overloaded values
       (not sure whether is should bypass tie/overload or not)
   - break

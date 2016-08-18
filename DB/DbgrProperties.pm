@@ -394,7 +394,6 @@ sub _getFullPropertyInfoByValue {
     my $encVal = undef;
     my $encValLength = undef;
     my $refstr = "";
-    my $address;
     my $variableGroup = -1;
     use constant VARIABLE_GROUP_ARRAY => 1;
     use constant VARIABLE_GROUP_HASH => 2;
@@ -409,12 +408,10 @@ sub _getFullPropertyInfoByValue {
 		$typeString = $refstr;
 		$variableGroup = VARIABLE_GROUP_ARRAY;
 		$numChildren = scalar @$val;
-		($address) = ($stringifiedVal =~ m/^ARRAY\(0x(.*)\)$/i);
 	    } elsif ($refstr eq 'HASH') {
 		$typeString = $refstr;
 		$variableGroup = VARIABLE_GROUP_HASH;
 		$numChildren = scalar keys %$val;
-		($address) = ($stringifiedVal =~ m/^HASH\(0x(.*)\)$/i);
 	    } elsif ($refstr =~ /^Regexp/) {
 		# Special-case -- only one in Perl?
 		$typeString = 'Regexp';
@@ -471,9 +468,6 @@ sub _getFullPropertyInfoByValue {
     $res .= qq( constant="0");
     if ($hasChildren) {
 	$res .= qq( children="1" numchildren="$numChildren");
-	if (defined $address) {
-	    $res .= qq( address="$address");
-	}
     } else {
 	$res .= qq( children="0");
     }
