@@ -43,7 +43,6 @@
 - test
   - interactive mode (prints banner when used with -e, maybe it does
     other stuff as well)
-  - that eval can see function arguments
   - feature_set/feature_get
     - individual features
   - breakpoints
