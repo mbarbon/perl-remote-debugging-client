@@ -41,8 +41,6 @@
   it can use Scalar::Util::reftype()/blessed() instead of performing
   string operations on types
 - test
-  - more thorough tests for function arguments in eval:
-    they don't work (at least) in the case of recursion depth check
   - interactive mode (prints banner when used with -e, maybe it does
     other stuff as well)
   - that eval can see function arguments
