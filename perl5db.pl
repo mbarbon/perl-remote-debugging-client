@@ -170,6 +170,17 @@ sub eval {
 	# pull them from the user's context.
 	local @_;  # Clear each time.
 	local @unused = caller($evalSkipFrames);
+	local $additionalLevels = 0;
+	# first term is for the extra stack frame of pure-Perl DB::sub
+	# second term is for eval BLOCK stack frames
+	local $notRealSubCall = $unused[0] eq 'DB' || ($unused[3] eq '(eval)' && !$unused[4]);
+	while ($evalStackLevel > 0 || $notRealSubCall) {
+	    $evalStackLevel-- if !$notRealSubCall;
+	    $additionalLevels++;
+	    @unused = caller($evalSkipFrames + $additionalLevels);
+	    $notRealSubCall = $unused[0] eq 'DB' || ($unused[3] eq '(eval)' && !$unused[4]);
+	    last unless @unused;
+	}
 	if ($unused[4]) {
 	    # hasargs field is set -- an instance of @_ was set up.
 	    eval { @_ = @args; };
@@ -261,7 +272,7 @@ terminates, and defaulting to printing return values for the C<r> command.
 
 =cut
 
-our ($no_value, $evalarg, $usercontext, $evalSkipFrames, @saved); # used by sub eval above
+our ($no_value, $evalarg, $usercontext, $evalSkipFrames, $evalStackLevel, @saved); # used by sub eval above
 
 our ($single, $trace, $signal, $sub, %sub, @args);
 our ($ldebug); # it should be my (), as all other $ldebug around the code
@@ -293,6 +304,7 @@ BEGIN {
     @stack = (0);
     $stack_depth = 0;    # Localized repeatedly; simple way to track $#stack
     $level = 0;
+    $evalSkipFrames = $evalStackLevel = 0;
 }
 
 local ($^W) = 0;    # Switch run-time warnings off during init.
@@ -1327,55 +1339,6 @@ sub checkForEvalStackType($) {
     }
 }
 
-# Walk a list of array and hash selectors until we get a final value.
-
-sub evalArgument($$$) {
-    my ($property_long_name, $propertyKey, $currentArgsARef) = @_;
-    my $returned_long_name;
-    if ($property_long_name eq '@_') {
-	if ($propertyKey =~ /^\[?(\d+)\]?/) {
-	    my $val = $1;
-	    $returned_long_name = sprintf('$_[%d]', $val);
-	    return ($returned_long_name, $currentArgsARef->[$val]);
-	} else {
-	    return (undef, undef, DBP_E_CantGetProperty,
-		    "Can't parse \@_ propertyKey $propertyKey");
-	}
-    } elsif ($property_long_name !~ /^\$_\[\d+\]/) {
-	return (undef, undef, DBP_E_CantGetProperty,
-		"Property $property_long_name doesn't identify an arg");
-    }
-    $returned_long_name = '$_';
-    my $currVal;
-    $property_long_name =~ /^\$_\[(\d+)\](.*)/;
-    $currVal = $currentArgsARef->[$1];
-    $returned_long_name = "\$_[$1]";
-    $property_long_name = $2;
-    while (length $property_long_name && ref $currVal) {
-	if ($property_long_name =~ /^((?:->)?\[(\d+)\])(.*)/) {
-	    $currVal = $currVal->[$2];
-	    $returned_long_name .= $1;
-	    $property_long_name = $3;
-	} elsif ($property_long_name =~ /^((?:->)?\{(.+?)\})(.*)/) {
-	    $currVal = $currVal->{$2};
-	    $returned_long_name .= $1;
-	    $property_long_name = $3;
-	} else {
-	    last;
-	}
-    }
-    if ($propertyKey && ref $currVal) {
-	if ($propertyKey =~ /^\[(\d+)\]/) {
-	    $currVal = $currVal->[$1];
-	    $returned_long_name .= "[$1]";
-	} elsif ($propertyKey =~ /^\{(.+?)\}(?:->)?(.*)/) {
-	    $currVal = $currVal->{$1};
-	    $returned_long_name .= "{$1}";
-	}
-    }
-    return ($returned_long_name, $currVal);
-}
-
 sub getFileInfo($$$$$) {
     my ($bFileURI,
         $rbFileURI,
@@ -1737,6 +1700,7 @@ sub db_alarm {
 sub eval_term {
     my ($term) = @_;
     my $valRef;
+    # Avoid pattern-matching
     my $firstChar = substr($term, 0, 1);
     $no_value = undef;
     $evalarg = $term;
@@ -1795,7 +1759,13 @@ sub DB {
     # Perl DB::sub: call-site -> DB::sub -> actual sub -> DB::DB
     # XS   DB::sub: call-site ->         -> actual sub -> DB::DB
     # so we need 2 or 3 levels for DB::eval to get to the actual call
-    local $evalSkipFrames = $has_xs ? 2 : 3;
+    #
+    # however if we skip the extra frame directly here (with a conditional),
+    # if makes the interaction of sub foo { eval { ... } } with the logic
+    # to look at deeper stack frames more complicated, so here we only
+    # skip the two level required to go to the first non-debugger frame,
+    # and leave the logic to deal with the XS vs. non-XS DB::sub in DB::eval
+    local $evalSkipFrames = 2;
     if (!defined $startedAsInteractiveShell) {
 	# This won't work with code that changes $0 to "-e"
 	# in a BEGIN block.
@@ -3022,43 +2992,19 @@ sub DB {
 		my $maxDataSize = $opts{m} || $settings{max_data}[0];
 		my $property_long_name = $opts{n};
 		my $pageIndex = $opts{p} || 0;
-		my $nameAndValue;
 		$property_long_name = nonXmlChar_Decode($property_long_name);
-		if ($context_id != FunctionArguments) {
-		    $nameAndValue = eval {
-			getPropertyInfo($property_long_name, $propertyKey);
-		    };
-		} else {
-		    my @savedArgs;
-		    my $actualStackDepth = $stackDepth + 1;
-		    while (1) {
-			my @unused = caller($actualStackDepth);
-			if (!@unused) {
-			    last;
-			} elsif ($unused[3] eq '(eval)' && !$unused[4]) {
-			    $actualStackDepth++;
-				# dblog("property_get: moving up to level $actualStackDepth");
-			} else {
-				# dblog("property_get: settle on caller => [@unused]");
-				# dblog("stack depth [$actualStackDepth]: curr args are [", join(", ", @args), "]") if $ldebug;
-			    @savedArgs = @args;
-			    last;
-			}
-		    }
-		    ($property_long_name, my $finalValue, my $code, my $error) =
-			evalArgument($property_long_name, $propertyKey,
-				     \@savedArgs);
-		    if ($code) {
+                if ($context_id == FunctionArguments &&
+                            $property_long_name ne '@_' &&
+                            $property_long_name !~ /^\$_\[/) {
 			makeErrorResponse($cmd,
 					  $transactionID,
-					  $code,
-					  $error);
+					  DBP_E_CantGetProperty,
+					  "Property $property_long_name doesn't identify an arg");
 			next CMD;
-		    }
-		    $nameAndValue = [$property_long_name, $finalValue, 0];
-		    $propertyKey = '';
-
-		}
+                }
+		my $nameAndValue = eval {
+		    getPropertyInfo($property_long_name, $propertyKey);
+		};
 		if ($@) {
 		    dblog("Got error [$@]\n") if $ldebug;
 		    # Fix $@;
@@ -3074,28 +3020,15 @@ sub DB {
 		    next CMD;
 		} elsif ($nameAndValue) {
 		    if ($nameAndValue->[NV_NEED_MAIN_LEVEL_EVAL]) {
-			# here we don't adjust $evalSkipFrames because
-			# this branch is never entered for function arguments
+			# + 1 is for the eval BLOCK below
+			local $evalSkipFrames = $evalSkipFrames + 1;
+                        local $evalStackLevel = $stackDepth;
 			eval {
-			    my $valRef;
-			    $evalarg = $nameAndValue->[NV_NAME];
-			    my $firstChar = substr($evalarg, 0, 1);
-				# Avoid pattern-matching
-			    if ($firstChar eq '@') {
-				my @tmp = &eval();
-				$valRef = \@tmp;
-			    } elsif ($firstChar eq '%') {
-				my %tmp = &eval();
-				$valRef = \%tmp;
-			    } else {
-				# eval always fires in array context
-				my @tmp = &eval();
-				$valRef = _guessScalarOrArray(\@tmp);
-			    }
-			    $nameAndValue->[NV_VALUE] = $valRef;
+			    $nameAndValue->[NV_VALUE] = eval_term($nameAndValue->[NV_NAME]);
 			};
 			if ($@) {
 			    $nameAndValue->[NV_VALUE] = _trimExceptionInfo($@);
+			    $nameAndValue->[NV_UNSET_FLAG] = 1;
 			}
 		    }
 		    eval {

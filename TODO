@@ -14,8 +14,6 @@
   - stack depth > 0 for anything but function arguments
   - if there is both a lexical $foo and a package $foo, there is no
     way of fetching the package variable
-  - kill evalArgument, it can be emulated via aliasing + eval, or
-    kill the eval for everything else, and use evalArgument
 - fix breakpoint_set return value
 - fix the fact that breakpoint_set can set multiple breakpoints
 - fix breakpoint_update -n option
