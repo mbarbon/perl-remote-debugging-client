@@ -1347,19 +1347,19 @@ sub evalArgument($$$) {
     }
     $returned_long_name = '$_';
     my $currVal;
-    $property_long_name =~ /^\$_\[(\d+)\](?:->)?(.*)/;
+    $property_long_name =~ /^\$_\[(\d+)\](.*)/;
     $currVal = $currentArgsARef->[$1];
     $returned_long_name = "\$_[$1]";
     $property_long_name = $2;
     while (length $property_long_name && ref $currVal) {
-	if ($property_long_name =~ /^\[(\d+)\](?:->)?(.*)/) {
-	    $currVal = $currVal->[$1];
-	    $returned_long_name .= "[$1]";
-	    $property_long_name = $2;
-	} elsif ($property_long_name =~ /^\{(.+?)\}(?:->)?(.*)/) {
-	    $currVal = $currVal->{$1};
-	    $returned_long_name .= "{$1}";
-	    $property_long_name = $2;
+	if ($property_long_name =~ /^((?:->)?\[(\d+)\])(.*)/) {
+	    $currVal = $currVal->[$2];
+	    $returned_long_name .= $1;
+	    $property_long_name = $3;
+	} elsif ($property_long_name =~ /^((?:->)?\{(.+?)\})(.*)/) {
+	    $currVal = $currVal->{$2};
+	    $returned_long_name .= $1;
+	    $property_long_name = $3;
 	} else {
 	    last;
 	}
