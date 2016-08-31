@@ -27,6 +27,7 @@ our @EXPORT = (
         stack_depth_is
         breakpoint_list_is
         eval_value_is
+        parsed_response_is
         start_listening
         stop_listening
         wait_connection
@@ -158,6 +159,12 @@ sub breakpoint_list_is {
     my $sorted_breakpoints = [sort { $a->id <=> $b->id } @$breakpoints];
 
     dbgp_parsed_response_cmp($sorted_breakpoints, $expected);
+}
+
+sub parsed_response_is {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+    dbgp_parsed_response_cmp(@_);
 }
 
 sub _cleanup {

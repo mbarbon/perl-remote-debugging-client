@@ -3372,13 +3372,21 @@ sub DB {
 		if (!defined $decodedData) {
 		    next CMD;
 		}
-		my $res = eval_term($decodedData);
-		emitEvalResultAsProperty($cmd,
-					 $transactionID,
-					 $decodedData,
-					 $res,
-					 $settings{max_data}[0],
-					 $pageIndex);
+		eval {
+		    local $evalSkipFrames = $evalSkipFrames + 1;
+		    my $res = eval_term($decodedData);
+		    emitEvalResultAsProperty($cmd,
+			 $transactionID,
+			 $decodedData,
+			 $res,
+			 $settings{max_data}[0],
+			 $pageIndex);
+		    1;
+		} or do {
+		    my $error = $@ || "";
+
+		    makeErrorResponse($cmd, $transactionID, DBP_E_PropertyEvalError, "Error in eval: $error")
+		};
 	    } else {
 		# Fallback
 		printWithLength(sprintf

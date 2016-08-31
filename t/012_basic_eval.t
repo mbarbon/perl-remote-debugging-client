@@ -86,4 +86,12 @@ command_is(['eval', encode_base64('{a => [1, 2], b => 7}')], {
     },
 });
 
+my $res = send_command('eval', '--', encode_base64('$i +'));
+parsed_response_is($res, {
+    command => 'eval',
+    code    => 206,
+    apperr  => 4,
+});
+like($res->message, qr{^Error in eval: syntax error at \(eval \d+\)\[blib/lib/dbgp-helper/perl5db.pl:\d+\] line 1, at EOF});
+
 done_testing();
