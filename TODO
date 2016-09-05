@@ -1,6 +1,5 @@
 - remove shared variables (our ())
 - use strict 'refs' in DB/DbgrProperties.pm, DB/DbgrContext.pm and perl5db.pl
-- check all eval/eval_term with external input handle invalid inputs
 - breakpoint on error
 - breakpoint on return should break before the function
   returns, otherwise they're not that useful

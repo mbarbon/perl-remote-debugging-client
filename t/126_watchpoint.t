@@ -11,12 +11,27 @@ command_is(['breakpoint_set', '-t', 'watch', '--', encode_base64('$i')], {
     id          => 0,
 });
 
+# a watchpoint which is a syntax error will never trigger
+command_is(['breakpoint_set', '-t', 'watch', '--', encode_base64('$i +')], {
+    state       => 'enabled',
+    id          => 1,
+});
+
 command_is(['breakpoint_get', '-d', 0], {
     breakpoint => {
         id              => 0,
         type            => 'watch',
         state           => 'enabled',
         expression      => '$i',
+    },
+});
+
+command_is(['breakpoint_get', '-d', 1], {
+    breakpoint => {
+        id              => 1,
+        type            => 'watch',
+        state           => 'enabled',
+        expression      => '$i +',
     },
 });
 

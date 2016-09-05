@@ -1864,7 +1864,7 @@ sub DB {
 
             # Fix context DB::eval() wants to return an array, but
             # we need a scalar here.
-            my ($val) = join (' ', &eval );
+            my ($val) = eval { join (' ', &eval ) };
             $val = ((defined $val) ? "'$val'" : 'undef');
 
             # Did it change?
@@ -2584,7 +2584,7 @@ sub DB {
 			dblog("Got decoded condition [$bCondition]") if $ldebug;
 			if ($bCondition) {
 			    $evalarg = $bCondition;
-			    my ($val) = join(' ', &eval);
+			    my ($val) = eval { join(' ', &eval) };
 			    $val = (defined $val) ? "'$val'" : 'undef';
 			    push @watchPoints, $bCondition;
 			    push @watchPointValues, $val;
