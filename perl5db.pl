@@ -3002,55 +3002,33 @@ sub DB {
 					  "Property $property_long_name doesn't identify an arg");
 			next CMD;
                 }
-		my $nameAndValue = eval {
-		    getPropertyInfo($property_long_name, $propertyKey);
+		my $nameAndValue = [makeFullPropertyName($property_long_name, $propertyKey), undef, 1];
+		# + 1 is for the eval BLOCK below
+		local $evalSkipFrames = $evalSkipFrames + 1;
+		local $evalStackLevel = $stackDepth;
+		eval {
+		    $nameAndValue->[NV_VALUE] = eval_term($nameAndValue->[NV_NAME]);
 		};
 		if ($@) {
-		    dblog("Got error [$@]\n") if $ldebug;
-		    # Fix $@;
-		    my ($code, $error) = ($@ =~ /code:(.*):error<:<(.*?)>:>/);
-		    if (!$code) {
-			$code = DBP_E_CantGetProperty;
-			$error = _trimExceptionInfo($@);
-		    }
-		    makeErrorResponse($cmd,
-				      $transactionID,
-				      $code,
-				      $error);
-		    next CMD;
-		} elsif ($nameAndValue) {
-		    if ($nameAndValue->[NV_NEED_MAIN_LEVEL_EVAL]) {
-			# + 1 is for the eval BLOCK below
-			local $evalSkipFrames = $evalSkipFrames + 1;
-                        local $evalStackLevel = $stackDepth;
-			eval {
-			    $nameAndValue->[NV_VALUE] = eval_term($nameAndValue->[NV_NAME]);
-			};
-			if ($@) {
-			    $nameAndValue->[NV_VALUE] = _trimExceptionInfo($@);
-			    $nameAndValue->[NV_UNSET_FLAG] = 1;
-			}
-		    }
-		    eval {
-			emitEvaluatedPropertyGetInfo($cmd,
-						     $transactionID,
-						     $nameAndValue,
-						     $property_long_name,
-						     $propertyKey,
-						     $maxDataSize,
-						     $pageIndex);
-		    };
-		    if ($@) {
-			dblog("Error in emitEvaluatedPropertyGetInfo: [$@]") if $ldebug;
-			makeErrorResponse($cmd,
-					  $transactionID,
-					  DBP_E_InternalException,
-					  "Internal error while formatting result");
-		    }
-		} else {
-		    # We already emitted an error message, and returned undef
+		    $nameAndValue->[NV_VALUE] = _trimExceptionInfo($@);
+		    $nameAndValue->[NV_UNSET_FLAG] = 1;
 		}
-
+		eval {
+		    emitEvaluatedPropertyGetInfo($cmd,
+						 $transactionID,
+						 $nameAndValue,
+						 $property_long_name,
+						 $propertyKey,
+						 $maxDataSize,
+						 $pageIndex);
+		};
+		if ($@) {
+		    dblog("Error in emitEvaluatedPropertyGetInfo: [$@]") if $ldebug;
+		    makeErrorResponse($cmd,
+				  $transactionID,
+				  DBP_E_InternalException,
+				  "Internal error while formatting result");
+		}
 	    } elsif ($cmd eq 'property_set') {
 		# First get the args, and then sanity check.
 		my %opts;

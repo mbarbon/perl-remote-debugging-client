@@ -23,7 +23,7 @@ our @EXPORT = qw(
 	     emitEvaluatedPropertyGetInfo
 	     figureEncoding
 	     getFullPropertyInfoByValue
-	     getPropertyInfo
+	     makeFullPropertyName
 	     );
 our @EXPORT_OK = ();
 
@@ -35,7 +35,7 @@ use DB::DbgrCommon;
 # Internal sub declarations
 
 sub adjustLongName($$$);
-sub makeFullName($$);
+sub makeFullPropertyName($$);
 
 # And recursively-called exported routines:
 
@@ -94,12 +94,12 @@ sub emitEvaluatedPropertyGetInfo($$$$$$$) {
 		      namespaceAttr(),
 		      $cmd,
 		      $transactionID);
+    my $finalName = $nameAndValue->[NV_NAME];
     my $finalVal = $nameAndValue->[NV_VALUE];
 
     $res .= '>' if $cmd ne 'property_value';
     my $startTag = $cmd ne 'property_value' ? '<property' : '';
     my $endTag = $cmd ne 'property_value' ? '</property>' : '';
-    my $finalName = makeFullName($property_long_name, $propertyKey);
     $res .= _getFullPropertyInfoByValue($startTag, $endTag,
 					$propertyKey || $finalName, # name
 					$finalName,
@@ -158,15 +158,6 @@ sub emitEvalResultAsProperty($$$$$$) {
     printWithLength($res);
 }
 
-sub getPropertyInfo($$) {
-    my ($property_long_name, $propertyKey) = @_;
-
-    # Invariant: FunctionArguments are handled by the caller.
-    
-    my $finalName = makeFullName($property_long_name, $propertyKey);
-    return [$finalName, undef, 1];
-}
-   
 sub propertyTagSpacer($) {
     my ($currentDepth) = @_;
     return ("\n" . ('  ' x $currentDepth));
@@ -465,7 +456,7 @@ sub adjustLongName($$$) {
     }
 }
 
-sub makeFullName($$) {
+sub makeFullPropertyName($$) {
     my ($property_long_name, $propertyKey) = @_;
     if (!$propertyKey) {
 	return $property_long_name;
