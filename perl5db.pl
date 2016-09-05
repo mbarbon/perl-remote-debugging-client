@@ -3002,7 +3002,8 @@ sub DB {
 					  "Property $property_long_name doesn't identify an arg");
 			next CMD;
                 }
-		my $nameAndValue = [makeFullPropertyName($property_long_name, $propertyKey), undef, 1];
+		(my $fullName, $propertyKey) = makeFullPropertyName($property_long_name, $propertyKey);
+		my $nameAndValue = [$fullName, undef, 1];
 		# + 1 is for the eval BLOCK below
 		local $evalSkipFrames = $evalSkipFrames + 1;
 		local $evalStackLevel = $stackDepth;

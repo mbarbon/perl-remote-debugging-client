@@ -459,13 +459,13 @@ sub adjustLongName($$$) {
 sub makeFullPropertyName($$) {
     my ($property_long_name, $propertyKey) = @_;
     if (!$propertyKey) {
-	return $property_long_name;
+	return ($property_long_name, undef);
     } elsif ($property_long_name =~ /^[\@\%](.*)/) {
-	return sprintf(q($%s%s), $1, $propertyKey);
+	return (sprintf(q($%s%s), $1, $propertyKey), $propertyKey);
     } elsif ($propertyKey =~ /^->/) {
-	return sprintf(q(%s%s), $property_long_name, $propertyKey);
+	return (sprintf(q(%s%s), $property_long_name, $propertyKey), $propertyKey);
     } else {
-	return sprintf(q(%s->%s), $property_long_name, $propertyKey);
+	return (sprintf(q(%s->%s), $property_long_name, $propertyKey), "->$propertyKey");
     }
 }
 

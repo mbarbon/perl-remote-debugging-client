@@ -42,4 +42,16 @@ command_is(['property_get', '-n', '$aref', '-k', '->[1]'], {
     },
 });
 
+command_is(['property_get', '-n', '$aref', '-k', '[1]'], {
+    command  => 'property_get',
+    property => {
+        name        => '->[1]',
+        fullname    => '$aref->[1]',
+        type        => 'int',
+        constant    => '0',
+        children    => '0',
+        value       => '2',
+    },
+});
+
 done_testing();
