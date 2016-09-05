@@ -2482,18 +2482,12 @@ sub DB {
 				  $cmd,
 				  $transactionID);
 
-		my %displayed; # horrible hack, need to review
-		while (my ($fileURI, $fileURINo) = each %fileURILookupTable) {
+		for my $fileURINo (0 .. $#bkptLookupTable) {
 		    my $fileURIInfo = $bkptLookupTable[$fileURINo];
-		    if (!$fileURIInfo) {
-			dblog("No breakpoint info for URI $fileURI ($fileURINo)\n") if $ldebug;
-			next;
-		    }
+		    next unless $fileURIInfo;
 		    while (my ($lineNo, $bkptID) = each %$fileURIInfo) {
-			next if $displayed{$bkptID};
 			my $bpInfo = getBreakpointInfoString($bkptID, fileURI => $fileURINo, lineNo => $lineNo);
 			$res .= $bpInfo if $bpInfo;
-			$displayed{$bkptID} = 1;
 		    }
 		}
 		dblog("bpList: FQFnNameLookupTable: ", DB::Data::Dump::dump(%FQFnNameLookupTable)) if $ldebug;

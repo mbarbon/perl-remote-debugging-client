@@ -6,8 +6,6 @@
 - breakpoint on return don't work for lvalue subroutines when using
   the pure-Perl debugger
   (probably not possible with pure Perl)
-- review breakpoint_list logic for file breakpoints,
-  it can probably be simplified
 - make stop not exit
 - check if it is possible to remove the eval() from context_get
 - fix stack depth/context id handling in properrty_get
