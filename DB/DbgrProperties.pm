@@ -471,6 +471,8 @@ sub makeFullName($$) {
 	return $property_long_name;
     } elsif ($property_long_name =~ /^[\@\%](.*)/) {
 	return sprintf(q($%s%s), $1, $propertyKey);
+    } elsif ($propertyKey =~ /^->/) {
+	return sprintf(q(%s%s), $property_long_name, $propertyKey);
     } else {
 	return sprintf(q(%s->%s), $property_long_name, $propertyKey);
     }
