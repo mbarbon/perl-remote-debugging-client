@@ -36,9 +36,6 @@
 - property_set
   - implement data page, context id, stack depth
   - get rid of the special case that tries to manually quote strings
-- cleanup _getFullPropertyInfoByValue
-  it can use Scalar::Util::reftype()/blessed() instead of performing
-  string operations on types
 - test
   - interactive mode (prints banner when used with -e, maybe it does
     other stuff as well)

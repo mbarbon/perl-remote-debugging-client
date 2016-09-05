@@ -223,6 +223,8 @@ sub _getFullPropertyInfoByValue {
 	$pageIndex,
 	$currentDepth,
 	) = @_;
+    require Scalar::Util;
+
     # dblog("getFullPropertyInfoByValue: (@_)\n");
     my $encoding;
     my $res = $startTag;
@@ -243,10 +245,9 @@ sub _getFullPropertyInfoByValue {
     my $hasChildren = 0;
     my $numChildren;
     my $className;
-    my ($h1, $h2) = split(//, $fullname, 2);
     my $encVal = undef;
     my $encValLength = undef;
-    my $refstr = "";
+    my $hasValue = 1;
     my $variableGroup = -1;
     use constant VARIABLE_GROUP_ARRAY => 1;
     use constant VARIABLE_GROUP_HASH => 2;
@@ -255,55 +256,30 @@ sub _getFullPropertyInfoByValue {
     } else {
 	# Unlike getPropertyInfo, this is where we find
 	# arrays and hashes
-	if ($refstr = ref $val) {
-	    my $stringifiedVal = "" . $val;
-	    if ($refstr eq 'ARRAY') {
-		$typeString = $refstr;
-		$variableGroup = VARIABLE_GROUP_ARRAY;
-		$numChildren = scalar @$val;
-	    } elsif ($refstr eq 'HASH') {
-		$typeString = $refstr;
+	if (my $reftype = Scalar::Util::reftype($val)) {
+	    my $refstr = ref $val;
+	    $className = Scalar::Util::blessed($val);
+	    $typeString = defined $className ? $className : $reftype;
+	    $hasValue = 0;
+	    if ($reftype eq 'HASH') {
 		$variableGroup = VARIABLE_GROUP_HASH;
-		$numChildren = scalar keys %$val;
-	    } elsif ($refstr =~ /^Regexp/) {
+		$numChildren = keys %$val;
+	    } elsif ($reftype eq 'ARRAY') {
+		$variableGroup = VARIABLE_GROUP_ARRAY;
+		$numChildren = @$val;
+	    } elsif (defined $className || $reftype eq 'SCALAR') {
+		# object but not array/hash: it's a scalar
+		$numChildren = 1;
+	    }
+
+	    if ($reftype eq 'REGEXP') {
 		# Special-case -- only one in Perl?
-		$typeString = 'Regexp';
-		$numChildren = 0;
 		$val = substr("$val", 0, $maxDataSize);
 		($encoding, $encVal) = figureEncoding($val);
 		$res .= sprintf(qq( encoding="%s"), $encoding);
 		$encValLength = length($encVal);
-		$refstr = undef;
-	    } elsif ($refstr eq 'CODE') {
-		$typeString = 'CODE';
 		$numChildren = 0;
-	    } elsif ($refstr eq 'SCALAR' || $refstr eq 'REF') {
-		$typeString = 'SCALAR';
-		$numChildren = 1;
-	    } elsif ("$val" =~ /$refstr=/) {
-		my $strVal = "$val";
-		$typeString = $className = $refstr;
-		if ($strVal =~ /=HASH\(0x\w+\)/) {
-		    $numChildren = keys %$val;
-		} elsif ($strVal =~ /=ARRAY\(0x\w+\)/) {
-		    $numChildren = @$val;
-		} else {
-		    $numChildren = 1;
-		}
-	    } elsif (overload::Overloaded($val)) {
-		my $strVal = overload::StrVal($val);
-		($typeString) = ($className) = $strVal =~ /^([^=]+)=/;
-		$refstr = $strVal;
-		if ($strVal =~ /=HASH\(0x\w+\)/) {
-		    $numChildren = keys %$val;
-		} elsif ($strVal =~ /=ARRAY\(0x\w+\)/) {
-		    $numChildren = @$val;
-		} else {
-		    $numChildren = 1;
-		}
-	    } else {
-		# Return whatever it is.
-		$typeString = $refstr;
+		$hasValue = 1;
 	    }
 	} else {
 	    # It's a scalar -- get the underlying value and classify.
@@ -334,9 +310,7 @@ sub _getFullPropertyInfoByValue {
 	    my $childrenPerPage = $settings{max_children}[0];
 	    my $startIndex = $pageIndex * $childrenPerPage;
 	    my $endIndex = $startIndex + $childrenPerPage - 1;
-	    if ($variableGroup == VARIABLE_GROUP_ARRAY
-		|| $refstr =~ /=ARRAY\(0x.*\)/
-		|| "$val" =~ /=ARRAY\(0x.*\)/) {
+	    if ($variableGroup == VARIABLE_GROUP_ARRAY) {
 		my $arraySize = scalar @$val;
 		#### ???? $res .= sprintf(qq( numchildren="%d"), $arraySize);
 		$res .= qq(>);
@@ -360,11 +334,8 @@ sub _getFullPropertyInfoByValue {
 			$res .= "$innerProp";
 		    }
 		}
-	    } elsif ($variableGroup == VARIABLE_GROUP_HASH
-		     || $refstr =~ /=HASH\(0x.*\)/
-		     || "$val" =~ /=HASH\(0x.*\)/) {
-		my %hval = %$val;
-		my @keys = sort keys %hval;
+	    } elsif ($variableGroup == VARIABLE_GROUP_HASH) {
+		my @keys = sort keys %$val;
 		my $arraySize = scalar @keys;
 		#### ???? $res .= sprintf(qq( numchildren="%d"), $arraySize);
 		$res .= qq(>);
@@ -415,7 +386,7 @@ sub _getFullPropertyInfoByValue {
 	$res .= qq( size="$encValLength") if defined $encValLength;
 	$res .= qq( >);
 	$res .= _getFullPropertyInfoByValue_emitNames($maxDataSize, %b_attr);
-	if ($refstr || !defined($encVal)) {
+	if (!$hasValue || !defined($encVal)) {
 	    # Do nothing
 	} elsif ($DB::xdebug_no_value_tag) {
 	    $res .= $encVal;
