@@ -247,6 +247,7 @@ sub _getFullPropertyInfoByValue {
     my $className;
     my $encVal = undef;
     my $encValLength = undef;
+    my $address;
     my $hasValue = 1;
     my $variableGroup = -1;
     use constant VARIABLE_GROUP_ARRAY => 1;
@@ -259,6 +260,7 @@ sub _getFullPropertyInfoByValue {
 	if (my $reftype = Scalar::Util::reftype($val)) {
 	    my $refstr = ref $val;
 	    $className = Scalar::Util::blessed($val);
+	    $address = Scalar::Util::refaddr($val);
 	    $typeString = defined $className ? $className : $reftype;
 	    $hasValue = 0;
 	    if ($reftype eq 'HASH') {
@@ -297,6 +299,9 @@ sub _getFullPropertyInfoByValue {
     $res .= qq( constant="0");
     if ($hasChildren) {
 	$res .= qq( children="1" numchildren="$numChildren");
+	if (defined $address) {
+	    $res .= qq( address="$address");
+	}
     } else {
 	$res .= qq( children="0");
     }

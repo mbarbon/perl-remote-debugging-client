@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use t::lib::Test;
+use MIME::Base64 qw(encode_base64);
 
 $ENV{DBGP_PERL_IGNORE_PADWALKER} = 1;
 
@@ -8,7 +9,8 @@ run_debugger('t/scripts/variables.pl');
 
 send_command('run');
 
-command_is(['context_get'], {
+my $values = send_command('context_get');
+parsed_response_is($values, {
     command => 'context_get',
     values  => [
         {
@@ -65,5 +67,19 @@ command_is(['context_get'], {
         },
     ],
 });
+
+my $refs = send_command('eval', '--', encode_base64('[map "$_", ($aref, undef, \%foo, \@foo, undef)]'));
+my @addresses = map {
+    if ($_->value) {
+        $_->value =~ /\(0x(.*)\)/ or die $_->value;
+        hex $1;
+    } else {
+        undef;
+    }
+} @{$refs->result->childs};
+
+for my $i (0 .. 4) {
+    is($values->values->[$i]->address, $addresses[$i]);
+}
 
 done_testing();
