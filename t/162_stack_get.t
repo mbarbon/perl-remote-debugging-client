@@ -97,7 +97,7 @@ send_command('run');
 my $eval_frames = send_command('stack_get');
 my $eval_file = $eval_frames->frames->[0]->filename;
 
-like($eval_file, qr{^dbgp://perl/[^/]+/\d+/0/%28eval%20\d+%29});
+like($eval_file, qr{^dbgp://perl/[^/]+/\d+/1/%28eval%20\d+%29});
 
 command_is(['stack_get'], {
     frames => [

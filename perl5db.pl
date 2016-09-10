@@ -1091,7 +1091,7 @@ sub lookForPerlFileName {
 # Variables for the eval things
 # Hash on <<(eval \d+)[parentLocn:lineNum]>> to (filename, startLine, @src)
 my %evalTable = ();
-my @evalTableIdx = ();
+my @evalTableIdx = (undef); # 0 is special-cased in calcFileURI
 
 sub internEvalURI($;$) {
     my ($filename, $srcLinesARef) = @_;
