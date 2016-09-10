@@ -20,7 +20,6 @@
 - sub eval {} goes to great lenghts to always produce at least one value
   which looks suspicious
 - breakpoint_update to disable does not work with watchpoints
-- breakpoints with dbgp:// URIs don'work (t/128_eval_breakpoint.t)
 - add extended_properties feature
 - aggressively disable DB::DB/DB::sub
   - when entering DB::DB

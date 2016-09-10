@@ -2537,11 +2537,26 @@ sub DB {
 		my $bptErrorCode = 0;
 		my $bptErrorMsg = undef;
 
-		getFileInfo(defined $opts{f} ? $opts{f} : calcFileURI($currentFilename),
-			    \$bFileURI,
-			    \$bFileURINo,
-			    \$bFileName,
-			    \$perlFileName);
+                if (rindex($opts{f}, "$full_dbgp_prefix/", 0) == 0) {
+		    my ($evalIdx, $encodedName) = $opts{f} =~ m{^\Q$full_dbgp_prefix/\E(\d+)/(.*)$};
+		    my $evalName = decodeData($encodedName, 'urlescape');
+		    my $evalInfo = $evalTableIdx[$evalIdx] &&
+			$evalTableIdx[$evalIdx] &&
+			$evalTable{$evalTableIdx[$evalIdx]};
+
+		    if ($evalName && $evalInfo) {
+			$bFileURI = $opts{f};
+			$bFileName = $opts{f};
+			$bFileURINo = internFileURI($bFileURI);
+			$perlFileName = $evalTableIdx[$evalIdx];
+		    }
+                } else {
+		    getFileInfo(defined $opts{f} ? $opts{f} : calcFileURI($currentFilename),
+			        \$bFileURI,
+			        \$bFileURINo,
+			        \$bFileName,
+			        \$perlFileName);
+                }
 
 		if ($opts{f} =~ m@^dbgp:///perl//(?:PerlApp/|<.*>)@) {
 		    $bptErrorCode = DBP_E_BreakpointTypeNotSupported;
