@@ -55,8 +55,8 @@ command_is(['property_get', '-n', '$rx'], {
         numchildren => 0,
         page        => undef,
         pagesize    => undef,
-        value       => '(?^:abc)',
-        childs      => [],
+        value       => $] < 5.014 ? '(?-xism:abc)' : '(?^:abc)',
+        childs      => []
     },
 });
 

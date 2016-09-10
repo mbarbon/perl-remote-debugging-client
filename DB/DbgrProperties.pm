@@ -264,8 +264,11 @@ sub _getFullPropertyInfoByValue {
 		# object but not array/hash: it's a scalar
 		$numChildren = 1;
 	    }
-
-	    if ($reftype eq 'REGEXP') {
+	    if ($reftype eq 'REGEXP' || (
+		    $] < 5.012 &&
+		    $reftype eq 'SCALAR' &&
+		    $className eq 'Regexp' &&
+		    _hasQrMagic($val))) {
 		# Special-case -- only one in Perl?
 		$val = substr("$val", 0, $maxDataSize);
 		($encoding, $encVal) = figureEncoding($val);
@@ -396,6 +399,21 @@ sub _getFullPropertyInfoByValue {
     }
     # dblog("getFullPropertyInfoByValue: \{$res}\n");
     return $res;
+}
+
+sub _hasQrMagic {
+    my ($val) = @_;
+
+    require B;
+
+    my $b = B::svref_2object($val);
+
+    return unless $b->isa('B::PVMG');
+    for (my $m = $b->MAGIC; $m; $m = $m->MOREMAGIC) {
+        return 1 if $m->TYPE eq 'r';
+    }
+
+    return 0;
 }
 
 sub _getFullPropertyInfoByValue_emitNames {
