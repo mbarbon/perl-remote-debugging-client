@@ -1370,8 +1370,10 @@ sub getFileInfo($$$$$) {
 	    }
 	};
 	if ($@) {
-	    dblog("Called uriToFilename in " .
-		  join("\n", dump_trace(0))) if $ldebug;
+	    my $error = $@;
+
+	    dblog("Error in uriToFilename: $error " .
+		  DB::Data::Dump::dump(dump_trace(0))) if $ldebug;
 	}
     }
 
