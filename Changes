@@ -1,5 +1,10 @@
 Revision history for Devel-Debug-DBGp
 
+0.20      2016-09-10 15:34:09 CEST
+
+    - Can now set breakpoints inside eval STRING source code
+    - Don't die on invalid eval or watchpoint expressions
+
 0.19      2016-08-14 15:23:26 CEST
 
     - Don't ignore undef scalar lexicals in context_get
