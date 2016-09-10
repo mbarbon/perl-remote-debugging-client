@@ -1824,24 +1824,26 @@ sub DB {
 
     my $fileNameURI;
     my $fileNameURINo;
+    our (@dbline, %dbline);
+
+    local*dbline = "::_<$currentFilename";
+    if ($ldebug && $pkg eq 'DB::fake') {
+	dblog($dbline[$currentLine]);
+    }
 
     my $canPerlFileName = canonicalizeFName($currentFilename);
     if (exists $perlNameToFileURINo{$canPerlFileName}) {
 	$fileNameURINo = $perlNameToFileURINo{$canPerlFileName};
 	($fileNameURI, undef, undef) = @{$fileNameTable[$fileNameURINo]};
+    } elsif ($currentFilename =~ /\(eval (\d+)\)\[(.*):(\d+)\]$/) {
+	internEvalURI($currentFilename, \@dbline);
+	$fileNameURI = calcFileURI($currentFilename);
+	$fileNameURINo = internFileURI($fileNameURI);
     } else {
 	$fileNameURI = filenameToURI($currentFilename, 1);
 	$fileNameURINo = internFileURI($fileNameURI);
     }
 
-    our (@dbline, %dbline);
-    local*dbline = "::_<$currentFilename";
-    if ($ldebug && $pkg eq 'DB::fake') {
-	dblog($dbline[$currentLine]);
-    }
-    if ($currentFilename =~ /\(eval (\d+)\)\[(.*):(\d+)\]$/) {
-	internEvalURI($currentFilename, \@dbline);
-    }
     if ($pkg !~ /^DB::/) {
 	if (! exists $firstFileInfo{file}) {
 	    $firstFileInfo{file} = $currentFilename; # Perl file name
