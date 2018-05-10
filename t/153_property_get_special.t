@@ -6,7 +6,7 @@ $ENV{DBGP_PERL_IGNORE_PADWALKER} = 1;
 
 run_debugger('t/scripts/special_values.pl');
 
-warn send_command('feature_set', '-n', 'max_depth', '-v', '5');
+send_command('feature_set', '-n', 'max_depth', '-v', '5');
 send_command('run');
 
 command_is(['property_get', '-n', '$code'], {
