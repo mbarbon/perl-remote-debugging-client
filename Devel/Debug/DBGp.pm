@@ -8,7 +8,13 @@ Devel::Debug::DBGp - Perl DBGp debugger (derived from Komodo remote debugging he
 
 From the command line:
 
-    DBGP_OPTS="RemotePort=localhost:9000" perl -I/path/to/lib/dbgp-helper -d myscript.pl
+    PERLDB_OPTS="RemotePort=localhost:9000" perl -I/path/to/lib/dbgp-helper -d myscript.pl
+    
+You can get the path of dbgp-helper by running something like:
+
+    [user@user]~% reply
+    0> use Devel::Debug::DBGp;
+    1> print Devel::Debug::DBGp->debugger_path
 
 From an helper module:
 
