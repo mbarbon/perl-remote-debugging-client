@@ -17,7 +17,7 @@ You can get the path of dbgp-helper by running the following command:
 From an helper module:
 
     unshift @INC, Devel::Debug::DBGp->debugger_path;
-    $ENV{DBGP_OPTS} = "RemotePort=localhost:9000";
+    $ENV{PERLDB_OPTS} = "RemotePort=localhost:9000";
     require 'perl5db.pl';
 
 For L<Plack> applications see L<Plack::Middleware::DBGp>.
