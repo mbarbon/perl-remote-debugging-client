@@ -67,7 +67,7 @@ WriteMakefile(
     },
     clean             => { FILES => 'DB/DbgrXS.pm' },
     $do_xs ? (
-        XS                => { 'perl5db.xs' => undef },
+        XS                => { 'perl5db.xs' => 'perl5db.c' },
         OBJECT            => 'perl5db.o',
     ) : (
         XS                => { },
