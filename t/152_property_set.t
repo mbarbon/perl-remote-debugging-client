@@ -156,7 +156,10 @@ command_is(['property_get', '-n', '%foo'], {
 command_is(['property_set', '-n', '$foo', '--', encode_base64('(aaa')], {
     apperr  => 4,
     code    => 207,
-    message => "syntax error\n",
+    message => ($^V < 5.37.9
+                ? "syntax error\n"
+                : "syntax error at (eval 18)[blib/lib/dbgp-helper/perl5db.pl:192] line 1, at EOF\n" .
+                  "Execution of (eval 18)[blib/lib/dbgp-helper/perl5db.pl:192] aborted due to compilation errors.\n"),
     command => 'property_set',
 });
 
